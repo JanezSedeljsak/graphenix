@@ -7,7 +7,7 @@ def main():
     description="py-base module",
     author="janezsedeljsak",
     author_email="janez.sedeljsak@gmail.com",
-    ext_modules=[Extension("pybase", ["./core/pybase.c"])]
+    ext_modules=[Extension("pybase", ["./core/main.c"])]
   )
 
 if (__name__ == "__main__"):
