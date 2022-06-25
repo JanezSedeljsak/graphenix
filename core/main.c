@@ -18,7 +18,7 @@ static PyMethodDef Methods[] = {
 static struct PyModuleDef pybasemodule = {
     PyModuleDef_HEAD_INIT,
     "pybase",
-    "Python c extension for data management",
+    "Python c extension for data management...",
     -1,
     Methods};
 
