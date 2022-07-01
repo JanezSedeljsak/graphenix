@@ -24,6 +24,9 @@ class Type:
         """
         Creates internal search index for column (seach will be O(log(n)) instead of O(n), but it will take more space)
         """
+        if type == _Type.LINK:
+            raise ValueError("LINK type cannot be indexed")
+
         self.index = True
         return self
 
@@ -180,20 +183,26 @@ class Schema:
         """
         Creates Schema on system. (if it already exists -> error)
         """
-        return PYB_Core.create_schema(self.parsed_)
+        return PYB_Core.create_schema(self.name, self.parsed_)
 
 
     def migrate(self) -> bool:
         """
         Updates schema definition and all models (if schema doesn't exist -> error)
         """
-        return PYB_Core.migrate_schema()
+        return PYB_Core.migrate_schema(self.name, self.parsed_)
 
     def delete(self) -> bool:
         """
         Deletes schema from filesystem
         """
-        return PYB_Core.delete_schema()
+        return PYB_Core.delete_schema(self.name)
+
+    def print(self) -> None:
+        """
+        Prints schema via C API
+        """
+        PYB_Core.print_schema(self.name, self.parsed_)
 
     @staticmethod
     def load(file_name: str) -> tuple[bool, 'Schema']:

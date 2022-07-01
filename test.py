@@ -58,6 +58,10 @@ class TestPyBase(unittest.TestCase):
         """Test delete schema"""
         self.assertEqual(my_schema.delete(), True)
 
+    def test_print_schema(self):
+        """Test print schema"""
+        my_schema.print()
+
     def test_load_schema(self):
         """Test load schema"""
         loaded, _ = Schema.load('test')
