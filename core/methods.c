@@ -6,11 +6,6 @@
 #include <errno.h>
 #include <string.h>
 
-static PyObject *heartbeat(PyObject *self, PyObject *args)
-{
-  return PyLong_FromLong(12l);
-}
-
 typedef struct _user
 {
     u_int64_t id;
@@ -45,10 +40,5 @@ static PyObject *create_base(PyObject *self, PyObject *args)
 
   fclose(user_schema_stream);
   fclose(schema_definition_stream);
-  Py_RETURN_TRUE;
-}
-
-static PyObject *delete_base(PyObject *self, PyObject *args)
-{
   Py_RETURN_TRUE;
 }

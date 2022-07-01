@@ -1,41 +1,68 @@
 import unittest
-import pybase as pyb_core
-import core.pyb as pyb
+import pybase_core as PYB_Core
+from core.pyb import Schema, Model, Field
 
-my_schema = pyb.Schema("university_db", models=[
-    pyb.Model("students", slots=[
-        pyb.Model("student_id", pyb.Type.STR_FIXED, size=255),
-        pyb.Model("fullname", pyb.Type.STR_FIXED, size=255),
-        pyb.Model("email", pyb.Type.STR_FIXED, size=255, indexed=True),
-        pyb.Link("courses")
-    ]),
-    pyb.Model("courses", slots=[
-        pyb.Model("name", pyb.Type.STR_FIXED, size=255),
-        pyb.Link("students"),
-        pyb.Link("teachers")
-    ]),
-    pyb.Model("teachers", slots=[
-        pyb.Model("fullname", pyb.Type.STR_FIXED, size=255),
-        pyb.Model("email", pyb.Type.STR_FIXED, size=255, indexed=True),
-        pyb.Link("courses")
-    ])
-])
+my_schema = Schema("university_db", models={
+    "students": Model({
+        "fullname": Field.String(size=100),
+        "email": Field.String(size=255).as_index(),
+        "courses": Field.Link("courses")
+    }),
+    "courses": Model({
+        "name": Field.String(size=100),
+        "teacher": Field.Link("teachers", multi=False),
+        "students": Field.Link("students")
+    }),
+    "teachers": Model({
+        "fullname": Field.String(size=100),
+        "email": Field.String(size=255).as_index(),
+        "birthdate": Field.DateTime().as_index(),
+        "courses": Field.Link("courses")
+    }, lazy_delete=True),
+})
 
-x = 5
+"""
+students
+    - fullname string size=100
+    - email string size=255
+    - courses courses link multi=1
+
+courses
+    - name string size=100
+    - teacher teachers link multi=0
+    - students students link multi=1
+
+teachers
+    - fullname string size=100
+    - email string size=255
+    - birthdate datetime
+    - courses courses link multi=1
+
+"""
 
 class TestPyBase(unittest.TestCase):
 
     def test_heartbeat(self):
         """Heartbeat function should return 12"""
-        self.assertEqual(pyb_core.heartbeat(), 12)
+        self.assertEqual(PYB_Core.heartbeat(), 12)
     
-    def test_create_base(self):
-        """Test creating a database"""
-        self.assertEqual(pyb_core.create_base(), True)
+    def test_create_schema(self):
+        """Test schema create"""
+        self.assertEqual(my_schema.create(), True)
+
+    def test_migrate_schema(self):
+        """Test schema migration"""
+        self.assertEqual(my_schema.migrate(), True)
     
-    def test_delete_base(self):
-        """Test delete database"""
-        self.assertEqual(pyb_core.delete_base(), True)
+    def test_delete_schema(self):
+        """Test delete schema"""
+        self.assertEqual(my_schema.delete(), True)
+
+    def test_load_schema(self):
+        """Test load schema"""
+        loaded, _ = Schema.load('test')
+        self.assertEqual(loaded, True)
+
 
 if __name__ == '__main__':
     unittest.main()

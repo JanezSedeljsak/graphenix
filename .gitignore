@@ -2,4 +2,5 @@
 
 /build/*
 /_pyb/*
+/core/__pycache__
 #/benchmarking/*
