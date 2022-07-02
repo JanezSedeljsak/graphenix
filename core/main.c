@@ -23,6 +23,7 @@ static PyObject *create_schema(PyObject *self, PyObject *args)
   int8_t models_count;
   MDef **models;
   PARSE_SCHEMA(args, seq, schema_name, models, models_count);
+  SCHEMA_create_base(models, models_count);
 
   SCHEMA_free_models(models, models_count);
   Py_DECREF(seq);
@@ -55,12 +56,28 @@ static PyObject *print_schema(PyObject *self, PyObject *args)
   MDef **models;
   PARSE_SCHEMA(args, seq, schema_name, models, models_count);
 
-  printf("\nSchema[%s, models_count=%d]:\n", schema_name, models_count);
+  printf("\nSchema[%s, models_count=%d]\n", schema_name, models_count);
   SCHEMA_print_models(models, models_count);
 
   SCHEMA_free_models(models, models_count);
   Py_DECREF(seq);
   Py_RETURN_TRUE;
+}
+
+static PyObject *load_schema(PyObject *self, PyObject *args)
+{
+  char *schema_name;
+  int8_t models_count = 0;
+  MDef **models = NULL;
+
+  if (!PyArg_ParseTuple(args, "z", &schema_name))
+    return NULL;
+
+  SCHEMA_read_base(models, models_count, schema_name);
+  PyObject *res = pythonize_models(models, models_count);
+
+  ////SCHEMA_free_models(models, models_count);
+  return res;
 }
 
 static PyMethodDef Methods[] = {
@@ -72,6 +89,7 @@ static PyMethodDef Methods[] = {
     {"delete_schema", delete_schema, METH_VARARGS, NULL},
     {"create_schema", create_schema, METH_VARARGS, NULL},
     {"print_schema", print_schema, METH_VARARGS, NULL},
+    {"load_schema", load_schema, METH_VARARGS, NULL},
     {NULL, NULL, 0, NULL}};
 
 static struct PyModuleDef pybase_core_module = {

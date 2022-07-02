@@ -126,6 +126,18 @@ class Model:
         self.slots = slots if slots is not None else {}
         self.lazy_delete = lazy_delete
 
+    def insert(self) -> bool:
+        ...
+
+    def query(self) -> Any:
+        ...
+
+    def edit(self) -> bool:
+        ...
+
+    def delete(self) -> bool:
+        ...
+
 
 class Schema:
     name: str
@@ -209,4 +221,4 @@ class Schema:
         """
         Reads schema from a file
         """
-        return True, Schema(file_name, models={})
+        return True, PYB_Core.load_schema(file_name)

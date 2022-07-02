@@ -28,6 +28,16 @@ class _Type(Enum):
 #define INDEX 16
 #define MULTI 8
 
+char TYPE_ARR[8][10] = {
+    "UNKNOWN",
+    "BOOL",
+    "INT",
+    "STRING",
+    "TEXT",
+    "DATETIME",
+    "FILE",
+    "LINK"};
+
 typedef struct _fdef
 {
     char name[30];
@@ -55,9 +65,14 @@ static Cfg *load_config(const int8_t);
 static int8_t compress_cfg(Cfg *);
 
 // schema methods
-static MDef **SCHEMA_load_models(const PyObject *, int8_t *);
+static MDef **SCHEMA_parse_models(const PyObject *, int8_t *);
 static void SCHEMA_print_models(MDef **, const int8_t);
 static void SCHEMA_free_models(MDef **, const int8_t);
+static PyObject *pythonize_models(MDef **, const int8_t);
+
+// schema filesystem operations
+static void SCHEMA_create_base(MDef **, const int8_t);
+static void SCHEMA_read_base(MDef **, int8_t, const char *);
 
 #define PARSE_SCHEMA(args, seq, schema_name, models, models_count) \
     {                                                              \
@@ -66,7 +81,7 @@ static void SCHEMA_free_models(MDef **, const int8_t);
         seq = PySequence_Fast(seq, "Models must be iterable!");    \
         if (!seq)                                                  \
             return NULL;                                           \
-        models = SCHEMA_load_models(seq, &models_count);           \
+        models = SCHEMA_parse_models(seq, &models_count);          \
     }
 
 #endif /* SCHEMA_H */

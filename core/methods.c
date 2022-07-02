@@ -44,25 +44,7 @@ static PyObject *create_base(PyObject *self, PyObject *args)
 
 static char *type_str(const int8_t type)
 {
-  switch (type)
-  {
-  case BOOL:
-    return "BOOL";
-  case INT:
-    return "INT";
-  case STRING:
-    return "STRING";
-  case TEXT:
-    return "TEXT";
-  case DATETIME:
-    return "DATETIME";
-  case FILE:
-    return "FILE";
-  case LINK:
-    return "LINK";
-  default:
-    return "UNKNOWN";
-  }
+  return TYPE_ARR[type];
 }
 
 static Cfg *load_config(const int8_t cfg_value)
@@ -83,7 +65,7 @@ static int8_t compress_cfg(Cfg *cfg)
   return cfg->index * INDEX + cfg->multi * MULTI + cfg->type;
 }
 
-static MDef **SCHEMA_load_models(const PyObject *seq, int8_t *n)
+static MDef **SCHEMA_parse_models(const PyObject *seq, int8_t *n)
 {
   int8_t i;
   *n = PySequence_Fast_GET_SIZE(seq);
@@ -160,4 +142,17 @@ static void SCHEMA_free_models(MDef **models, const int8_t n)
     free(models[i]);
   }
   free(models);
+}
+
+static void SCHEMA_create_base(MDef **models, const int8_t n)
+{
+}
+
+static void SCHEMA_read_base(MDef **models, int8_t n, const char *schema_name)
+{
+}
+
+static PyObject *pythonize_models(MDef **models, const int8_t n)
+{
+  Py_RETURN_TRUE;
 }
