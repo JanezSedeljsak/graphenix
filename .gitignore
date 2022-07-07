@@ -4,3 +4,4 @@
 /_pyb/*
 /core/__pycache__
 #/benchmarking/*
+__pycache__

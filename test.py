@@ -1,6 +1,5 @@
 import unittest
-import pybase_core as PYB_Core
-from core.pyb import Schema, Model, Field
+from src.schema_engine import Schema, Model, Field
 
 my_schema = Schema("university_db", models={
     "students": Model({
@@ -41,10 +40,6 @@ teachers
 """
 
 class TestPyBase(unittest.TestCase):
-
-    def test_heartbeat(self):
-        """Heartbeat function should return 12"""
-        self.assertEqual(PYB_Core.heartbeat(), 12)
     
     def test_create_schema(self):
         """Test schema create"""
@@ -60,11 +55,11 @@ class TestPyBase(unittest.TestCase):
 
     def test_print_schema(self):
         """Test print schema"""
-        my_schema.print()
+        print(str(my_schema))
 
     def test_load_schema(self):
         """Test load schema"""
-        loaded, _ = Schema.load('test')
+        loaded, _ = Schema.load('university_db')
         self.assertEqual(loaded, True)
 
 

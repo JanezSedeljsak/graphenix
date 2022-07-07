@@ -11,7 +11,7 @@ class _Type(Enum):
     STRING = 3
     TEXT = 4
     DATETIME = 5
-    FILE = 6
+    BLOB = 6
     LINK = 7
 
 class Type:
@@ -89,12 +89,12 @@ class Field:
         type = _Type.DATETIME
         size = 8
     
-    class File(Type):
+    class Blob(Type):
         """
         Creates file and links via uuid4 name
         """
         size = 37 # uuid for filename
-        type = _Type.FILE
+        type = _Type.BLOB
 
     class Link(Type):
         """
@@ -140,6 +140,8 @@ class Model:
 
 
 class Schema:
+    version: int
+    is_synced: bool
     name: str
     _models: dict[str, Model]
 
@@ -160,14 +162,19 @@ class Schema:
         for mname, mdef in self._models.items():
             mdef._name = mname
 
+    def __str__(self) -> str:
+        """
+        Schema instance to string
+        """
+        return PYB_Core.stringify_schema(self.name, self.parsed_)
 
-    def __getitem__(self, mname: str) -> Model:
+    def __getitem__(self, key: str):
         """
         Gets schema model by name
         """
-        res = self._models.get(mname)
+        res = self._models.get(key)
         if res is None:
-            raise KeyError(f"\"{mname}\" model not found in \"{self.name}\" - schema")
+            raise KeyError(f"\"{key}\" model not found in \"{self.name}\" - schema")
 
         return res
 
@@ -175,6 +182,7 @@ class Schema:
         """
         Sets schema model by key
         """
+        self.is_synced = False
         self._models[mname] = mdef
         mdef._name = mname
 
@@ -186,23 +194,32 @@ class Schema:
             raise KeyError(f"\"{mname}\" model not found in \"{self.name}\" - schema")
 
         del self._models[mname]
+        self.is_synced = False
 
     def __iter__(self) -> Iterator[tuple[str, Model]]:
         for pair in self._models.items():
             yield pair
 
-    def create(self) -> None:
+    def create(self) -> bool:
         """
         Creates Schema on system. (if it already exists -> error)
         """
-        return PYB_Core.create_schema(self.name, self.parsed_)
+        success = PYB_Core.create_schema(self.name, self.parsed_)
+        if success:
+            self.is_synced = True
+        
+        return success
 
 
     def migrate(self) -> bool:
         """
         Updates schema definition and all models (if schema doesn't exist -> error)
         """
-        return PYB_Core.migrate_schema(self.name, self.parsed_)
+        success = PYB_Core.migrate_schema(self.name, self.parsed_)
+        if success:
+            self.is_synced = True
+
+        return success
 
     def delete(self) -> bool:
         """
