@@ -45,23 +45,28 @@ static MDef **SCHEMA_parse_models(const PyObject *seq, int8_t *n)
     res[i]->field_count = PySequence_Fast_GET_SIZE(slots);
     strcpy(res[i]->name, model_name);
     FDef **fields = calloc(res[i]->field_count, sizeof(FDef *));
+    int16_t fields_size = 0;
 
     for (int j = 0; j < res[i]->field_count; j++)
     {
       PyObject *slot = PySequence_Fast_GET_ITEM(slots, j);
       fields[j] = calloc(1, sizeof(FDef));
+      int16_t cfg_value;
 
       char *field_name;
-      if (!PyArg_ParseTuple(slot, "zi", &field_name, &fields[j]->cfg))
+      if (!PyArg_ParseTuple(slot, "zii", &field_name, &cfg_value, &fields[j]->size))
       {
         return NULL;
       }
 
+      fields[j]->cfg = cfg_value;
+      fields_size += fields[j]->size;
       strcpy(fields[j]->name, field_name);
-      res[i]->fields = fields;
       Py_DECREF(slot);
     }
 
+    res[i]->fields_size = fields_size;
+    res[i]->fields = fields;
     Py_DECREF(item);
     Py_DECREF(slots);
   }
@@ -199,14 +204,14 @@ static void SCHEMA_stringify_models(char *str_builder, int16_t offset, MDef **mo
   for (i = 0; i < n; i++)
   {
     const MDef *cur_model = models[i];
-    sprintf(str_builder + offset, "\t%s(is_lazy=%d, field_count=%hhd):\n", cur_model->name, cur_model->is_lazy, cur_model->field_count);
+    sprintf(str_builder + offset, "\t%s(is_lazy=%d, field_count=%hhd, record_size=%hd):\n", cur_model->name, cur_model->is_lazy, cur_model->field_count, cur_model->fields_size);
     offset = strlen(str_builder);
     for (j = 0; j < cur_model->field_count; j++)
     {
       const FDef *field = cur_model->fields[j];
       Cfg *cfg = load_config(field->cfg);
       char *type = TYPE_ARR[cfg->type];
-      sprintf(str_builder + offset, "\t\t%s(type=%s, multi=%d, index=%d)\n", field->name, type, cfg->multi, cfg->index);
+      sprintf(str_builder + offset, "\t\t%s(type=%s, size=%hd, multi=%d, index=%d)\n", field->name, type, field->size, cfg->multi, cfg->index);
       offset = strlen(str_builder);
     }
   }

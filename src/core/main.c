@@ -59,13 +59,10 @@ static PyObject *load_schema(PyObject *self, PyObject *args)
     return NULL;
 
   MDef **models = SCHEMA_read_base(models_count, schema_name);
-  // if (__DEBUG__)
-  // printf("first model -> %s\n", models[0]->name);
-
   PyObject *res = SCHEMA_pythonize_models(models, *models_count);
 
-  free(models_count);
   SCHEMA_free_models(models, *models_count);
+  free(models_count);
   return res;
 }
 
@@ -104,7 +101,7 @@ static PyMethodDef Methods[] = {
 static struct PyModuleDef pybase_core_module = {
     PyModuleDef_HEAD_INIT,
     "pybase_core",
-    "Python c extension for data management..",
+    "Python c extension for data management...",
     -1,
     Methods};
 

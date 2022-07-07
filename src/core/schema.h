@@ -33,6 +33,7 @@ char TYPE_ARR[8][10] = {
 typedef struct _fdef
 {
     char name[30];
+    int16_t size;
     int8_t cfg;
 } FDef;
 
@@ -41,6 +42,7 @@ typedef struct _mdef
     char name[30];
     bool is_lazy;
     int8_t field_count;
+    int16_t fields_size;
     FDef **fields;
 } MDef;
 

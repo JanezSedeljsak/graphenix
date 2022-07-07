@@ -16,9 +16,10 @@ class _Type(Enum):
 
 class Type:
     type = _Type.UNKNOWN
-    index = False
-    multi = False # only used for Link
-    default = lambda : None
+    index: bool = False
+    multi: bool = False # only used for Link
+    size: int = 0
+    default: Callable = lambda : None
 
     def as_index(self):
         """
@@ -102,8 +103,13 @@ class Field:
         """
         default = lambda : []
         type = _Type.LINK
+        
+        @property
+        def size(self):
+            # size of links depends on multi value
+            return 0 if self.multi else 4
 
-        def __init__(self, model: str, multi=False):
+        def __init__(self, model: str, multi=True):
             self.model = model
             self.multi = multi
 
@@ -117,7 +123,7 @@ class Model:
         """
         Returns compressed slots of model + their names
         """
-        return [(sname, slot.compressed_) for sname, slot in self.slots.items()]
+        return [(sname, slot.compressed_, slot.size) for sname, slot in self.slots.items()]
 
     def __init__(self, slots: dict[str, Field], lazy_delete: bool = False):
         """
