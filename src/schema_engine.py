@@ -114,7 +114,7 @@ class Field:
             self.multi = multi
 
 class Model:
-    slots: dict[str, Field]
+    slots: dict[str, Type]
     lazy_delete: bool
     _name: str
 
@@ -125,7 +125,7 @@ class Model:
         """
         return [(sname, slot.compressed_, slot.size) for sname, slot in self.slots.items()]
 
-    def __init__(self, slots: dict[str, Field], lazy_delete: bool = False):
+    def __init__(self, slots: dict[str, Type], lazy_delete: bool = False):
         """
         Creates instance of Model
         """
@@ -159,7 +159,7 @@ class Schema:
         """
         return [(mdef._name, int(mdef.lazy_delete), mdef.slots_) for mdef in self._models.values()]
 
-    def __init__(self, name: str, models: dict[str, Model] = None) -> None:
+    def __init__(self, name: str, models: dict[str, Model] | None = None) -> None:
         """
         Creates instance of Schema
         """
