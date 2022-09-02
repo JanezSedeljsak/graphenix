@@ -26,12 +26,12 @@ class Type:
         Creates internal search index for column (seach will be O(log(n)) instead of O(n), but it will take more space)
         """
         if type == _Type.LINK:
-            raise ValueError("LINK type cannot be indexed")
+            raise TypeError("LINK type cannot be indexed")
 
         self.index = True
         return self
 
-    def set_default(self, func: Callable[[], Any]):
+    def set_default(self, func: Callable):
         """
         Set value of default (has to be callable -> function is called when we create instance)
         """
@@ -114,7 +114,7 @@ class Field:
             self.multi = multi
 
 class Model:
-    slots: dict[str, Type]
+    slots: dict
     lazy_delete: bool
     _name: str
 
@@ -125,7 +125,7 @@ class Model:
         """
         return [(sname, slot.compressed_, slot.size) for sname, slot in self.slots.items()]
 
-    def __init__(self, slots: dict[str, Type], lazy_delete: bool = False):
+    def __init__(self, slots: dict, lazy_delete: bool = False):
         """
         Creates instance of Model
         """
@@ -149,7 +149,7 @@ class Schema:
     version: int
     is_synced: bool
     name: str
-    _models: dict[str, Model]
+    _models: dict
 
     @property
     def parsed_(self):
@@ -159,7 +159,7 @@ class Schema:
         """
         return [(mdef._name, int(mdef.lazy_delete), mdef.slots_) for mdef in self._models.values()]
 
-    def __init__(self, name: str, models: dict[str, Model] | None = None) -> None:
+    def __init__(self, name: str, models = None) -> None:
         """
         Creates instance of Schema
         """
@@ -202,7 +202,7 @@ class Schema:
         del self._models[mname]
         self.is_synced = False
 
-    def __iter__(self) -> Iterator[tuple[str, Model]]:
+    def __iter__(self) -> Iterator:
         for pair in self._models.items():
             yield pair
 
@@ -240,7 +240,7 @@ class Schema:
         PYB_Core.print_schema(self.name, self.parsed_)
 
     @staticmethod
-    def load(file_name: str) -> tuple[bool, 'Schema']:
+    def load(file_name: str) -> tuple:
         """
         Reads schema from a file
         """

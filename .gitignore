@@ -1,7 +1,6 @@
 .vscode
 
 /build/*
-/_pyb/*
 /core/__pycache__
 #/benchmarking/*
 __pycache__

@@ -25,18 +25,15 @@ students
     - fullname string size=100
     - email string size=255
     - courses courses link multi=1
-
 courses
     - name string size=100
     - teacher teachers link multi=0
     - students students link multi=1
-
 teachers
     - fullname string size=100
     - email string size=255
     - birthdate datetime
     - courses courses link multi=1
-
 """
 
 class TestPyBase(unittest.TestCase):
@@ -65,4 +62,3 @@ class TestPyBase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
