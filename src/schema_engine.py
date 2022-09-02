@@ -240,7 +240,7 @@ class Schema:
         PYB_Core.print_schema(self.name, self.parsed_)
 
     @staticmethod
-    def load(file_name: str) -> tuple[bool, 'Schema']:
+    def load(file_name: str) -> tuple:
         """
         Reads schema from a file
         """
