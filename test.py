@@ -42,23 +42,6 @@ class TestPyBase(unittest.TestCase):
         """Test schema create"""
         self.assertEqual(my_schema.create(), True)
 
-    def test_migrate_schema(self):
-        """Test schema migration"""
-        self.assertEqual(my_schema.migrate(), True)
-    
-    def test_delete_schema(self):
-        """Test delete schema"""
-        self.assertEqual(my_schema.delete(), True)
-
-    def test_print_schema(self):
-        """Test print schema"""
-        print(str(my_schema))
-
-    def test_load_schema(self):
-        """Test load schema"""
-        loaded, _ = Schema.load('university_db')
-        self.assertEqual(loaded, True)
-
 
 if __name__ == '__main__':
     unittest.main()
