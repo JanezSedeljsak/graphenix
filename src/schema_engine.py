@@ -31,7 +31,7 @@ class Type:
         self.index = True
         return self
 
-    def set_default(self, func: Callable[[], Any]):
+    def set_default(self, func: Callable):
         """
         Set value of default (has to be callable -> function is called when we create instance)
         """
