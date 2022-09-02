@@ -26,7 +26,7 @@ class Type:
         Creates internal search index for column (seach will be O(log(n)) instead of O(n), but it will take more space)
         """
         if type == _Type.LINK:
-            raise ValueError("LINK type cannot be indexed")
+            raise TypeError("LINK type cannot be indexed")
 
         self.index = True
         return self
