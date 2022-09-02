@@ -2,7 +2,7 @@ name: PyBase - Continuous Integration
 
 jobs:
   build:
-  
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -15,8 +15,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-     - name: Install dependencies
-       run: make _build 
+      - name: Install dependencies
+        run: make _build 
 
-     - name: Run Test
-       run: make _test
+      - name: Run Test
+        run: make _test
