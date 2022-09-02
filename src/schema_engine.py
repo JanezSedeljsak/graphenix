@@ -114,7 +114,7 @@ class Field:
             self.multi = multi
 
 class Model:
-    slots: dict[str, Type]
+    slots: dict
     lazy_delete: bool
     _name: str
 
@@ -125,7 +125,7 @@ class Model:
         """
         return [(sname, slot.compressed_, slot.size) for sname, slot in self.slots.items()]
 
-    def __init__(self, slots: dict[str, Type], lazy_delete: bool = False):
+    def __init__(self, slots: dict, lazy_delete: bool = False):
         """
         Creates instance of Model
         """
@@ -149,7 +149,7 @@ class Schema:
     version: int
     is_synced: bool
     name: str
-    _models: dict[str, Model]
+    _models: dict
 
     @property
     def parsed_(self):
@@ -159,7 +159,7 @@ class Schema:
         """
         return [(mdef._name, int(mdef.lazy_delete), mdef.slots_) for mdef in self._models.values()]
 
-    def __init__(self, name: str, models: dict[str, Model] | None = None) -> None:
+    def __init__(self, name: str, models = None) -> None:
         """
         Creates instance of Schema
         """
