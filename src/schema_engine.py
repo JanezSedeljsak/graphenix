@@ -202,7 +202,7 @@ class Schema:
         del self._models[mname]
         self.is_synced = False
 
-    def __iter__(self) -> Iterator[tuple[str, Model]]:
+    def __iter__(self) -> Iterator:
         for pair in self._models.items():
             yield pair
 
