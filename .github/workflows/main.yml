@@ -20,7 +20,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade coverage
-          python -m pip install -e ".[d]"
+        run: python setup.py install
+
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+
+      - name: Try importing pybase_core module
+        run: python -c "import pybase_core;"
+
+      - name: Run Test
+        run: python test.py
