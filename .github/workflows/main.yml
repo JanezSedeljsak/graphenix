@@ -20,5 +20,11 @@ jobs:
       - name: Install dependencies
         run: make _build 
 
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+
+      - name: Try importing pybase_core module
+        run: python -c "import pybase_core;"
+
       - name: Run Test
         run: make _test
