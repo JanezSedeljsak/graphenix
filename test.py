@@ -1,4 +1,5 @@
 import unittest
+import pybase_core
 
 """
 students
