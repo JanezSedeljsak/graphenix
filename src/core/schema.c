@@ -17,11 +17,11 @@ static Cfg *load_config(const int8_t cfg_value)
   return res;
 }
 
-static int8_t compress_cfg(Cfg *cfg)
-{
-  // self.index * 16 + self.multi * 8 + self.type.value
-  return cfg->index * INDEX + cfg->multi * MULTI + cfg->type;
-}
+// static int8_t compress_cfg(Cfg *cfg)
+// {
+//   // self.index * 16 + self.multi * 8 + self.type.value
+//   return cfg->index * INDEX + cfg->multi * MULTI + cfg->type;
+// }
 
 static MDef **SCHEMA_parse_models(const PyObject *seq, int8_t *n)
 {

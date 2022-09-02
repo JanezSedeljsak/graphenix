@@ -58,7 +58,7 @@ typedef struct _cfg
 
 // cfg methods
 static Cfg *load_config(const int8_t);
-static int8_t compress_cfg(Cfg *);
+// static int8_t compress_cfg(Cfg *);
 
 // schema methods
 static MDef **SCHEMA_parse_models(const PyObject *, int8_t *);
