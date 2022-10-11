@@ -30,6 +30,13 @@ ki bo velikosti `N` in v posameznem polju tabele, shranimo email.
 
 ## Integracija direktno v prog. jeziku
 
+PyBase, kot že ime pove je vezan na Python (dejansko gre za knjižnico integrirano direktno v sam jezik). 
+**Zakaj?** 
+V praksi se pogosto srečamo z enim od dveh pristopov:
+- Imamo ORM (object relational mapping), ki posamezne tabele preslika v razrede in potem operiramo direktno na 
+tem razredu. V ozadju, pa se vse operacije pretvorijo v SQL poizvedbe, ki se potem kličejo. 
+- Na nivoju aplikacije moramo skrbeti za usklajenost strukture na nivoju aplikacije in na nivoju baze.
+
 ## Pristop indeksiranja
 
 V klasičnih `SQL` `DBMS`-jih programerju dovoljujemo, da ključe določa sam. V PyBase, pa bi ključe določama sama,
@@ -92,7 +99,17 @@ in dodati nekaj takega dosežemo v eni vrstici. Se pa takšni in drugačni prime
 implementaciji PyBase poskusili implementirati avtomatske migracije, ki bi glede na spremembe v sami strukturi, izvedli migracijo na nivoju 
 podatkovnih tabel v `.bin` datotekah.
 
-## Področja uporabe
+## Paralelizem
+...
 
+## Področja uporabe
 - Logiranje podatkov iz nekega kompleksnega sistema, kjer želimo določeno strukturo in hitro iskanje napak. 
-- Preproste 
+- Shranjevanje analitstkih podatkov iz našega sistema, ki služi kot podlaga za analitski sistem
+- Shranjevanje podatkov na lokalnem nivoju
+
+## Cilji naloge
+- Priprava analitskega sistema za nek lokalen API.
+- Primerjava identične aplikacije napisane v SQL (enkrat z uporabo ORM, enkrat z uporabu SQL poizvedb), MongoDB, PyBase in primerjave:
+    1. Hitrost izvedbe posameznih poizvedb 
+    2. Velikost na disku
+    3. Količina kode
