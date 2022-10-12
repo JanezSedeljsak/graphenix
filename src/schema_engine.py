@@ -3,6 +3,8 @@ from collections.abc import Iterator, Callable
 from datetime import datetime
 from typing import Any
 import pybase_core as PYB_Core
+import shutil
+import os
 
 class _Type(Enum):
     UNKNOWN = 0
@@ -231,7 +233,14 @@ class Schema:
         """
         Deletes schema from filesystem
         """
-        return PYB_Core.delete_schema(self.name)
+        try:
+            root_dir = os.path.abspath(os.curdir)
+            shutil.rmtree(os.path.join(root_dir, "_pyb", self.name))
+        except Exception as ex:
+            print(ex) # should be logged to file
+            return False
+
+        return True
 
     def print(self) -> None:
         """

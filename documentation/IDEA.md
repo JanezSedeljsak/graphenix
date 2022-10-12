@@ -1,12 +1,11 @@
 # PyBase
 
 ## Relacijske pod. baze
-PyBase knjižnca temelji na principu relacijskih podatkovnih baz. Podatki se shranjujejo v binarne datoteke, s katerimi potem operiramo v C.
+`PyBase` knjižnca temelji na principu relacijskih podatkovnih baz. Gre za pristop, kjer imamo točno dolečeno strukturo podatkov in podatke shranjujemo v tabele, ki se med sabo vežejo s pomočjo tujih ključev. 
 
-Prednost tega pristopa je zelo hitro iskanje, sploh kadar imamo točno dolečeno strukturo in točno določeno velikosti za posamezen stolpec v tabeli;
-Če vemo da je posamezna vrstica dolga `N` bajtov potem lahko `M`-to vrstico najdemo, tako da se pomaknemo na `N*M`-ti bajt.
+Pri implementaciji `PyBase` podatke shranjujemo v binarne datoteke, kar nam omogoča preprosto in hitro iskanje (npr. če vemo da je vsaka posamezna vrstica dolga `Z` bajtov potem lahko `X`-to vrstico najdemo, tako da se pomaknemo na `X*Z`-ti bajt).
 
-Primer. strukture:
+Primer strukture:
 ```yml
 students
     - fullname string size=100
@@ -22,29 +21,29 @@ teachers
     - birthdate datetime
     - courses courses link multi=1
 ```
- 
-Za lažjo predstavo lahko tabelo `students` definiramo, kot matriko z `N` vrstic in `M` stolpcev. 
 
-Kadar za vsakega učenca želimo dobiti njegov `email` iz vsake vrstice izberemo drugi stolpec, ki predstavlja željeno polje. Posledično, za tak nabor potrebujemo tabelo, 
-ki bo velikosti `N` in v posameznem polju tabele, shranimo email.
-
-## Integracija direktno v prog. jeziku
+## Integracija direktno v prog. jezik
 
 PyBase, kot že ime pove je vezan na Python (dejansko gre za knjižnico integrirano direktno v sam jezik). 
-**Zakaj?** 
-V praksi se pogosto srečamo z enim od dveh pristopov:
-- Imamo ORM (object relational mapping), ki posamezne tabele preslika v razrede in potem operiramo direktno na 
-tem razredu. V ozadju, pa se vse operacije pretvorijo v SQL poizvedbe, ki se potem kličejo. 
-- Na nivoju aplikacije moramo skrbeti za usklajenost strukture na nivoju aplikacije in na nivoju baze.
+
+**Zakaj?**
+V praksi, ko se srečujemo z izvedbo aplikacije, ki uporablja relacijsko podatkovno bazo, pogosto srečamo enega izmed dveh pristopov:
+
+- Imamo ORM (object relational mapping), ki posamezne tabele preslika v razrede in potem operiramo direktno nad razredi, v ozadju, pa se vse operacije pretvorijo v SQL poizvedbe.
+- Med nivojema baze in aplikacije moramo skrbeti za usklajenost strukture podatkovnega modela.
+
+**Slabost** - omejeni smo na uporabo le enega jezika.
 
 ## Pristop indeksiranja
 
-V klasičnih `SQL` `DBMS`-jih programerju dovoljujemo, da ključe določa sam. V PyBase, pa bi ključe določama sama,
-kot priparni ključ, bo vedno določen kot indeks vrstice v matriki.
+V klasičnih `DBMS`-jih programerju dovoljujemo, da ključe določa sam. V PyBase, pa bi se ključi določili sami (za primarni ključ bo vedno vzet indeks vrstice v matriki).
 
+Pristop indeksiranja je treba omogočiti tudi nad polji, ki niso primarni ali tuji ključi, saj tako z uporabo principov, kot so `dvojiško iskanje` in `iskanje po "hash" tabeli` omogočimo hitro iskanje tudi po drugih poljih.
+
+\pagebreak
 ### Uporaba relaciji - združevanje podatkov
 
-Kadar združujemo podatke želimo ohranjati strukturo in ne direktno povezovati relaciji, kot dela to SQL.
+Kadar združujemo podatke želimo ohranjati strukturo in ne direktno povezovati relaciji, kot to delajo klasični relacijski sistemi.
 Primer rezultata, kjer za vse študente naberemo še njihove predmete:
 SQL:
 ```SQL
@@ -70,9 +69,6 @@ LEFT OUTER JOIN courses ON courses.id = students.course_id
 ```
 
 PyBase:
-```Python
-my_schema.get(my_schema['users'].with(my_schema['courses']))
-```
 ```JSON
 [
     {
@@ -94,22 +90,14 @@ my_schema.get(my_schema['users'].with(my_schema['courses']))
 
 ## Avtomatske migracije
 Pogost problem ostalih relacijskih podatkovnih baz so migracije. Gre za problem, ki nastopi, kadar želimo strukturo z že 
-vnešenimi podatki spremeniti samo strukturo (npr. tabeli `students` želimo dodati stolpec `birth_date`), to je seveda preprost primer
+vnešenimi podatki spremeniti (npr. tabeli `students` želimo dodati stolpec `birthdate`), to je seveda preprost primer
 in dodati nekaj takega dosežemo v eni vrstici. Se pa takšni in drugačni primeri migraciji same strukture dogajajo zelo pogosto, zato bi v
 implementaciji PyBase poskusili implementirati avtomatske migracije, ki bi glede na spremembe v sami strukturi, izvedli migracijo na nivoju 
 podatkovnih tabel v `.bin` datotekah.
 
 ## Paralelizem
-...
+...?
 
 ## Področja uporabe
-- Logiranje podatkov iz nekega kompleksnega sistema, kjer želimo določeno strukturo in hitro iskanje napak. 
-- Shranjevanje analitstkih podatkov iz našega sistema, ki služi kot podlaga za analitski sistem
-- Shranjevanje podatkov na lokalnem nivoju
-
-## Cilji naloge
-- Priprava analitskega sistema za nek lokalen API.
-- Primerjava identične aplikacije napisane v SQL (enkrat z uporabo ORM, enkrat z uporabu SQL poizvedb), MongoDB, PyBase in primerjave:
-    1. Hitrost izvedbe posameznih poizvedb 
-    2. Velikost na disku
-    3. Količina kode
+- Logiranje podatkov iz nekega kompleksnega sistema, kjer želimo hitro in strukturirano iskanje med napakami. 
+- Podatkovni sistem za manjše aplikacije/mobilne aplikacije
