@@ -1,7 +1,4 @@
 .vscode
 
 /build/*
-/core/__pycache__
-#/benchmarking/*
-__pycache__
-*.pdf
+*.pyc
