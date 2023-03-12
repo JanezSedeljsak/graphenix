@@ -27,6 +27,6 @@ public:
 class ErrorManager {
 public:
     // TODO (this will handle errors in raw CPP so the errors can then be generated for python)
-}
+};
 
 #endif

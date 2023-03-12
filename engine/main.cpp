@@ -137,6 +137,74 @@ static PyObject *schema_add_record(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static PyObject *schema_update_record(PyObject *self, PyObject *args)
+{
+    const char *schema_name;
+    const char *model_name;
+    int offset;
+    PyObject *py_values;
+
+    if (!PyArg_ParseTuple(args, "ssiO", &schema_name, &model_name, &offset, &py_values))
+    {
+        return NULL;
+    }
+
+    // Convert Python list to C++ vector of strings
+    vector<string> values;
+    PyObject *iterator = PyObject_GetIter(py_values);
+    PyObject *item;
+
+    while ((item = PyIter_Next(iterator)))
+    {
+        const char *str = PyUnicode_AsUTF8(item);
+        values.push_back(string(str));
+        Py_DECREF(item);
+    }
+
+    Py_DECREF(iterator);
+
+    // Open binary file
+    string file_name = schema_name;
+    file_name += "/" + string(model_name) + ".bin";
+    fstream file(file_name, ios::binary | ios::in | ios::out);
+
+    if (!file.is_open())
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to open binary file");
+        return NULL;
+    }
+
+    // Move file pointer to record offset
+    file.seekp(offset);
+
+    // Write values to binary file
+    int num_values = values.size();
+    int record_size = num_values * 100;
+    char *record = new char[record_size];
+    int offset_in_record = 0;
+
+    for (const auto &value : values)
+    {
+        if (value.length() > 100)
+        {
+            PyErr_SetString(PyExc_RuntimeError, "String length exceeds 100 characters");
+            return NULL;
+        }
+
+        // Copy value to record buffer at fixed offset
+        memset(record + offset_in_record, ' ', 100);
+        memcpy(record + offset_in_record, value.c_str(), value.length());
+
+        offset_in_record += 100;
+    }
+
+    file.write(record, record_size);
+    file.close();
+    delete[] record;
+
+    Py_RETURN_NONE;
+}
+
 static PyObject *schema_get_record(PyObject *self, PyObject *args)
 {
     const char *schema_name;
@@ -209,7 +277,8 @@ static PyMethodDef graphenix_methods[] = {
     {"create_schema", create_schema, METH_VARARGS, "Create a schema with the given name"},
     {"delete_schema", delete_schema, METH_VARARGS, "Delete the schema with the given name"},
     {"schema_exists", schema_exists, METH_VARARGS, "Check if the schema with the given name exists"},
-    {"schema_add_record", schema_add_record, METH_VARARGS, "Add a record to the model with the given name in the schema with the given name"},
+    {"schema_add_record", schema_add_record, METH_VARARGS, "Adds a record"},
+    {"schema_update_record", schema_update_record, METH_VARARGS, "Updates a record"},
     {"schema_get_record", schema_get_record, METH_VARARGS, "Get a record for a specific model by id"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };

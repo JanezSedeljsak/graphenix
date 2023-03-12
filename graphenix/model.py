@@ -20,6 +20,10 @@ class Model:
     def id(self):
         return self._id
     
+    @property
+    def is_new(self):
+        return self._id == -1
+    
     @staticmethod
     def filter_attributes(attrs):
         return [attr for attr in attrs if not attr.startswith('_')]
@@ -59,4 +63,9 @@ class Model:
     
     def save(self):
         values_as_list = [getattr(self, field) for field in self.get_fields_instance()]
-        graphenix_engine.schema_add_record(self.__db__, self.__name__, values_as_list)
+
+        if self.is_new:
+            self._id = 1 # the add record needs to return the index where it added the record
+            graphenix_engine.schema_add_record(self.__db__, self.__name__, values_as_list)
+        else:
+            graphenix_engine.schema_update_record(self.__db__, self.__name__, 0, values_as_list)
