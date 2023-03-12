@@ -1,10 +1,10 @@
 import graphenix_engine
 
 class Schema:
-    def __init__(self, name: str, *models):
+    def __init__(self, name: str, models=None):
         self.name = name
         self.models = {}
-        for model_class in models:
+        for model_class in (models or []):
             model_class.__db__ = self.name
             setattr(self, name, model_class)
             self.models[model_class.__name__] = model_class
