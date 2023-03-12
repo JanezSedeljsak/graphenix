@@ -27,9 +27,14 @@ user2 = User(name='johndoe', email='johndoe@gmail.com')
 user2.save()
 
 z = User.get(1)
-z.name = 'janez_update'
+z.name = 'janez_update2'
 z.save()
 
 m = User.get(1)
+m.name = 'keksi'
+m.email = 'keksi@gmail.com'
+m.save()
+
+l = User.get(1)
 
 x = 5

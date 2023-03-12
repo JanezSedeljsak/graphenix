@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <filesystem>
+#include "../util.cpp"
 
 using namespace std;
 
@@ -12,19 +13,18 @@ void SchemaManager::create_schema(const string &db_name, const vector<string> &t
     int status = mkdir(db_name.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if (status == -1)
     {
-        cerr << "Failed to create schema folder." << endl;
-        return;
+        throw runtime_error("Failed to create schema folder");
     }
 
     for (const auto &table_name : table_names)
     {
-        string filename = db_name + "/" + table_name + ".bin";
+        string filename = get_file_name(db_name, table_name);
         ofstream outfile(filename, ios::out | ios::binary);
         if (!outfile)
         {
-            cerr << "Failed to create binary file for table: " << table_name << endl;
-            return;
+            throw runtime_error("Failed to create binary file for table");
         }
+
         outfile.close();
     }
 }

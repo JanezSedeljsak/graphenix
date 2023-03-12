@@ -5,9 +5,10 @@
 #include <filesystem>
 #include <vector>
 #include <numeric>
+#include "util.cpp"
 #include "managers/managers.h"
 #include "managers/schema_manager.cpp"
-#include "managers/query_manager.cpp"
+#include "managers/record_manager.cpp"
 
 using namespace std;
 
@@ -85,7 +86,6 @@ static PyObject *schema_add_record(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // Convert Python list to C++ vector of strings
     vector<string> values;
     PyObject *iterator = PyObject_GetIter(py_values);
     PyObject *item;
@@ -99,7 +99,7 @@ static PyObject *schema_add_record(PyObject *self, PyObject *args)
 
     Py_DECREF(iterator);
 
-    int64_t offset = QueryManager::create_record(db_name, table_name, values);
+    int64_t offset = RecordManager::create_record(db_name, table_name, values);
     return PyLong_FromLongLong(offset);
 }
 
@@ -115,7 +115,6 @@ static PyObject *schema_update_record(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // Convert Python list to C++ vector of strings
     vector<string> values;
     PyObject *iterator = PyObject_GetIter(py_values);
     PyObject *item;
@@ -129,45 +128,7 @@ static PyObject *schema_update_record(PyObject *self, PyObject *args)
 
     Py_DECREF(iterator);
 
-    // Open binary file
-    string file_name = schema_name;
-    file_name += "/" + string(model_name) + ".bin";
-    fstream file(file_name, ios::binary | ios::in | ios::out);
-
-    if (!file.is_open())
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to open binary file");
-        return NULL;
-    }
-
-    // Write values to binary file
-    int num_values = values.size();
-    int record_size = num_values * 100;
-    char *record = new char[record_size];
-    int offset_in_record = 0;
-
-    // Move file pointer to record offset
-    file.seekp(offset * record_size);
-
-    for (const auto &value : values)
-    {
-        if (value.length() > 100)
-        {
-            PyErr_SetString(PyExc_RuntimeError, "String length exceeds 100 characters");
-            return NULL;
-        }
-
-        // Copy value to record buffer at fixed offset
-        memset(record + offset_in_record, ' ', 100);
-        memcpy(record + offset_in_record, value.c_str(), value.length());
-
-        offset_in_record += 100;
-    }
-
-    file.write(record, record_size);
-    file.close();
-    delete[] record;
-
+    RecordManager::update_record(schema_name, model_name, offset, values);
     Py_RETURN_NONE;
 }
 
@@ -183,7 +144,6 @@ static PyObject *schema_get_record(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // Convert Python list to C++ vector of integers
     vector<int> field_lengths;
     PyObject *iterator = PyObject_GetIter(py_field_lengths);
     PyObject *item;
@@ -196,9 +156,7 @@ static PyObject *schema_get_record(PyObject *self, PyObject *args)
 
     Py_DECREF(iterator);
 
-    // Open binary file and seek to the record's position
-    string file_name = schema_name;
-    file_name += "/" + string(model_name) + ".bin";
+    string file_name = get_file_name(schema_name, string(model_name));
     ifstream file(file_name, ios::binary);
 
     if (!file.is_open())
@@ -211,7 +169,6 @@ static PyObject *schema_get_record(PyObject *self, PyObject *args)
     int offset = id * record_size;
     file.seekg(offset);
 
-    // Read the fields from the binary file and convert to Python strings
     vector<string> fields;
     char buffer[101];
 
@@ -220,7 +177,6 @@ static PyObject *schema_get_record(PyObject *self, PyObject *args)
         file.read(buffer, length);
         buffer[length] = '\0';
         string field(buffer);
-        // Trim the string
         field.erase(0, field.find_first_not_of(" "));
         field.erase(field.find_last_not_of(" ") + 1);
         fields.push_back(field);
@@ -228,7 +184,6 @@ static PyObject *schema_get_record(PyObject *self, PyObject *args)
 
     file.close();
 
-    // Convert C++ vector of strings to Python list of strings
     PyObject *py_fields = PyList_New(field_lengths.size());
 
     for (long unsigned int i = 0; i < field_lengths.size(); i++)
