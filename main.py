@@ -36,5 +36,7 @@ m.email = 'keksi@gmail.com'
 m.save()
 
 l = User.get(1)
+l2 = User.get(2)
+l0 = User.get(0)
 
 x = 5

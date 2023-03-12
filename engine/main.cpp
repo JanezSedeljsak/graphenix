@@ -156,37 +156,10 @@ static PyObject *schema_get_record(PyObject *self, PyObject *args)
 
     Py_DECREF(iterator);
 
-    string file_name = get_file_name(schema_name, string(model_name));
-    ifstream file(file_name, ios::binary);
+    vector<string> fields = RecordManager::get_record(schema_name, model_name, id, field_lengths);
+    PyObject *py_fields = PyList_New(fields.size());
 
-    if (!file.is_open())
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to open binary file");
-        return NULL;
-    }
-
-    int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
-    int offset = id * record_size;
-    file.seekg(offset);
-
-    vector<string> fields;
-    char buffer[101];
-
-    for (const auto &length : field_lengths)
-    {
-        file.read(buffer, length);
-        buffer[length] = '\0';
-        string field(buffer);
-        field.erase(0, field.find_first_not_of(" "));
-        field.erase(field.find_last_not_of(" ") + 1);
-        fields.push_back(field);
-    }
-
-    file.close();
-
-    PyObject *py_fields = PyList_New(field_lengths.size());
-
-    for (long unsigned int i = 0; i < field_lengths.size(); i++)
+    for (long unsigned int i = 0; i < fields.size(); i++)
     {
         PyList_SET_ITEM(py_fields, i, PyUnicode_FromString(fields[i].c_str()));
     }
@@ -206,9 +179,9 @@ static PyMethodDef graphenix_methods[] = {
 
 static struct PyModuleDef graphenix_module = {
     PyModuleDef_HEAD_INIT,
-    "graphenix_engine",                              /* name of module */
-    "This module provides schema operations in C++", /* module documentation, may be NULL */
-    -1,                                              /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+    "graphenix_engine",
+    "This module provides schema operations in C++",
+    -1,
     graphenix_methods};
 
 PyMODINIT_FUNC PyInit_graphenix_engine(void)

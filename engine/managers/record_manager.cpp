@@ -90,8 +90,32 @@ void RecordManager::delete_record(const string &db_name, const string &table_nam
 {
 }
 
-vector<string> RecordManager::get_record(const string &db_name, const string &table_name, const int64_t record_id)
+vector<string> RecordManager::get_record(const string &db_name, const string &table_name, const int64_t record_id, const vector<int>& field_lengths) 
 {
-    vector<string> empty;
-    return empty;
+    string file_name = get_file_name(db_name, table_name);
+    fstream file(file_name, ios::binary | ios::in);
+
+    if (!file.is_open()) {
+        throw runtime_error("Failed to open binary file");
+    }
+
+    int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
+    int offset = record_id * record_size;
+
+    file.seekg(offset);
+    vector<string> fields;
+
+    char buffer[101];
+
+    for (const auto &length : field_lengths) {
+        file.read(buffer, length);
+        buffer[length] = '\0';
+        string field(buffer);
+        field.erase(0, field.find_first_not_of(" "));
+        field.erase(field.find_last_not_of(" ") + 1);
+        fields.push_back(field);
+    }
+
+    file.close();
+    return fields;
 }
