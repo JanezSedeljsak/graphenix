@@ -4,6 +4,7 @@ from graphenix.internal.query import Query
 
 class Model:
     __db__ = None
+    __lazy_delete__ = False
 
     def __init__(self, **fields):
         self._id = -1
@@ -22,12 +23,11 @@ class Model:
     
     @property
     def is_new(self):
-        return self._id == -1
+        return self.id == -1
     
     @staticmethod
     def filter_attributes(attrs):
         return [attr for attr in attrs if not attr.startswith('_')]
-
     
     @classmethod
     def get_fields(cls):
@@ -38,34 +38,34 @@ class Model:
     
     @classmethod
     def all(cls):
-        return Query(cls.__db__, cls.__name__).all()
+        return Query(cls).all()
 
     @classmethod
     def first(cls):
-        return Query(cls.__db__, cls.__name__).first()
+        return Query(cls).first()
     
     @classmethod
-    def filter(cls, **filters):
-        return Query(cls.__db__, cls.__name__, **filters)
+    def filter(cls, **filters) -> Query:
+        return Query(cls, **filters)
     
     @classmethod
-    def get_by_id(cls, record_id):
+    def get(cls, record_id):
         fields = cls.get_fields()
         record = graphenix_engine.schema_get_record(cls.__db__, cls.__name__, record_id, [100] * len(fields))
         record_as_dict = {field: record[idx] for idx, field in enumerate(fields)}
-        return cls(**record_as_dict)
-    
-    def __getitem__(self, record_id):
-        return self.get_by_id(record_id)
+        instance = cls(**record_as_dict)
+        instance._id = record_id
+        return instance
     
     def delete(self):
-        pass
+        return Query(self, id=self.id).delete()
     
     def save(self):
         values_as_list = [getattr(self, field) for field in self.get_fields_instance()]
 
         if self.is_new:
-            self._id = 1 # the add record needs to return the index where it added the record
-            graphenix_engine.schema_add_record(self.__db__, self.__name__, values_as_list)
+            record_id = graphenix_engine.schema_add_record(self.__db__, self.__name__, values_as_list)
+            self._id = record_id
         else:
-            graphenix_engine.schema_update_record(self.__db__, self.__name__, 0, values_as_list)
+            graphenix_engine.schema_update_record(self.__db__, self.__name__, self.id, values_as_list)
+

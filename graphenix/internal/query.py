@@ -1,14 +1,18 @@
 class Query:
-    def __init__(self, db, model, **query):
-        self.db = db
-        self.model = model
+    def __init__(self, model, **query):
+        self.db = model.__db__
+        self.model = model.__name__
+        self.lazy_delete = model.__lazy_delete__
         self.query = query
 
-    def all():
+    def all(self):
         ... # this executes the actual query to the schema engine
 
-    def first():
+    def first(self):
         ... # this exectures the actual query to the schema engine
 
-    def delete():
-        ... # this will delete all items in the db that fit the query
+    def delete(self):
+        if self.lazy_delete:
+            ... # call lazy delete method under the hood
+        else:
+            ... # call full delete 

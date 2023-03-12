@@ -7,6 +7,7 @@
 #include <numeric>
 #include "managers/managers.h"
 #include "managers/schema_manager.cpp"
+#include "managers/query_manager.cpp"
 
 using namespace std;
 
@@ -75,11 +76,11 @@ static PyObject *schema_exists(PyObject *self, PyObject *args)
 
 static PyObject *schema_add_record(PyObject *self, PyObject *args)
 {
-    const char *schema_name;
-    const char *model_name;
+    const char *db_name;
+    const char *table_name;
     PyObject *py_values;
 
-    if (!PyArg_ParseTuple(args, "ssO", &schema_name, &model_name, &py_values))
+    if (!PyArg_ParseTuple(args, "ssO", &db_name, &table_name, &py_values))
     {
         return NULL;
     }
@@ -98,43 +99,8 @@ static PyObject *schema_add_record(PyObject *self, PyObject *args)
 
     Py_DECREF(iterator);
 
-    // Open binary file
-    string file_name = schema_name;
-    file_name += "/" + string(model_name) + ".bin";
-    ofstream file(file_name, ios::binary | ios::app);
-
-    if (!file.is_open())
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to open binary file");
-        return NULL;
-    }
-
-    // Write values to binary file
-    int num_values = values.size();
-    int record_size = num_values * 100;
-    char *record = new char[record_size];
-    int offset = 0;
-
-    for (const auto &value : values)
-    {
-        if (value.length() > 100)
-        {
-            PyErr_SetString(PyExc_RuntimeError, "String length exceeds 100 characters");
-            return NULL;
-        }
-
-        // Copy value to record buffer at fixed offset
-        memset(record + offset, ' ', 100);
-        memcpy(record + offset, value.c_str(), value.length());
-
-        offset += 100;
-    }
-
-    file.write(record, record_size);
-    file.close();
-    delete[] record;
-
-    Py_RETURN_NONE;
+    int64_t offset = QueryManager::create_record(db_name, table_name, values);
+    return PyLong_FromLongLong(offset);
 }
 
 static PyObject *schema_update_record(PyObject *self, PyObject *args)
@@ -174,14 +140,14 @@ static PyObject *schema_update_record(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // Move file pointer to record offset
-    file.seekp(offset);
-
     // Write values to binary file
     int num_values = values.size();
     int record_size = num_values * 100;
     char *record = new char[record_size];
     int offset_in_record = 0;
+
+    // Move file pointer to record offset
+    file.seekp(offset * record_size);
 
     for (const auto &value : values)
     {

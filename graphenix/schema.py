@@ -25,3 +25,4 @@ class Schema:
 
     def exists(self) -> bool:
         return graphenix_engine.schema_exists(self.name)
+
