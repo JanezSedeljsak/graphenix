@@ -1,11 +1,11 @@
-from graphenix import Schema, Model
+from graphenix import Schema, Model, Field
 
 class User(Model):
-    name: str
-    email: str
+    name = Field.String(size=128)
+    email = Field.String(size=255)
 
 class Subject(Model):
-    name: str
+    name = Field.String(size=128)
 
 school = Schema('school', models=[
     User,
@@ -38,5 +38,7 @@ m.save()
 l = User.get(1)
 l2 = User.get(2)
 l0 = User.get(0)
+
+print(l, m, z)
 
 x = 5

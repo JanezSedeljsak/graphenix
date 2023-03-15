@@ -1,6 +1,7 @@
 import graphenix_engine
 
 from graphenix.internal.query import Query
+from graphenix.field import Field
 
 class Model:
     __db__ = None
@@ -13,9 +14,15 @@ class Model:
             setattr(self, key, value)
 
     def __str__(self):
-        fields = ['id', *self.get_fields_instance()]
+        fields = ['id', *self.get_fields()]
         attrs = ', '.join([f"{k}={getattr(self, k)}" for k in fields])
         return f"{self.__name__}({attrs})"
+    
+    def __setattr__(self, name, value):
+        if name not in self.get_fields() and not name.startswith("_"):
+            raise AttributeError(f"Cannot assign member '{name}' for type '{self.__name__}'")
+        
+        super().__setattr__(name, value)
 
     @property
     def id(self):
@@ -27,14 +34,11 @@ class Model:
     
     @staticmethod
     def filter_attributes(attrs):
-        return [attr for attr in attrs if not attr.startswith('_')]
+        return [attr for attr, val in attrs.items() if isinstance(val, Field.BaseType)]
     
     @classmethod
     def get_fields(cls):
-        return Model.filter_attributes(cls.__dict__['__annotations__'])
-    
-    def get_fields_instance(self):
-        return Model.filter_attributes(self.__dict__)
+        return Model.filter_attributes(cls.__dict__)
     
     @classmethod
     def all(cls):
@@ -61,7 +65,7 @@ class Model:
         return Query(self, id=self.id).delete()
     
     def save(self):
-        values_as_list = [getattr(self, field) for field in self.get_fields_instance()]
+        values_as_list = [getattr(self, field) for field in self.get_fields()]
 
         if self.is_new:
             record_id = graphenix_engine.schema_add_record(self.__db__, self.__name__, values_as_list)
