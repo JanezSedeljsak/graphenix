@@ -1,3 +1,4 @@
+import time
 import unittest
 import graphenix_engine
 from graphenix import Field, Schema, Model
@@ -14,6 +15,18 @@ mock_schema = Schema('test_school', models=[
 ])
 
 class CommonTestBase(unittest.TestCase):
+
+    @staticmethod
+    def perf(method):
+        def timed(*args, **kw):
+            start_time = time.perf_counter()
+            result = method(*args, **kw)
+            end_time = time.perf_counter()
+            elapsed_time_ms = "%.2f" % ((end_time - start_time) * 1000)
+            print(f"Performance test: '{method.__name__}' took {elapsed_time_ms} ms")
+            return result
+
+        return timed
 
     def delete_if_exists_and_create(self):
         if mock_schema.exists():
@@ -108,6 +121,7 @@ class GraphenixUnitTests(CommonTestBase):
 
 class GraphenixPerfTests(CommonTestBase):
 
+    @CommonTestBase.perf
     def test_create_100k_users_and_read(self):
         """ Create 100K users and read them by IDs """
         self.delete_if_exists_and_create()
