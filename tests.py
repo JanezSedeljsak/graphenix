@@ -13,7 +13,7 @@ mock_schema = Schema('test_school', models=[
     User
 ])
 
-class GraphenixTests(unittest.TestCase):
+class CommonTestBase(unittest.TestCase):
 
     def delete_if_exists_and_create(self):
         if mock_schema.exists():
@@ -22,6 +22,15 @@ class GraphenixTests(unittest.TestCase):
         mock_schema.create()
         exists = mock_schema.exists()
         self.assertTrue(exists)
+
+    def cleanup_and_validate(self):
+        exists = mock_schema.exists()
+        self.assertTrue(exists)
+        mock_schema.delete()
+        exists = mock_schema.exists()
+        self.assertFalse(exists)
+
+class GraphenixUnitTests(CommonTestBase):
 
     def test_library_hearbeat(self):
         """ Test if heartbeat returns 12 (it's my birthdate so i return that as heartbeat) """
@@ -95,12 +104,35 @@ class GraphenixTests(unittest.TestCase):
         self.assertEqual(user1.id, user1_db.id)
         self.assertEqual(update_name, user1_db.first_name)
         self.assertEqual(user1.first_name, user1_db.first_name)
+        self.cleanup_and_validate()
 
-        exists = mock_schema.exists()
-        self.assertTrue(exists)
-        mock_schema.delete()
-        exists = mock_schema.exists()
-        self.assertFalse(exists)
+class GraphenixPerfTests(CommonTestBase):
+
+    def test_create_100k_users_and_read(self):
+        """ Create 100K users and read them by IDs """
+        self.delete_if_exists_and_create()
+
+        tmp_user = User(first_name="John", last_name="Doe", email="john.doe@example.com", age=25)
+        for _ in range(100_000):
+            new_user = User(
+                first_name=tmp_user.first_name,
+                last_name=tmp_user.last_name,
+                email=tmp_user.email,
+                age=tmp_user.age,
+            )
+
+            new_user.save()
+
+        for i, user_id in enumerate(range(100_000)):
+            read_user = User.get(user_id)
+            self.assertEqual(tmp_user.first_name, read_user.first_name)
+            self.assertEqual(tmp_user.age, read_user.age)
+            self.assertEqual(i, read_user.id)
+            self.assertFalse(read_user.is_new)
+
+
+        self.cleanup_and_validate()
+
 
 
 if __name__ == '__main__':

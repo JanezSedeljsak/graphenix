@@ -81,7 +81,7 @@ class Model:
     def save(self):
         fields = self.get_fields()
 
-        # TODO - each field is currently is just a string - we need actual types
+        # TODO - each field is currently just a string - we need actual types
         values_as_list = [str(getattr(self, field)) for field in fields]
         fields_sizes_dict = self.get_field_sizes()
         sizes_as_list = [fields_sizes_dict[field] for field in fields]
