@@ -8,11 +8,12 @@
 #include <numeric>
 #include <filesystem>
 #include <cstring>
+#include<algorithm>
 #include "../util.cpp"
 
 using namespace std;
 
-int64_t RecordManager::create_record(const string &db_name, const string &table_name, const vector<string> &values)
+int64_t RecordManager::create_record(const string &db_name, const string &table_name, const vector<string> &values, const vector<int>& field_lengths)
 {
     string file_name = get_file_name(db_name, table_name);
     ofstream file(file_name, ios::binary | ios::app);
@@ -23,23 +24,29 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
     }
 
     int num_values = values.size();
-    int record_size = num_values * 100;
+    int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
+    
     char *record = new char[record_size];
     int offset = file.tellp();
 
-    for (const auto &value : values)
+    int field_offset = 0;
+    for (int i = 0; i < num_values; i++)
     {
-        if (value.length() > 100)
+        const auto& value = values[i];
+        int field_size = field_lengths[i];
+
+        if (static_cast<int>(value.length()) > field_size)
         {
-            return -1;
+            throw runtime_error("Field exceeds max size!");
         }
 
-        memset(record, ' ', 100);
-        memcpy(record, value.c_str(), value.length());
+        memset(record + field_offset, ' ', field_size);
+        memcpy(record + field_offset, value.c_str(), value.length());
 
-        file.write(record, 100);
+        field_offset += field_size;
     }
 
+    file.write(record, record_size);
     file.close();
     delete[] record;
 
@@ -48,7 +55,7 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
     return offset / record_size;
 }
 
-void RecordManager::update_record(const string &db_name, const string &table_name, const int64_t record_id, const vector<string> &values)
+void RecordManager::update_record(const string &db_name, const string &table_name, const int64_t record_id, const vector<string> &values, const vector<int>& field_lengths)
 {
     string file_name = get_file_name(db_name, table_name);
     fstream file(file_name, ios::binary | ios::in | ios::out);
@@ -58,23 +65,27 @@ void RecordManager::update_record(const string &db_name, const string &table_nam
         throw runtime_error("Failed to open binary file");
     }
 
-    int record_size = values.size() * 100;
-    char *record = new char[record_size];
-    int offset_in_record = 0;
+    int num_values = values.size();
+    int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
 
+    char *record = new char[record_size];
     file.seekp(record_id * record_size);
 
-    for (const auto &value : values)
+    int field_offset = 0;
+    for (int i = 0; i < num_values; i++)
     {
-        if (value.length() > 100)
+        const auto& value = values[i];
+        int field_size = field_lengths[i];
+
+        if (static_cast<int>(value.length()) > field_size)
         {
-            throw runtime_error("String length exceeds 100 characters");
+            throw runtime_error("Field exceeds max size!");
         }
 
-        memset(record + offset_in_record, ' ', 100);
-        memcpy(record + offset_in_record, value.c_str(), value.length());
+        memset(record + field_offset, ' ', field_size);
+        memcpy(record + field_offset, value.c_str(), value.length());
 
-        offset_in_record += 100;
+        field_offset += field_size;
     }
 
     file.write(record, record_size);
@@ -105,7 +116,8 @@ vector<string> RecordManager::get_record(const string &db_name, const string &ta
     file.seekg(offset);
     vector<string> fields;
 
-    char buffer[101];
+    auto max_element_ptr = max_element(field_lengths.begin(), field_lengths.end());
+    char buffer[*max_element_ptr + 1];
 
     for (const auto &length : field_lengths) {
         file.read(buffer, length);

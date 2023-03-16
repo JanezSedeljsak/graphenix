@@ -2,6 +2,7 @@
 class Field:
 
     class BaseType:
+        size = None
         default = None
 
         def __get__(self, instance, owner):
@@ -16,10 +17,14 @@ class Field:
     class Int(BaseType):
         def __init__(self, default=0):
             self.default = default
+            self.size = 8
+
+        def __set__(self, instance, value):
+            setattr(instance, '_' + self.name, int(value))
 
     class String(BaseType):
         def __init__(self, size=255, default=''):
             self.size = size
             self.default = default
-        
-        
+
+

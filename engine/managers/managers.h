@@ -16,11 +16,39 @@ public:
 
 class RecordManager {
 public:
-    static int64_t create_record(const string& db_name, const string& table_name, const vector<string>& values);
-    static void update_record(const string& db_name, const string& table_name, const int64_t record_id, const vector<string>& values);
-    static void lazy_delete_record(const string& db_name, const string& table_name, const int64_t record_id);
-    static void delete_record(const string& db_name, const string& table_name, const int64_t record_id);
-    static vector<string> get_record(const string &db_name, const string &table_name, const int64_t record_id, const vector<int>& field_lengths);
+    static int64_t create_record(
+        const string& db_name, 
+        const string& table_name, 
+        const vector<string>& values, 
+        const vector<int>& field_lengths
+    );
+
+    static void update_record(
+        const string& db_name, 
+        const string& table_name, 
+        const int64_t record_id, 
+        const vector<string>& values, 
+        const vector<int>& field_lengths
+    );
+
+    static void lazy_delete_record(
+        const string& db_name, 
+        const string& table_name, 
+        const int64_t record_id
+    );
+
+    static void delete_record(
+        const string& db_name, 
+        const string& table_name, 
+        const int64_t record_id
+    );
+
+    static vector<string> get_record(
+        const string &db_name, 
+        const string &table_name, 
+        const int64_t record_id, 
+        const vector<int>& field_lengths
+    );
 };
 
 class QueryManager {

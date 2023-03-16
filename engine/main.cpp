@@ -12,6 +12,11 @@
 
 using namespace std;
 
+static PyObject *heartbeat(PyObject *self, PyObject *args)
+{
+  return PyLong_FromLong(12l);
+}
+
 static PyObject *create_schema(PyObject *self, PyObject *args)
 {
     const char *schema_name;
@@ -79,9 +84,9 @@ static PyObject *schema_add_record(PyObject *self, PyObject *args)
 {
     const char *db_name;
     const char *table_name;
-    PyObject *py_values;
+    PyObject *py_values, *py_field_lengths;
 
-    if (!PyArg_ParseTuple(args, "ssO", &db_name, &table_name, &py_values))
+    if (!PyArg_ParseTuple(args, "ssOO", &db_name, &table_name, &py_values, &py_field_lengths))
     {
         return NULL;
     }
@@ -97,9 +102,18 @@ static PyObject *schema_add_record(PyObject *self, PyObject *args)
         Py_DECREF(item);
     }
 
+    vector<int> field_lengths;
+    iterator = PyObject_GetIter(py_field_lengths);
+
+    while ((item = PyIter_Next(iterator)))
+    {
+        field_lengths.push_back(PyLong_AsLong(item));
+        Py_DECREF(item);
+    }
+
     Py_DECREF(iterator);
 
-    int64_t offset = RecordManager::create_record(db_name, table_name, values);
+    int64_t offset = RecordManager::create_record(db_name, table_name, values, field_lengths);
     return PyLong_FromLongLong(offset);
 }
 
@@ -108,9 +122,9 @@ static PyObject *schema_update_record(PyObject *self, PyObject *args)
     const char *schema_name;
     const char *model_name;
     int offset;
-    PyObject *py_values;
+    PyObject *py_values, *py_field_lengths;
 
-    if (!PyArg_ParseTuple(args, "ssiO", &schema_name, &model_name, &offset, &py_values))
+    if (!PyArg_ParseTuple(args, "ssiOO", &schema_name, &model_name, &offset, &py_values, &py_field_lengths))
     {
         return NULL;
     }
@@ -126,9 +140,18 @@ static PyObject *schema_update_record(PyObject *self, PyObject *args)
         Py_DECREF(item);
     }
 
+    vector<int> field_lengths;
+    iterator = PyObject_GetIter(py_field_lengths);
+
+    while ((item = PyIter_Next(iterator)))
+    {
+        field_lengths.push_back(PyLong_AsLong(item));
+        Py_DECREF(item);
+    }
+
     Py_DECREF(iterator);
 
-    RecordManager::update_record(schema_name, model_name, offset, values);
+    RecordManager::update_record(schema_name, model_name, offset, values, field_lengths);
     Py_RETURN_NONE;
 }
 
@@ -168,6 +191,7 @@ static PyObject *schema_get_record(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef graphenix_methods[] = {
+    {"heartbeat", heartbeat, METH_VARARGS, "Validate library is installed"},
     {"create_schema", create_schema, METH_VARARGS, "Create a schema with the given name"},
     {"delete_schema", delete_schema, METH_VARARGS, "Delete the schema with the given name"},
     {"schema_exists", schema_exists, METH_VARARGS, "Check if the schema with the given name exists"},

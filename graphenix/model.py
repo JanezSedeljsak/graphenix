@@ -37,6 +37,17 @@ class Model:
         return [attr for attr, val in attrs.items() if isinstance(val, Field.BaseType)]
     
     @classmethod
+    def get_field_sizes(cls):
+        field_sizes = {}
+        for field_name, field_type in cls.__dict__.items():
+            if isinstance(field_type, Field.BaseType):
+                if not field_type.size:
+                    raise AttributeError(f'Size for field {field_name} is not defined or is not a positive integer!')
+                
+                field_sizes[field_name] = field_type.size
+        return field_sizes
+    
+    @classmethod
     def get_fields(cls):
         return Model.filter_attributes(cls.__dict__)
     
@@ -55,7 +66,10 @@ class Model:
     @classmethod
     def get(cls, record_id):
         fields = cls.get_fields()
-        record = graphenix_engine.schema_get_record(cls.__db__, cls.__name__, record_id, [100] * len(fields))
+        fields_sizes_dict = cls.get_field_sizes()
+        sizes_as_list = [fields_sizes_dict[field] for field in fields]
+
+        record = graphenix_engine.schema_get_record(cls.__db__, cls.__name__, record_id, sizes_as_list)
         record_as_dict = {field: record[idx] for idx, field in enumerate(fields)}
         instance = cls(**record_as_dict)
         instance._id = record_id
@@ -65,11 +79,16 @@ class Model:
         return Query(self, id=self.id).delete()
     
     def save(self):
-        values_as_list = [getattr(self, field) for field in self.get_fields()]
+        fields = self.get_fields()
+
+        # TODO - each field is currently is just a string - we need actual types
+        values_as_list = [str(getattr(self, field)) for field in fields]
+        fields_sizes_dict = self.get_field_sizes()
+        sizes_as_list = [fields_sizes_dict[field] for field in fields]
 
         if self.is_new:
-            record_id = graphenix_engine.schema_add_record(self.__db__, self.__name__, values_as_list)
+            record_id = graphenix_engine.schema_add_record(self.__db__, self.__name__, values_as_list, sizes_as_list)
             self._id = record_id
         else:
-            graphenix_engine.schema_update_record(self.__db__, self.__name__, self.id, values_as_list)
+            graphenix_engine.schema_update_record(self.__db__, self.__name__, self.id, values_as_list, sizes_as_list)
 
