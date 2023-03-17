@@ -18,10 +18,8 @@ class City(Model):
     country = Field.String(size=50)
     population_thousands = Field.Int()
 
-mock_schema = Schema('test_school', models=[
-    User,
-    City
-])
+mock_schema = Schema('test_school',
+                      models=[User, City])
 
 class CommonTestBase(unittest.TestCase):
 
