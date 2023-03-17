@@ -12,9 +12,9 @@ class Schema:
     def __getitem__(self, key: str):
         return self.models[key]
 
-    def create(self):
+    def create(self, delete_old=False):
         model_names = [m_name for m_name in self.models.keys()]
-        graphenix_engine.create_schema(self.name, model_names)
+        graphenix_engine.create_schema(self.name, model_names, delete_old)
 
     def delete(self):
         graphenix_engine.delete_schema(self.name)

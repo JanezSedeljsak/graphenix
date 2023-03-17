@@ -20,9 +20,10 @@ static PyObject *heartbeat(PyObject *self, PyObject *args)
 static PyObject *create_schema(PyObject *self, PyObject *args)
 {
     const char *schema_name;
+    int delete_old;
     PyObject *py_model_names;
 
-    if (!PyArg_ParseTuple(args, "sO", &schema_name, &py_model_names))
+    if (!PyArg_ParseTuple(args, "sOp", &schema_name, &py_model_names, &delete_old))
     {
         return NULL;
     }
@@ -43,7 +44,7 @@ static PyObject *create_schema(PyObject *self, PyObject *args)
         model_names.push_back(string(model_name));
     }
 
-    SchemaManager::create_schema(schema_name, model_names);
+    SchemaManager::create_schema(schema_name, model_names, delete_old);
     Py_RETURN_NONE;
 }
 

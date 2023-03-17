@@ -8,7 +8,7 @@ using namespace std;
 
 class SchemaManager {
 public:
-    static void create_schema(const string& db_name, const vector<string>& table_names);
+    static void create_schema(const string& db_name, const vector<string>& table_names, bool delete_old);
     static void migrate_schema(const string& db_name);
     static void delete_schema(const string& db_name);
     static bool schema_exists(const string& db_name);

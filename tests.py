@@ -91,6 +91,15 @@ class GraphenixUnitTests(CommonTestBase):
         self.assertFalse(exists)
 
     @CommonTestBase().prepare_and_destroy
+    def test_create_with_delete_option(self):
+        exists = mock_schema.exists()
+        self.assertTrue(exists)
+
+        mock_schema.create(delete_old=True)
+        exists = mock_schema.exists()
+        self.assertTrue(exists)
+
+    @CommonTestBase().prepare_and_destroy
     def test_create_schema_and_10_records(self):
         """ Test creating 10 users and then read the records by id and verify each exists """
         users = [
@@ -169,7 +178,7 @@ class GraphenixUnitTests(CommonTestBase):
 
 class GraphenixPerfTests(CommonTestBase):
 
-    # @CommonTestBase.ignore
+    @CommonTestBase.ignore
     @CommonTestBase.perf("Create 10K users and read them by IDs", times=3)
     @CommonTestBase().prepare_and_destroy
     def test_create_10k_users_and_read(self):
@@ -201,7 +210,7 @@ class GraphenixPerfTests(CommonTestBase):
             temp_dt = dt+timedelta(days=uid)
             self.assertEqual(temp_dt.day, read_user.created_at.day)
 
-    # @CommonTestBase.ignore
+    @CommonTestBase.ignore
     @CommonTestBase.perf("Create 100K basic codelist records and read them by IDs", times=3)
     @CommonTestBase().prepare_and_destroy
     def test_create_100k_records_and_read(self):

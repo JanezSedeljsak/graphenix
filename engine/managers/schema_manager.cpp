@@ -8,8 +8,13 @@
 
 using namespace std;
 
-void SchemaManager::create_schema(const string &db_name, const vector<string> &table_names)
+void SchemaManager::create_schema(const string &db_name, const vector<string> &table_names, bool delete_old)
 {
+    if (delete_old && SchemaManager::schema_exists(db_name)) 
+    {
+        SchemaManager::delete_schema(db_name);
+    }
+
     int status = mkdir(db_name.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if (status == -1)
     {
