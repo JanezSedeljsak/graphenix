@@ -1,14 +1,16 @@
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
+import pybind11
 
-def main():
-  setup(
-    name="graphenix_engine",
-    version="1.0.0",
-    description="py-base-core module",
-    author="janezsedeljsak",
-    author_email="janez.sedeljsak@gmail.com",
-    ext_modules=[Extension("graphenix_engine", ["./engine/main.cpp"])]
-  )
+pybind_include = pybind11.get_include()
 
-if (__name__ == "__main__"):
-  main()
+extension_mod = Extension("graphenix_engine",
+                           sources=["engine/main.cpp"],
+                           include_dirs=[pybind_include])
+
+
+setup(name="graphenix_engine",
+      version="0.0.1",
+      author="janezsedeljsak",
+      author_email="janez.sedeljsak@gmail.com",
+      ext_modules=[extension_mod],
+      description="Graphenix engine with PyBind11")

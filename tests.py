@@ -36,7 +36,7 @@ class CommonTestBase(unittest.TestCase):
                     total_elapsed_time += elapsed_time
 
                 avg_elapsed_time = total_elapsed_time / times
-                print(f"[Graphenix_PERF_TEST] Avg: {avg_elapsed_time:10.3f} - {name} (executed {times} times)")
+                print(f"[Graphenix_PERF_TEST] Avg: {avg_elapsed_time:.3f} - {name} (executed {times} times)")
                 return None
             return wrapper
         return decorator
@@ -178,7 +178,7 @@ class GraphenixUnitTests(CommonTestBase):
 
 class GraphenixPerfTests(CommonTestBase):
 
-    @CommonTestBase.ignore
+    # @CommonTestBase.ignore
     @CommonTestBase.perf("Create 10K users and read them by IDs", times=3)
     @CommonTestBase().prepare_and_destroy
     def test_create_10k_users_and_read(self):
@@ -210,7 +210,7 @@ class GraphenixPerfTests(CommonTestBase):
             temp_dt = dt+timedelta(days=uid)
             self.assertEqual(temp_dt.day, read_user.created_at.day)
 
-    @CommonTestBase.ignore
+    # @CommonTestBase.ignore
     @CommonTestBase.perf("Create 100K basic codelist records and read them by IDs", times=3)
     @CommonTestBase().prepare_and_destroy
     def test_create_100k_records_and_read(self):

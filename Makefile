@@ -9,6 +9,5 @@ _build:
 
 _test:
 	@echo "[graphenix] Running tests..."
-	sudo rm -f -r ./_pyb/*
-	python3 test.py -b
+	python3 tests.py
 	@echo "[graphenix] Finished tests!"
