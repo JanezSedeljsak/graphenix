@@ -1,6 +1,7 @@
 _install_dependencies:
 	sudo apt install python3.10-distutils
 	sudo apt install libpython3.10-dev
+	sudo pip3 install pybind11
 
 _build:
 	@echo "[graphenix] Running build..."

@@ -1,16 +1,20 @@
-from setuptools import setup, Extension
-import pybind11
+from setuptools import setup
+from pybind11.setup_helpers import Pybind11Extension
 
-pybind_include = pybind11.get_include()
+__version__ = "0.0.1"
 
-extension_mod = Extension("graphenix_engine",
-                           sources=["engine/main.cpp"],
-                           include_dirs=[pybind_include])
-
+ext_modules = [
+    Pybind11Extension(
+        "graphenix_engine",
+        ["engine/main.cpp"],
+        define_macros = [('VERSION_INFO', __version__)],
+    ),
+]
 
 setup(name="graphenix_engine",
-      version="0.0.1",
+      version=__version__,
       author="janezsedeljsak",
       author_email="janez.sedeljsak@gmail.com",
-      ext_modules=[extension_mod],
+      ext_modules=ext_modules,
+      python_requires=">=3.9",
       description="Graphenix engine with PyBind11")

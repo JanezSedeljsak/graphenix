@@ -4,6 +4,9 @@
 #include "managers/schema_manager.cpp"
 #include "managers/record_manager.cpp"
 
+#define STRINGIFY(x) #x
+#define MACRO_STRINGIFY(x) STRINGIFY(x)
+
 namespace py = pybind11;
 
 long heartbeat()
@@ -51,4 +54,10 @@ PYBIND11_MODULE(graphenix_engine, m)
     m.def("schema_add_record", &schema_add_record, "Add a record to the given table");
     m.def("schema_update_record", &schema_update_record, "Update a record in the given table");
     m.def("schema_get_record", &schema_get_record, "Get a record from the given table");
+
+    #ifdef VERSION_INFO
+        m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
+    #else
+        m.attr("__version__") = "dev";
+    #endif
 }
