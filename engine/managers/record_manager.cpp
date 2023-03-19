@@ -13,10 +13,14 @@
 
 using namespace std;
 
-int64_t RecordManager::create_record(const string &db_name, const string &table_name, const vector<string> &values, const vector<int>& field_lengths)
+int64_t RecordManager::create_record(const string &db_name, const string &table_name, 
+                                     const vector<string> &values, const vector<int>& field_lengths)
 {
     string file_name = get_file_name(db_name, table_name);
+    string ix_file_name = get_ix_file_name(db_name, table_name);
+
     ofstream file(file_name, ios::binary | ios::app);
+    ofstream ix_file(ix_file_name, ios::binary | ios::app);
 
     if (!file.is_open())
     {
@@ -27,7 +31,7 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
     int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
     
     char *record = new char[record_size];
-    int offset = file.tellp();
+    int64_t offset = file.tellp();
 
     int field_offset = 0;
     for (int i = 0; i < num_values; i++)
@@ -50,15 +54,24 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
     file.close();
     delete[] record;
 
-    // reutrn the offset as index
-    // eg. if the offset would be 800 and the record_size is 200 the returned value will be 4
-    return offset / record_size;
+    // insert the offset into the binary file (a pointer to the table file)
+    int ix_offset = ix_file.tellp();
+    ix_file.write(reinterpret_cast<const char*>(&offset), IX_SZIE);
+    ix_file.close();
+
+    // return the index of the record in the index file
+    return ix_offset / IX_SZIE;
 }
 
-void RecordManager::update_record(const string &db_name, const string &table_name, const int64_t record_id, const vector<string> &values, const vector<int>& field_lengths)
+void RecordManager::update_record(const string &db_name, const string &table_name, 
+                                  const int64_t record_id, const vector<string> &values, 
+                                  const vector<int>& field_lengths)
 {
     string file_name = get_file_name(db_name, table_name);
+    string ix_file_name = get_ix_file_name(db_name, table_name);
+
     fstream file(file_name, ios::binary | ios::in | ios::out);
+    fstream ix_file(ix_file_name, ios::binary | ios::in);
 
     if (!file.is_open())
     {
@@ -69,7 +82,9 @@ void RecordManager::update_record(const string &db_name, const string &table_nam
     int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
 
     char *record = new char[record_size];
-    file.seekp(record_id * record_size);
+
+    int64_t record_offset = get_record_offset(record_id, ix_file);
+    file.seekp(record_offset);
 
     int field_offset = 0;
     for (int i = 0; i < num_values; i++)
@@ -90,6 +105,8 @@ void RecordManager::update_record(const string &db_name, const string &table_nam
 
     file.write(record, record_size);
     file.close();
+
+    ix_file.close();
     delete[] record;
 }
 
@@ -101,21 +118,23 @@ void RecordManager::delete_record(const string &db_name, const string &table_nam
 {
 }
 
-vector<string> RecordManager::get_record(const string &db_name, const string &table_name, const int64_t record_id, const vector<int>& field_lengths) 
+vector<string> RecordManager::get_record(const string &db_name, const string &table_name, 
+                                         const int64_t record_id, const vector<int>& field_lengths) 
 {
     string file_name = get_file_name(db_name, table_name);
+    string ix_file_name = get_ix_file_name(db_name, table_name);
+
     fstream file(file_name, ios::binary | ios::in);
+    fstream ix_file(ix_file_name, ios::binary | ios::in);
 
     if (!file.is_open()) {
         throw runtime_error("Failed to open binary file");
     }
 
-    int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
-    int offset = record_id * record_size;
+    int64_t record_offset = get_record_offset(record_id, ix_file);
+    file.seekg(record_offset, ios::beg);
 
-    file.seekg(offset);
     vector<string> fields;
-
     auto max_element_ptr = max_element(field_lengths.begin(), field_lengths.end());
     char buffer[*max_element_ptr + 1];
 
@@ -128,6 +147,7 @@ vector<string> RecordManager::get_record(const string &db_name, const string &ta
         fields.push_back(field);
     }
 
+    ix_file.close();
     file.close();
     return fields;
 }

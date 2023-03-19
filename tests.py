@@ -1,6 +1,6 @@
 import time
 import unittest
-import graphenix_engine
+import graphenix_engine2
 from graphenix import Field, Schema, Model
 from random import randint
 from datetime import datetime, timedelta
@@ -79,7 +79,7 @@ class GraphenixUnitTests(CommonTestBase):
 
     def test_library_hearbeat(self):
         """ Test if heartbeat returns 12 (it's my birthdate so i return that as heartbeat) """
-        heartbeat_response = graphenix_engine.heartbeat()
+        heartbeat_response = graphenix_engine2.heartbeat()
         self.assertEqual(12, heartbeat_response)
 
     def test_create_and_delete_schema(self):

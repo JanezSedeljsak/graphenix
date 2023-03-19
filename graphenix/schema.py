@@ -1,4 +1,4 @@
-import graphenix_engine
+import graphenix_engine2
 
 class Schema:
     def __init__(self, name: str, models=None):
@@ -14,15 +14,15 @@ class Schema:
 
     def create(self, delete_old=False):
         model_names = [m_name for m_name in self.models.keys()]
-        graphenix_engine.create_schema(self.name, model_names, delete_old)
+        graphenix_engine2.create_schema(self.name, model_names, delete_old)
 
     def delete(self):
-        graphenix_engine.delete_schema(self.name)
+        graphenix_engine2.delete_schema(self.name)
 
     def migrate(self):
         # Call the engine function to migrate the database schema
         pass
 
     def exists(self) -> bool:
-        return graphenix_engine.schema_exists(self.name)
+        return graphenix_engine2.schema_exists(self.name)
 

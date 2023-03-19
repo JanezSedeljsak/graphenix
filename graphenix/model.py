@@ -1,4 +1,4 @@
-import graphenix_engine
+import graphenix_engine2
 
 from graphenix.internal.query import Query
 from graphenix.field import Field
@@ -69,7 +69,7 @@ class Model:
         fields_sizes_dict = cls.get_field_sizes()
         sizes_as_list = [fields_sizes_dict[field] for field in fields]
 
-        record = graphenix_engine.schema_get_record(cls.__db__, cls.__name__, record_id, sizes_as_list)
+        record = graphenix_engine2.schema_get_record(cls.__db__, cls.__name__, record_id, sizes_as_list)
         record_as_dict = {field: record[idx] for idx, field in enumerate(fields)}
         instance = cls(**record_as_dict)
         instance._id = record_id
@@ -87,8 +87,8 @@ class Model:
         sizes_as_list = [fields_sizes_dict[field] for field in fields]
 
         if self.is_new:
-            record_id = graphenix_engine.schema_add_record(self.__db__, self.__name__, values_as_list, sizes_as_list)
+            record_id = graphenix_engine2.schema_add_record(self.__db__, self.__name__, values_as_list, sizes_as_list)
             self._id = record_id
         else:
-            graphenix_engine.schema_update_record(self.__db__, self.__name__, self.id, values_as_list, sizes_as_list)
+            graphenix_engine2.schema_update_record(self.__db__, self.__name__, self.id, values_as_list, sizes_as_list)
 

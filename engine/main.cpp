@@ -45,7 +45,7 @@ py::list schema_get_record(const std::string& schema_name, const std::string& mo
     return py::cast(fields);
 }
 
-PYBIND11_MODULE(graphenix_engine, m)
+PYBIND11_MODULE(graphenix_engine2, m)
 {
     m.def("heartbeat", &heartbeat, "Validate library is installed");
     m.def("create_schema", &create_schema, "Create a schema with the given name");

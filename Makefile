@@ -5,10 +5,17 @@ _install_dependencies:
 
 _build:
 	@echo "[graphenix] Running build..."
-	sudo python3 setup.py install
+	# remove build files
+	sudo rm -rf dist/
+	sudo rm -rf build/
+	sudo rm -rf graphenix_engine2.egg-info/
+
+	# install library
+	sudo python3 setup.py build --force
+	sudo python3 setup.py install --force
 	@echo "[graphenix] Finished build!"
 
 _test:
 	@echo "[graphenix] Running tests..."
-	python3 tests.py
+	sudo python3 tests.py
 	@echo "[graphenix] Finished tests!"

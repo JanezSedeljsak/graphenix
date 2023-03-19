@@ -35,8 +35,8 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
 
-      - name: Try importing graphenix_engine module
-        run: python -c "import graphenix_engine;"
+      - name: Try importing graphenix_engine2 module
+        run: python -c "import graphenix_engine2;"
 
       - name: Run Graphenix tests
         run: python tests.py

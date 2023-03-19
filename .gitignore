@@ -3,4 +3,5 @@
 /build/*
 *.pyc
 *.egg
-graphenix_engine.egg-info/*
+graphenix_engine2.egg-info/*
+main.py

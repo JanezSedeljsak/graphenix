@@ -23,14 +23,25 @@ void SchemaManager::create_schema(const string &db_name, const vector<string> &t
 
     for (const auto &table_name : table_names)
     {
+        // create model file
         string filename = get_file_name(db_name, table_name);
-        ofstream outfile(filename, ios::out | ios::binary);
-        if (!outfile)
+        ofstream table_outfile(filename, ios::out | ios::binary);
+        if (!table_outfile)
         {
-            throw runtime_error("Failed to create binary file for table");
+            throw runtime_error("Failed to create binary file for table!");
         }
 
-        outfile.close();
+        table_outfile.close();
+
+        // create index file
+        string ix_filename = get_ix_file_name(db_name, table_name);
+        ofstream ix_outfile(ix_filename, ios::out | ios::binary);
+        if (!ix_outfile)
+        {
+            throw runtime_error("Failed to create binary file for table index!");
+        }
+
+        ix_outfile.close();
     }
 }
 
