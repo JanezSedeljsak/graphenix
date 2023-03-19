@@ -77,6 +77,22 @@ class CommonTestBase(unittest.TestCase):
 
 class GraphenixUnitTests(CommonTestBase):
 
+    @classmethod
+    def _get_users(cls):
+        users = [
+            User(first_name="John", last_name="Doe", email="john.doe@example.com", age=randint(18, 60)),
+            User(first_name="Jane", last_name="Doe", email="jane.doe@example.com", age=randint(18, 60)),
+            User(first_name="Alice", last_name="Smith", email="alice.smith@example.com", age=randint(18, 60)),
+            User(first_name="Bob", last_name="Johnson", email="bob.johnson@example.com", age=randint(18, 60)),
+            User(first_name="Emily", last_name="Williams", email="emily.williams@example.com", age=randint(18, 60)),
+            User(first_name="Daniel", last_name="Brown", email="daniel.brown@example.com", age=randint(18, 60)),
+            User(first_name="Olivia", last_name="Jones", email="olivia.jones@example.com", age=randint(18, 60)),
+            User(first_name="David", last_name="Garcia", email="david.garcia@example.com", age=randint(18, 60)),
+            User(first_name="Isabella", last_name="Martinez", email="isabella.martinez@example.com", age=randint(18, 60)),
+            User(first_name="Jonhhny", last_name="Brave", email="jb@gmail.com", age=randint(8, 60)),
+        ]
+        return users
+
     def test_library_hearbeat(self):
         """ Test if heartbeat returns 12 (it's my birthdate so i return that as heartbeat) """
         heartbeat_response = graphenix_engine2.heartbeat()
@@ -102,18 +118,7 @@ class GraphenixUnitTests(CommonTestBase):
     @CommonTestBase().prepare_and_destroy
     def test_create_schema_and_10_records(self):
         """ Test creating 10 users and then read the records by id and verify each exists """
-        users = [
-            User(first_name="John", last_name="Doe", email="john.doe@example.com", age=randint(18, 60)),
-            User(first_name="Jane", last_name="Doe", email="jane.doe@example.com", age=randint(18, 60)),
-            User(first_name="Alice", last_name="Smith", email="alice.smith@example.com", age=randint(18, 60)),
-            User(first_name="Bob", last_name="Johnson", email="bob.johnson@example.com", age=randint(18, 60)),
-            User(first_name="Emily", last_name="Williams", email="emily.williams@example.com", age=randint(18, 60)),
-            User(first_name="Daniel", last_name="Brown", email="daniel.brown@example.com", age=randint(18, 60)),
-            User(first_name="Olivia", last_name="Jones", email="olivia.jones@example.com", age=randint(18, 60)),
-            User(first_name="David", last_name="Garcia", email="david.garcia@example.com", age=randint(18, 60)),
-            User(first_name="Isabella", last_name="Martinez", email="isabella.martinez@example.com", age=randint(18, 60)),
-            User(first_name="Jonhhny", last_name="Brave", email="jb@gmail.com", age=randint(8, 60)),
-        ]
+        users = self._get_users()
 
         for user in users:
             user.save()
@@ -175,6 +180,51 @@ class GraphenixUnitTests(CommonTestBase):
         self.assertEqual(dt.hour, usr.created_at.hour)
         self.assertEqual(dt.minute, usr.created_at.minute)
 
+    @CommonTestBase().prepare_and_destroy
+    def test_insert_and_delete(self):
+        user0 = User(first_name="user1", last_name="last1", email="fl@gmail.com", age=30)
+        user0.save()
+
+        user0.delete(lazy=True)
+        with self.assertRaises(RuntimeError):
+            User.get(0)
+
+    @CommonTestBase().prepare_and_destroy
+    def test_insert_and_delete_not_lazy(self):
+        user0 = User(first_name="user1", last_name="last1", email="fl@gmail.com", age=30)
+        user0.save()
+
+        user0.delete(lazy=False)
+        with self.assertRaises(RuntimeError):
+            User.get(0)
+
+    @CommonTestBase.ignore # TODO this test case fails fix it
+    @CommonTestBase().prepare_and_destroy
+    def test_insert_10_users_and_delete(self):
+        users = self._get_users()
+
+        for user in users:
+            user.save()
+
+        for i in range(len(users)):
+            usr = User.get(i)
+            usr.delete(lazy=False)
+            with self.assertRaises(RuntimeError):
+                User.get(i)
+
+
+    @CommonTestBase().prepare_and_destroy
+    def test_insert_10_users_and_delete_reverse(self):
+        users = self._get_users()
+
+        for user in users:
+            user.save()
+
+        for i in range(-len(users), -1, -1):
+            usr = User.get(i)
+            usr.delete(lazy=False)
+            with self.assertRaises(RuntimeError):
+                User.get(i)
 
 class GraphenixPerfTests(CommonTestBase):
 

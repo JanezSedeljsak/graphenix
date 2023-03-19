@@ -142,11 +142,19 @@ void RecordManager::delete_record(const string &db_name, const string &table_nam
 
     if (bytes_to_move > 0)
     {
-        char *buffer = new char[bytes_to_move];
+        char *buffer = new char[CHUNK_SIZE];
+        int64_t remaining_bytes = bytes_to_move;
         file.seekp(record_offset + record_size, ios::beg);
-        file.read(buffer, bytes_to_move);
-        file.seekp(record_offset, ios::beg);
-        file.write(buffer, bytes_to_move);
+
+        while (remaining_bytes > 0)
+        {
+            int64_t bytes_to_read = min(remaining_bytes, (int64_t)CHUNK_SIZE);
+            file.read(buffer, bytes_to_read);
+            file.seekp(record_offset + record_size + bytes_to_move - remaining_bytes, ios::beg);
+            file.write(buffer, bytes_to_read);
+            remaining_bytes -= bytes_to_read;
+        }
+
         delete[] buffer;
     }
 

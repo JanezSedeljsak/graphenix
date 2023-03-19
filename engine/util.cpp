@@ -5,6 +5,7 @@
 #include <string>
 
 #define IX_SZIE sizeof(int64_t)
+#define CHUNK_SIZE 10 * 1024 * 1024
 
 using namespace std;
 
