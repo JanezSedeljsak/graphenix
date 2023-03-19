@@ -31,16 +31,12 @@ public:
         const vector<int>& field_lengths
     );
 
-    static void lazy_delete_record(
-        const string& db_name, 
-        const string& table_name, 
-        const int64_t record_id
-    );
-
     static void delete_record(
         const string& db_name, 
         const string& table_name, 
-        const int64_t record_id
+        const int64_t record_id,
+        const bool is_lazy_delete,
+        const vector<int>& field_lengths
     );
 
     static vector<string> get_record(

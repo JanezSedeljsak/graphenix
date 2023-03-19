@@ -29,4 +29,11 @@ int64_t get_record_offset(const int64_t record_id, fstream &ix_file)
     return ix;
 }
 
+void set_record_inactive(const int64_t record_id, fstream &ix_file)
+{
+    ix_file.seekp(record_id * IX_SZIE, ios::beg);
+    int64_t ix = -1;
+    ix_file.write(reinterpret_cast<const char*>(&ix), IX_SZIE);
+}
+
 #endif

@@ -14,7 +14,8 @@ long heartbeat()
     return 12l;
 }
 
-void create_schema(const std::string& schema_name, const std::vector<std::string>& model_names, bool delete_old)
+void create_schema(const std::string& schema_name, const std::vector<std::string>& model_names, 
+                   const bool delete_old)
 {
     SchemaManager::create_schema(schema_name, model_names, delete_old);
 }
@@ -29,20 +30,31 @@ bool schema_exists(const std::string& schema_name)
     return SchemaManager::schema_exists(schema_name);
 }
 
-long long schema_add_record(const std::string& db_name, const std::string& table_name, const std::vector<std::string>& values, const std::vector<int>& field_lengths)
+long long schema_add_record(const std::string& db_name, const std::string& table_name, 
+                            const std::vector<std::string>& values, const std::vector<int>& field_lengths)
 {
     return RecordManager::create_record(db_name, table_name, values, field_lengths);
 }
 
-void schema_update_record(const std::string& schema_name, const std::string& model_name, long offset, const std::vector<std::string>& values, const std::vector<int>& field_lengths)
+void schema_update_record(const std::string& schema_name, const std::string& model_name, 
+                          const int64_t id, const std::vector<std::string>& values, 
+                          const std::vector<int>& field_lengths)
 {
-    RecordManager::update_record(schema_name, model_name, offset, values, field_lengths);
+    RecordManager::update_record(schema_name, model_name, id, values, field_lengths);
 }
 
-py::list schema_get_record(const std::string& schema_name, const std::string& model_name, int id, const std::vector<int>& field_lengths)
+py::list schema_get_record(const std::string& schema_name, const std::string& model_name, 
+                           const int64_t id, const std::vector<int>& field_lengths)
 {
     std::vector<std::string> fields = RecordManager::get_record(schema_name, model_name, id, field_lengths);
     return py::cast(fields);
+}
+
+void schema_delete_record(const std::string& schema_name, const std::string& model_name, 
+                          const int64_t id, bool is_lazy_delete,
+                          const std::vector<int>& field_lengths)
+{
+    RecordManager::delete_record(schema_name, model_name, id, is_lazy_delete, field_lengths);
 }
 
 PYBIND11_MODULE(graphenix_engine2, m)
@@ -54,6 +66,7 @@ PYBIND11_MODULE(graphenix_engine2, m)
     m.def("schema_add_record", &schema_add_record, "Add a record to the given table");
     m.def("schema_update_record", &schema_update_record, "Update a record in the given table");
     m.def("schema_get_record", &schema_get_record, "Get a record from the given table");
+    m.def("schema_delete_record", &schema_delete_record, "Delete a record from a given table");
 
     #ifdef VERSION_INFO
         m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

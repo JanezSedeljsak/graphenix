@@ -75,8 +75,16 @@ class Model:
         instance._id = record_id
         return instance
     
-    def delete(self):
-        return Query(self, id=self.id).delete()
+    def delete(self, lazy=None):
+        if lazy is None:
+            lazy = self.__lazy_delete__
+            
+        fields = self.get_fields()
+        fields_sizes_dict = self.get_field_sizes()
+        sizes_as_list = [fields_sizes_dict[field] for field in fields]
+
+        graphenix_engine2.schema_delete_record(self.__db__, self.__name__, self.id, lazy, sizes_as_list)
+        self._id = -1 # set flag to is_new again so you don't update an inactive record
     
     def save(self):
         fields = self.get_fields()
