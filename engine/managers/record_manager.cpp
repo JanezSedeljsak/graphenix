@@ -155,12 +155,13 @@ void RecordManager::delete_record(const string &db_name, const string &table_nam
             remaining_bytes -= bytes_to_read;
         }
 
+        adjust_indexes(record_id + 1, record_size, ix_file);
         delete[] buffer;
     }
 
     file.close();
-    filesystem::resize_file(file_name, record_offset + bytes_to_move);
     ix_file.close();
+    filesystem::resize_file(file_name, record_offset + bytes_to_move);
 }
 
 vector<string> RecordManager::get_record(const string &db_name, const string &table_name,

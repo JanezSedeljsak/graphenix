@@ -6,6 +6,7 @@ from graphenix.field import Field
 class Model:
     __db__ = None
     __lazy_delete__ = False
+    qfields = None # if not defined take all the fields
 
     def __init__(self, **fields):
         self._id = -1
@@ -78,7 +79,7 @@ class Model:
     def delete(self, lazy=None):
         if lazy is None:
             lazy = self.__lazy_delete__
-            
+
         fields = self.get_fields()
         fields_sizes_dict = self.get_field_sizes()
         sizes_as_list = [fields_sizes_dict[field] for field in fields]

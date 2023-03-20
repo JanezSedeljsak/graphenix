@@ -198,7 +198,6 @@ class GraphenixUnitTests(CommonTestBase):
         with self.assertRaises(RuntimeError):
             User.get(0)
 
-    @CommonTestBase.ignore # TODO this test case fails fix it
     @CommonTestBase().prepare_and_destroy
     def test_insert_10_users_and_delete(self):
         users = self._get_users()
@@ -211,7 +210,6 @@ class GraphenixUnitTests(CommonTestBase):
             usr.delete(lazy=False)
             with self.assertRaises(RuntimeError):
                 User.get(i)
-
 
     @CommonTestBase().prepare_and_destroy
     def test_insert_10_users_and_delete_reverse(self):
