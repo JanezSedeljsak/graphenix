@@ -42,7 +42,6 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
 
         if (static_cast<int>(value.length()) > field_size)
         {
-            printf("offset: %d\n", i);
             throw runtime_error("Field exceeds max size!");
         }
 

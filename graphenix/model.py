@@ -8,9 +8,10 @@ class Model:
     __lazy_delete__ = False
 
     # cached values
-    __qfields__ = tuple()
-    __total_size__ = 0
-    __field_sizes__ = {}
+    __qfields__: tuple = tuple()
+    __total_size__: int = 0
+    __field_sizes__: dict[str, int] = {}
+    __field_types__: dict[str, type] = {}
 
     def __init__(self, **fields):
         self._id = -1
@@ -50,6 +51,7 @@ class Model:
                     raise AttributeError(f'Size for field {field_name} is not defined or is not a positive integer!')
 
                 field_sizes[field_name] = field.size
+                cls.__field_types__[field_name] = type(field)
         
         cls.__field_sizes__ = field_sizes
         cls.__total_size__ = sum(field_sizes.values())
@@ -89,7 +91,19 @@ class Model:
         return instance
     
     def get_values(self, fields) -> list:
-        return [str(getattr(self, field)) for field in fields]
+        values = []
+        for field in fields:
+            match self.__field_types__[field]:
+                case Field.String:
+                    values.append(str(getattr(self, field)))
+                case Field.Int:
+                    values.append(str(getattr(self, field)))
+                case Field.Bool:
+                    values.append(str(getattr(self, field)))
+                case Field.DateTime:
+                    values.append(str(getattr(self, field)))
+        
+        return values
     
     def delete(self, lazy=None):
         if self.is_new:
