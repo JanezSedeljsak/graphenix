@@ -31,16 +31,17 @@ bool schema_exists(const std::string& schema_name)
 }
 
 long long schema_add_record(const std::string& db_name, const std::string& table_name, 
-                            const std::vector<std::string>& values, const std::vector<int>& field_lengths)
+                            const std::vector<std::string>& values, const std::vector<int>& field_lengths,
+                            const int64_t record_size)
 {
-    return RecordManager::create_record(db_name, table_name, values, field_lengths);
+    return RecordManager::create_record(db_name, table_name, values, field_lengths, record_size);
 }
 
 void schema_update_record(const std::string& schema_name, const std::string& model_name, 
                           const int64_t id, const std::vector<std::string>& values, 
-                          const std::vector<int>& field_lengths)
+                          const std::vector<int>& field_lengths, const int64_t record_size)
 {
-    RecordManager::update_record(schema_name, model_name, id, values, field_lengths);
+    RecordManager::update_record(schema_name, model_name, id, values, field_lengths, record_size);
 }
 
 py::list schema_get_record(const std::string& schema_name, const std::string& model_name, 
@@ -52,9 +53,9 @@ py::list schema_get_record(const std::string& schema_name, const std::string& mo
 
 void schema_delete_record(const std::string& schema_name, const std::string& model_name, 
                           const int64_t id, bool is_lazy_delete,
-                          const std::vector<int>& field_lengths)
+                          const int64_t record_size)
 {
-    RecordManager::delete_record(schema_name, model_name, id, is_lazy_delete, field_lengths);
+    RecordManager::delete_record(schema_name, model_name, id, is_lazy_delete, record_size);
 }
 
 PYBIND11_MODULE(graphenix_engine2, m)

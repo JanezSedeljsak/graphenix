@@ -20,7 +20,8 @@ public:
         const string& db_name, 
         const string& table_name, 
         const vector<string>& values, 
-        const vector<int>& field_lengths
+        const vector<int>& field_lengths,
+        const int64_t record_size
     );
 
     static void update_record(
@@ -28,7 +29,8 @@ public:
         const string& table_name, 
         const int64_t record_id, 
         const vector<string>& values, 
-        const vector<int>& field_lengths
+        const vector<int>& field_lengths,
+        const int64_t record_size
     );
 
     static void delete_record(
@@ -36,7 +38,7 @@ public:
         const string& table_name, 
         const int64_t record_id,
         const bool is_lazy_delete,
-        const vector<int>& field_lengths
+        const int64_t record_size
     );
 
     static vector<string> get_record(

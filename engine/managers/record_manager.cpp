@@ -14,7 +14,8 @@
 using namespace std;
 
 int64_t RecordManager::create_record(const string &db_name, const string &table_name,
-                                     const vector<string> &values, const vector<int> &field_lengths)
+                                     const vector<string> &values, const vector<int> &field_lengths,
+                                     const int64_t record_size)
 {
     string file_name = get_file_name(db_name, table_name);
     string ix_file_name = get_ix_file_name(db_name, table_name);
@@ -28,7 +29,7 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
     }
 
     int num_values = values.size();
-    int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
+    // int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
 
     char *record = new char[record_size];
     int64_t offset = file.tellp();
@@ -41,6 +42,7 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
 
         if (static_cast<int>(value.length()) > field_size)
         {
+            printf("offset: %d\n", i);
             throw runtime_error("Field exceeds max size!");
         }
 
@@ -65,7 +67,7 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
 
 void RecordManager::update_record(const string &db_name, const string &table_name,
                                   const int64_t record_id, const vector<string> &values,
-                                  const vector<int> &field_lengths)
+                                  const vector<int> &field_lengths, const int64_t record_size)
 {
     string file_name = get_file_name(db_name, table_name);
     string ix_file_name = get_ix_file_name(db_name, table_name);
@@ -79,7 +81,7 @@ void RecordManager::update_record(const string &db_name, const string &table_nam
     }
 
     int num_values = values.size();
-    int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
+    // int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
 
     char *record = new char[record_size];
 
@@ -117,7 +119,7 @@ void RecordManager::update_record(const string &db_name, const string &table_nam
 
 void RecordManager::delete_record(const string &db_name, const string &table_name,
                                   const int64_t record_id, const bool is_lazy_delete,
-                                  const vector<int> &field_lengths)
+                                  const int64_t record_size)
 {
     string ix_file_name = get_ix_file_name(db_name, table_name);
     fstream ix_file(ix_file_name, ios::binary | ios::in | ios::out);
@@ -135,7 +137,7 @@ void RecordManager::delete_record(const string &db_name, const string &table_nam
     string file_name = get_file_name(db_name, table_name);
     fstream file(file_name, ios::binary | ios::in | ios::out);
 
-    int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
+    // int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
 
     file.seekp(0, ios::end);
     int64_t bytes_to_move = file.tellp() - (record_offset + record_size);
