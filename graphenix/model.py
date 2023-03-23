@@ -99,9 +99,9 @@ class Model:
                 case Field.Int:
                     values.append(str(getattr(self, field)))
                 case Field.Bool:
-                    values.append(str(getattr(self, field)))
+                    values.append(str(getattr(self, '_' + field, 0)))
                 case Field.DateTime:
-                    values.append(str(getattr(self, field)))
+                    values.append(str(getattr(self, '_' + field, 0)))
         
         return values
     

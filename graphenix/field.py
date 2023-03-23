@@ -34,10 +34,10 @@ class Field:
             self.size = 1
 
         def __get__(self, instance, owner):
-            return int(getattr(instance, '_' + self.name, self.default))
+            return getattr(instance, '_' + self.name, self.default)
 
         def __set__(self, instance, value):
-            setattr(instance, '_' + self.name, int(value) != 0)
+            setattr(instance, '_' + self.name, int(value))
 
     class DateTime(BaseType):
         """ Datetime field is stored as ammount of seconds from 1.1.1970 (POSIX) format """
@@ -47,14 +47,15 @@ class Field:
             self.default = default
             self.size = 20
 
-        def __get__(self, instance, owner):
+        def __get__(self, instance, owner, raw=False):
             diff: int = getattr(instance, '_' + self.name, self.default)
             dt = self.epoch + timedelta(seconds=diff)
             return dt
         
         def __set__(self, instance, value):
             if isinstance(value, str):
-                value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+                setattr(instance, '_' + self.name, int(value))
+                return
 
             diff = int((value - self.epoch).total_seconds())
             setattr(instance, '_' + self.name, diff)
