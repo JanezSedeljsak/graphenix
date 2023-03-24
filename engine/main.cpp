@@ -32,22 +32,24 @@ bool schema_exists(const std::string& schema_name)
 
 long long schema_add_record(const std::string& db_name, const std::string& table_name, 
                             const std::vector<std::string>& values, const std::vector<int>& field_lengths,
-                            const int64_t record_size)
+                            const int64_t record_size, const std::vector<int>& field_types)
 {
-    return RecordManager::create_record(db_name, table_name, values, field_lengths, record_size);
+    return RecordManager::create_record(db_name, table_name, values, field_lengths, record_size, field_types);
 }
 
 void schema_update_record(const std::string& schema_name, const std::string& model_name, 
                           const int64_t id, const std::vector<std::string>& values, 
-                          const std::vector<int>& field_lengths, const int64_t record_size)
+                          const std::vector<int>& field_lengths, const int64_t record_size,
+                          const std::vector<int>& field_types)
 {
-    RecordManager::update_record(schema_name, model_name, id, values, field_lengths, record_size);
+    RecordManager::update_record(schema_name, model_name, id, values, field_lengths, record_size, field_types);
 }
 
 py::list schema_get_record(const std::string& schema_name, const std::string& model_name, 
-                           const int64_t id, const std::vector<int>& field_lengths)
+                           const int64_t id, const std::vector<int>& field_lengths,
+                           const std::vector<int>& field_types)
 {
-    std::vector<std::string> fields = RecordManager::get_record(schema_name, model_name, id, field_lengths);
+    std::vector<std::string> fields = RecordManager::get_record(schema_name, model_name, id, field_lengths, field_types);
     return py::cast(fields);
 }
 

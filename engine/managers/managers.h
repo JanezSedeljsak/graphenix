@@ -21,7 +21,8 @@ public:
         const string& table_name, 
         const vector<string>& values, 
         const vector<int>& field_lengths,
-        const int64_t record_size
+        const int64_t record_size,
+        const std::vector<int>& field_types
     );
 
     static void update_record(
@@ -30,7 +31,8 @@ public:
         const int64_t record_id, 
         const vector<string>& values, 
         const vector<int>& field_lengths,
-        const int64_t record_size
+        const int64_t record_size,
+        const std::vector<int>& field_types
     );
 
     static void delete_record(
@@ -45,7 +47,8 @@ public:
         const string &db_name, 
         const string &table_name, 
         const int64_t record_id, 
-        const vector<int>& field_lengths
+        const vector<int>& field_lengths,
+        const std::vector<int>& field_types
     );
 };
 

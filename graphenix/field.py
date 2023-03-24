@@ -1,5 +1,13 @@
 from datetime import datetime, timedelta
 
+class FieldTypeEnum:
+    INT = 0
+    STRING = 1
+    BOOL = 2
+    DATETIME = 3
+    LINK_SINGLE = 4
+    LINK_MULTIPLE = 5
+
 class Field:
 
     class BaseType:
@@ -24,16 +32,16 @@ class Field:
             setattr(instance, '_' + self.name, int(value))
 
     class String(BaseType):
-        def __init__(self, size=255, default=''):
+        def __init__(self, size=255, default: str = ''):
             self.size = size
             self.default = default
 
     class Bool(Int):
-        def __init__(self, default=0):
-            self.default = default
+        def __init__(self, default: bool = False):
+            self.default = int(default)
             self.size = 1
 
-        def __get__(self, instance, owner):
+        def __get__(self, instance, owner) -> bool:
             return getattr(instance, '_' + self.name, self.default)
 
         def __set__(self, instance, value):
@@ -43,11 +51,11 @@ class Field:
         """ Datetime field is stored as ammount of seconds from 1.1.1970 (POSIX) format """
         epoch = datetime.utcfromtimestamp(0)
 
-        def __init__(self, default=0):
+        def __init__(self, default = 0):
             self.default = default
             self.size = 20
 
-        def __get__(self, instance, owner, raw=False):
+        def __get__(self, instance, owner) -> datetime:
             diff: int = getattr(instance, '_' + self.name, self.default)
             dt = self.epoch + timedelta(seconds=diff)
             return dt

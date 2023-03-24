@@ -15,7 +15,7 @@ using namespace std;
 
 int64_t RecordManager::create_record(const string &db_name, const string &table_name,
                                      const vector<string> &values, const vector<int> &field_lengths,
-                                     const int64_t record_size)
+                                     const int64_t record_size, const std::vector<int>& field_types)
 {
     string file_name = get_file_name(db_name, table_name);
     string ix_file_name = get_ix_file_name(db_name, table_name);
@@ -66,7 +66,8 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
 
 void RecordManager::update_record(const string &db_name, const string &table_name,
                                   const int64_t record_id, const vector<string> &values,
-                                  const vector<int> &field_lengths, const int64_t record_size)
+                                  const vector<int> &field_lengths, const int64_t record_size,
+                                  const std::vector<int>& field_types)
 {
     string file_name = get_file_name(db_name, table_name);
     string ix_file_name = get_ix_file_name(db_name, table_name);
@@ -166,7 +167,8 @@ void RecordManager::delete_record(const string &db_name, const string &table_nam
 }
 
 vector<string> RecordManager::get_record(const string &db_name, const string &table_name,
-                                         const int64_t record_id, const vector<int> &field_lengths)
+                                         const int64_t record_id, const vector<int> &field_lengths,
+                                         const std::vector<int>& field_types)
 {
     string file_name = get_file_name(db_name, table_name);
     string ix_file_name = get_ix_file_name(db_name, table_name);

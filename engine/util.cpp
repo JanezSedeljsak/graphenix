@@ -9,6 +9,15 @@
 
 using namespace std;
 
+enum FIELD_TYPE {
+    INT = 0,
+    STRING = 1,
+    BOOL = 2,
+    DATETIME = 3,
+    LINK_SINGLE = 4,
+    LINK_MULTIPLE = 5
+};
+
 string get_file_name(const string &schema_name, const string &model_name)
 {
     // eg. school/students.bin;

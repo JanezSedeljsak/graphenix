@@ -1,7 +1,7 @@
 import graphenix_engine2
 
 from graphenix.internal.query import Query
-from graphenix.field import Field
+from graphenix.field import Field, FieldTypeEnum
 
 class Model:
     __db__ = None
@@ -12,6 +12,8 @@ class Model:
     __total_size__: int = 0
     __field_sizes__: dict[str, int] = {}
     __field_types__: dict[str, type] = {}
+    __field_types_raw__: dict[str, int] = {} # for parsing in c++
+    __field_defaults__: dict = {} # can't add type hints since there are different type for default (base of field type)
 
     def __init__(self, **fields):
         self._id = -1
@@ -51,7 +53,23 @@ class Model:
                     raise AttributeError(f'Size for field {field_name} is not defined or is not a positive integer!')
 
                 field_sizes[field_name] = field.size
-                cls.__field_types__[field_name] = type(field)
+                actual_type = type(field)
+                cls.__field_types__[field_name] = actual_type
+                cls.__field_defaults__[field_name] = field.default
+                match actual_type:
+                    case Field.Int:
+                        raw_type_index = FieldTypeEnum.INT
+                    case Field.String:
+                        raw_type_index = FieldTypeEnum.STRING
+                    case Field.Bool:
+                        raw_type_index = FieldTypeEnum.BOOL
+                    case Field.DateTime:
+                        raw_type_index = FieldTypeEnum.DATETIME
+                    case _:
+                        raise AttributeError("Field type is not valid!")
+                
+
+                cls.__field_types_raw__[field_name] = raw_type_index
         
         cls.__field_sizes__ = field_sizes
         cls.__total_size__ = sum(field_sizes.values())
@@ -81,9 +99,11 @@ class Model:
         fields = cls.get_fields()
         field_sizes = cls.get_field_sizes()
         sizes_as_list = [field_sizes[field] for field in fields]
+        raw_type_as_list = [cls.__field_types_raw__[field] for field in fields]
 
         record = graphenix_engine2.schema_get_record(cls.__db__, cls.__name__, 
-                                                     record_id, sizes_as_list)
+                                                     record_id, sizes_as_list,
+                                                     raw_type_as_list)
         
         record_as_dict = {field: record[idx] for idx, field in enumerate(fields)}
         instance = cls(**record_as_dict)
@@ -94,14 +114,11 @@ class Model:
         values = []
         for field in fields:
             match self.__field_types__[field]:
-                case Field.String:
+                case Field.String | Field.Int:
                     values.append(str(getattr(self, field)))
-                case Field.Int:
-                    values.append(str(getattr(self, field)))
-                case Field.Bool:
-                    values.append(str(getattr(self, '_' + field, 0)))
-                case Field.DateTime:
-                    values.append(str(getattr(self, '_' + field, 0)))
+                case Field.Bool | Field.DateTime:
+                    # get raw types for datetime and bool (both are stored as integers under the hood)
+                    values.append(str(getattr(self, '_' + field, self.__field_defaults__[field])))
         
         return values
     
@@ -122,13 +139,16 @@ class Model:
         field_sizes = self.get_field_sizes()
         sizes_as_list = [field_sizes[field] for field in fields]
         values_as_list = self.get_values(fields)
+        raw_type_as_list = [self.__field_types_raw__[field] for field in fields]
 
         if self.is_new:
             self._id = graphenix_engine2.schema_add_record(self.__db__, self.__name__, 
                                                             values_as_list, sizes_as_list,
-                                                            self.__total_size__)
+                                                            self.__total_size__,
+                                                            raw_type_as_list)
         else:
             graphenix_engine2.schema_update_record(self.__db__, self.__name__, self.id, 
                                                    values_as_list, sizes_as_list,
-                                                   self.__total_size__)
+                                                   self.__total_size__,
+                                                   raw_type_as_list)
 
