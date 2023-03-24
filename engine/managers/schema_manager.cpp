@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <filesystem>
+#include <omp.h>
 #include "../util.cpp"
 
 using namespace std;
@@ -21,6 +22,7 @@ void SchemaManager::create_schema(const string &db_name, const vector<string> &t
         throw runtime_error("Failed to create schema folder");
     }
 
+    #pragma omp parallel for schedule(static) 
     for (const auto &table_name : table_names)
     {
         // create model file

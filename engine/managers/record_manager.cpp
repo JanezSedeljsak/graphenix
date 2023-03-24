@@ -188,19 +188,20 @@ vector<string> RecordManager::get_record(const string &db_name, const string &ta
     }
 
     file.seekg(record_offset, ios::beg);
+    const size_t fields_count = field_lengths.size();
 
-    vector<string> fields;
+    vector<string> fields(fields_count);
     auto max_element_ptr = max_element(field_lengths.begin(), field_lengths.end());
     char buffer[*max_element_ptr + 1];
 
-    for (const auto &length : field_lengths)
+    for (size_t i = 0; i < fields_count; i++)
     {
-        file.read(buffer, length);
-        buffer[length] = '\0';
+        file.read(buffer, field_lengths[i]);
+        buffer[field_lengths[i]] = '\0';
         string field(buffer);
         field.erase(0, field.find_first_not_of(" "));
         field.erase(field.find_last_not_of(" ") + 1);
-        fields.push_back(field);
+        fields[i] = field;
     }
 
     ix_file.close();
