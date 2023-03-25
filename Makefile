@@ -9,13 +9,18 @@ _build:
 	sudo rm -rf dist/
 	sudo rm -rf build/
 	sudo rm -rf graphenix_engine2.egg-info/
+	sudo rm -rf graphenix.egg-info/
 
 	# install library
-	sudo python3 setup.py build --force
 	sudo python3 setup.py install --force
 	@echo "[graphenix] Finished build!"
 
-_test:
+_unit_test:
 	@echo "[graphenix] Running tests..."
-	sudo python3 tests.py
+	sudo python3 -m tests.tests_unit
+	@echo "[graphenix] Finished tests!"
+
+_perf_test:
+	@echo "[graphenix] Running tests..."
+	sudo python3 -m tests.tests_perf
 	@echo "[graphenix] Finished tests!"

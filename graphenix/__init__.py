@@ -1,6 +1,6 @@
-from graphenix.model import Model
-from graphenix.schema import Schema
-from graphenix.field import Field
-from graphenix.internal.type import Type
+from .model import Model
+from .schema import Schema
+from .field import Field
+from .query import Query
 
-__all__ = ['Schema', 'Model', 'Type', 'Field']
+__all__ = ['Schema', 'Model', 'Field', 'Query']

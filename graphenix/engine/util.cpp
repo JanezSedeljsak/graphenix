@@ -7,6 +7,14 @@
 #define IX_SZIE sizeof(int64_t)
 #define CHUNK_SIZE 10 * 1024 * 1024
 
+#ifdef _WIN32
+    #include <direct.h>
+    #define MAKE_GRAPHENIX_DB_DIR() _mkdir("graphenix_db")
+#else
+    #include <sys/stat.h>
+    #define MAKE_GRAPHENIX_DB_DIR() mkdir("graphenix_db", 0777)
+#endif
+
 using namespace std;
 
 enum FIELD_TYPE {
@@ -18,16 +26,21 @@ enum FIELD_TYPE {
     LINK_MULTIPLE = 5
 };
 
+string get_db_path(const string &schema_name) 
+{
+    return "graphenix_db/" + schema_name;
+}
+
 string get_file_name(const string &schema_name, const string &model_name)
 {
     // eg. school/students.bin;
-    return schema_name + "/" + model_name + ".bin";
+    return "graphenix_db/" + schema_name + "/" + model_name + ".bin";
 }
 
 string get_ix_file_name(const string &schema_name, const string &model_name) 
 {
     // eg. school/ix_students.bin; <- primary key index
-    return schema_name + "/ix_" + model_name + ".bin";   
+    return "graphenix_db/" + schema_name + "/ix_" + model_name + ".bin";   
 }
 
 int64_t get_record_offset(const int64_t record_id, fstream &ix_file)

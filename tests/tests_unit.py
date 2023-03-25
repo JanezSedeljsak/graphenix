@@ -1,82 +1,12 @@
-import time
-import unittest
 import graphenix_engine2
-from graphenix import Field, Schema, Model
+import unittest
 from random import randint
-from datetime import datetime, timedelta
+from datetime import datetime
+from .tests_base import *
+from .tests_data import *
 
-class User(Model):
-    first_name = Field.String(size=15)
-    last_name = Field.String(size=15)
-    email = Field.String(size=50)
-    age = Field.Int()
-    is_admin = Field.Bool()
-    created_at = Field.DateTime()
-
-class City(Model):
-    name = Field.String(size=50)
-    country = Field.String(size=50)
-    population_thousands = Field.Int()
-
-mock_schema = Schema('test_school',
-                      models=[User, City])
-
-class CommonTestBase(unittest.TestCase):
-
-    @staticmethod
-    def perf(name, times=1, logger=False, test_id=None):
-        def decorator(method):
-            def wrapper(*args, **kwargs):
-                total_elapsed_time = 0
-                for _ in range(times):
-                    start_time = time.monotonic()
-                    method(*args, **kwargs)
-                    end_time = time.monotonic()
-                    elapsed_time = end_time - start_time
-                    total_elapsed_time += elapsed_time
-
-                avg_elapsed_time = total_elapsed_time / times
-                print(f"[Graphenix_PERF_TEST] Avg: {avg_elapsed_time:.3f} - {name} (executed {times} times)")
-                return None
-            return wrapper
-        return decorator
-    
-    @staticmethod
-    def ignore(method):
-        """ A decorator that ignores the method it wraps (it never calls it) """
-        def callable(*args, **kwargs):
-            return None
-        
-        return callable
-    
-    def prepare_and_destroy(self, method):
-        """ A decorator that calls prepares the db before the method call and deletes it after the call """
-        def callable(*args, **kwargs):
-            self.delete_if_exists_and_create()
-            result = method(*args, **kwargs)
-            self.cleanup_and_validate()
-            return result
-        
-        return callable
-
-
-    def delete_if_exists_and_create(self):
-        if mock_schema.exists():
-            mock_schema.delete()
-
-        mock_schema.create()
-        exists = mock_schema.exists()
-        self.assertTrue(exists)
-
-    def cleanup_and_validate(self):
-        exists = mock_schema.exists()
-        self.assertTrue(exists)
-        mock_schema.delete()
-        exists = mock_schema.exists()
-        self.assertFalse(exists)
 
 class GraphenixUnitTests(CommonTestBase):
-
     @classmethod
     def _get_users(cls):
         users = [
@@ -223,65 +153,6 @@ class GraphenixUnitTests(CommonTestBase):
             usr.delete(lazy=False)
             with self.assertRaises(RuntimeError):
                 User.get(i)
-
-class GraphenixPerfTests(CommonTestBase):
-
-    # @CommonTestBase.ignore
-    @CommonTestBase.perf("Create 10K users and read them by IDs", times=3)
-    @CommonTestBase().prepare_and_destroy
-    def test_create_10k_users_and_read(self):
-        """ Create 10K users and read them by IDs """
-        AMOUNT = 10_000
-
-        amount_half = AMOUNT // 2
-        tmp_user = User(first_name="John", last_name="Doe", email="john.doe@example.com", age=25)
-        dt = datetime.now()
-        for uid in range(AMOUNT):
-            new_user = User(
-                first_name=tmp_user.first_name,
-                last_name=tmp_user.last_name,
-                email=tmp_user.email,
-                age=tmp_user.age,
-                is_admin=uid<amount_half,
-                created_at=dt+timedelta(days=uid)
-            )
-
-            new_user.save()
-
-        for uid in range(AMOUNT):
-            read_user = User.get(uid)
-            self.assertEqual(tmp_user.first_name, read_user.first_name)
-            self.assertEqual(tmp_user.age, read_user.age)
-            self.assertEqual(uid, read_user.id)
-            self.assertFalse(read_user.is_new)
-            self.assertEqual(uid<amount_half, read_user.is_admin)
-            temp_dt = dt+timedelta(days=uid)
-            self.assertEqual(temp_dt.day, read_user.created_at.day)
-
-    # @CommonTestBase.ignore
-    @CommonTestBase.perf("Create 100K basic codelist records and read them by IDs", times=3)
-    @CommonTestBase().prepare_and_destroy
-    def test_create_100k_records_and_read(self):
-        AMOUNT = 100_000
-
-        temp_record = City(name="Ljubljana", country="SLO", population_thousands=280)
-        for _ in range(AMOUNT):
-            new_rec = City(
-                name=temp_record.name,
-                country=temp_record.country,
-                population_thousands=temp_record.population_thousands
-            )
-
-            new_rec.save()
-
-        for rid in range(AMOUNT):
-            city = City.get(rid)
-            self.assertEqual(rid, city.id)
-            self.assertEqual(temp_record.name, city.name)
-            self.assertEqual(temp_record.population_thousands, city.population_thousands)
-
-
-
 
 if __name__ == '__main__':
     unittest.main()

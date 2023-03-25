@@ -1,7 +1,8 @@
 .vscode
 
 /build/*
+/dist/*
 *.pyc
-*.egg
-graphenix_engine2.egg-info/*
+*.egg*/
+/graphenix_db/*
 main.py

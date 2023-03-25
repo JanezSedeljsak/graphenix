@@ -11,12 +11,14 @@ using namespace std;
 
 void SchemaManager::create_schema(const string &db_name, const vector<string> &table_names, bool delete_old)
 {
+    MAKE_GRAPHENIX_DB_DIR();
     if (delete_old && SchemaManager::schema_exists(db_name)) 
     {
         SchemaManager::delete_schema(db_name);
     }
 
-    int status = mkdir(db_name.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    string db_path = get_db_path(db_name);
+    int status = mkdir(db_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if (status == -1)
     {
         throw runtime_error("Failed to create schema folder");
@@ -49,8 +51,10 @@ void SchemaManager::create_schema(const string &db_name, const vector<string> &t
 
 bool SchemaManager::schema_exists(const string &db_name)
 {
+    MAKE_GRAPHENIX_DB_DIR();
     struct stat st;
-    return (stat(db_name.c_str(), &st) == 0 && S_ISDIR(st.st_mode));
+    string db_path = get_db_path(db_name);
+    return (stat(db_path.c_str(), &st) == 0 && S_ISDIR(st.st_mode));
 }
 
 void SchemaManager::migrate_schema(const string &db_name)
@@ -60,7 +64,9 @@ void SchemaManager::migrate_schema(const string &db_name)
 
 void SchemaManager::delete_schema(const string &db_name)
 {
-    filesystem::path dir_path(db_name);
+    MAKE_GRAPHENIX_DB_DIR();
+    string db_path = get_db_path(db_name);
+    filesystem::path dir_path(db_path);
     if (filesystem::exists(dir_path) && filesystem::is_directory(dir_path))
     {
         filesystem::remove_all(dir_path);

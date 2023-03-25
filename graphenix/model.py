@@ -1,6 +1,6 @@
 import graphenix_engine2
 
-from graphenix.internal.query import Query
+from graphenix.query import Query
 from graphenix.field import Field, FieldTypeEnum
 
 class Model:
