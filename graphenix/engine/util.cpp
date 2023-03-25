@@ -17,6 +17,15 @@
 
 using namespace std;
 
+template<typename ...Args>
+string message(Args&&... args)
+{
+    ostringstream oss;
+    using List = int[];
+    (void)List{0, ((void)(oss << forward<Args>(args)), 0)...};
+    return oss.str();
+}
+
 enum FIELD_TYPE {
     INT = 0,
     STRING = 1,

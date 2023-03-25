@@ -88,7 +88,8 @@ void RecordManager::update_record(const string &db_name, const string &table_nam
     int64_t record_offset = get_record_offset(record_id, ix_file);
     if (record_offset == -1)
     {
-        throw runtime_error("Record has been deleted");
+        string msg = message("Record with id ", record_id, " has been deleted!");
+        throw runtime_error(msg);
     }
 
     file.seekp(record_offset);
@@ -184,7 +185,8 @@ vector<string> RecordManager::get_record(const string &db_name, const string &ta
     int64_t record_offset = get_record_offset(record_id, ix_file);
     if (record_offset == -1)
     {
-        throw runtime_error("Record has been deleted");
+        string msg = message("Record with id ", record_id, " has been deleted!");
+        throw runtime_error(msg);
     }
 
     file.seekg(record_offset, ios::beg);
