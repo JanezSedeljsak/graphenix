@@ -101,7 +101,7 @@ class Model:
         sizes_as_list = [field_sizes[field] for field in fields]
         raw_type_as_list = [cls.__field_types_raw__[field] for field in fields]
 
-        record = graphenix_engine2.schema_get_record(cls.__db__, cls.__name__, 
+        record = graphenix_engine2.schema_get_record(cls.__db__, cls.__name__, # type: ignore
                                                      record_id, sizes_as_list,
                                                      raw_type_as_list)
         
@@ -129,7 +129,7 @@ class Model:
         if lazy is None:
             lazy = self.__lazy_delete__
 
-        graphenix_engine2.schema_delete_record(self.__db__, self.__name__, 
+        graphenix_engine2.schema_delete_record(self.__db__, self.__name__, # type: ignore
                                                self.id, lazy, self.__total_size__)
         self._id = -1 # set flag to is_new again so you don't update an inactive record
     
@@ -142,12 +142,12 @@ class Model:
         raw_type_as_list = [self.__field_types_raw__[field] for field in fields]
 
         if self.is_new:
-            self._id = graphenix_engine2.schema_add_record(self.__db__, self.__name__, 
+            self._id = graphenix_engine2.schema_add_record(self.__db__, self.__name__, # type: ignore
                                                             values_as_list, sizes_as_list,
                                                             self.__total_size__,
                                                             raw_type_as_list)
         else:
-            graphenix_engine2.schema_update_record(self.__db__, self.__name__, self.id, 
+            graphenix_engine2.schema_update_record(self.__db__, self.__name__, self.id,  # type: ignore
                                                    values_as_list, sizes_as_list,
                                                    self.__total_size__,
                                                    raw_type_as_list)

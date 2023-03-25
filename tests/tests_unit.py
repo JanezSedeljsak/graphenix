@@ -25,7 +25,7 @@ class GraphenixUnitTests(CommonTestBase):
 
     def test_library_hearbeat(self):
         """ Test if heartbeat returns 12 (it's my birthdate so i return that as heartbeat) """
-        heartbeat_response = graphenix_engine2.heartbeat()
+        heartbeat_response = graphenix_engine2.heartbeat() # type: ignore
         self.assertEqual(12, heartbeat_response)
 
     def test_create_and_delete_schema(self):
