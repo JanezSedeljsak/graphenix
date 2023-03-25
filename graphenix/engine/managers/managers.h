@@ -19,20 +19,20 @@ public:
     static int64_t create_record(
         const string& db_name, 
         const string& table_name, 
-        const vector<string>& values, 
+        const vector<char*> &values,
         const vector<int>& field_lengths,
         const int64_t record_size,
-        const std::vector<int>& field_types
+        const vector<int>& field_types
     );
 
     static void update_record(
         const string& db_name, 
         const string& table_name, 
         const int64_t record_id, 
-        const vector<string>& values, 
+        const vector<char*> &values,
         const vector<int>& field_lengths,
         const int64_t record_size,
-        const std::vector<int>& field_types
+        const vector<int>& field_types
     );
 
     static void delete_record(
@@ -43,12 +43,12 @@ public:
         const int64_t record_size
     );
 
-    static vector<string> get_record(
+    static vector<char*> get_record(
         const string &db_name, 
         const string &table_name, 
         const int64_t record_id, 
         const vector<int>& field_lengths,
-        const std::vector<int>& field_types
+        const vector<int>& field_types
     );
 };
 

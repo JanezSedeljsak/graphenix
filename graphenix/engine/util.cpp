@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include "parser.hpp"
 
 #define IX_SZIE sizeof(int64_t)
 #define CHUNK_SIZE 10 * 1024 * 1024
@@ -16,24 +17,6 @@
 #endif
 
 using namespace std;
-
-template<typename ...Args>
-string message(Args&&... args)
-{
-    ostringstream oss;
-    using List = int[];
-    (void)List{0, ((void)(oss << forward<Args>(args)), 0)...};
-    return oss.str();
-}
-
-enum FIELD_TYPE {
-    INT = 0,
-    STRING = 1,
-    BOOL = 2,
-    DATETIME = 3,
-    LINK_SINGLE = 4,
-    LINK_MULTIPLE = 5
-};
 
 string get_db_path(const string &schema_name) 
 {
@@ -54,7 +37,19 @@ string get_ix_file_name(const string &schema_name, const string &model_name)
 
 int64_t get_record_offset(const int64_t record_id, fstream &ix_file)
 {
-    ix_file.seekg(record_id * IX_SZIE, ios::beg);
+    const int64_t position = record_id * IX_SZIE;
+    ix_file.clear();
+    ix_file.seekg(0, ios::end);
+    
+    const int64_t file_size = ix_file.tellg();
+    if (position >= file_size)
+    {
+        int64_t last_id = file_size > 1 ? (file_size / IX_SZIE - 1) : 0;
+        string msg = message("Record ID (", record_id, ") is out of range!\nLast inserted: ", last_id);
+        throw runtime_error(msg);
+    }
+
+    ix_file.seekg(position, ios::beg);
     int64_t ix;
     ix_file.read(reinterpret_cast<char*>(&ix), IX_SZIE);
 
@@ -80,7 +75,7 @@ void adjust_indexes(const int64_t start_ix, const int record_size, fstream &ix_f
         int64_t new_ix = get_record_offset(i, ix_file) - record_size;
         // cout << "Record offset: " << get_record_offset(i, ix_file) << " New offset: " << new_ix << endl;
         ix_file.seekp(i * IX_SZIE, ios::beg);
-        ix_file.write(reinterpret_cast<char*>(&new_ix), IX_SZIE);
+        ix_file.write(reinterpret_cast<const char*>(&new_ix), IX_SZIE);
     }
 }
 

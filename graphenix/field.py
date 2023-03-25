@@ -24,12 +24,15 @@ class Field:
             self.name = name
 
     class Int(BaseType):
-        def __init__(self, default=0):
+        def __init__(self, default: int = 0):
             self.default = default
             self.size = 8
 
+        def __get__(self, instance, owner) -> int:
+            return getattr(instance, '_' + self.name, self.default)
+
         def __set__(self, instance, value):
-            setattr(instance, '_' + self.name, int(value))
+            setattr(instance, '_' + self.name, value)
 
     class String(BaseType):
         def __init__(self, size=255, default: str = ''):
@@ -38,7 +41,7 @@ class Field:
 
     class Bool(Int):
         def __init__(self, default: bool = False):
-            self.default = int(default)
+            self.default = default
             self.size = 1
 
         def __get__(self, instance, owner) -> bool:
@@ -53,15 +56,15 @@ class Field:
 
         def __init__(self, default = 0):
             self.default = default
-            self.size = 20
+            self.size = 8
 
         def __get__(self, instance, owner) -> datetime:
             diff: int = getattr(instance, '_' + self.name, self.default)
             dt = self.epoch + timedelta(seconds=diff)
             return dt
         
-        def __set__(self, instance, value):
-            if isinstance(value, str):
+        def __set__(self, instance, value: datetime | int):
+            if isinstance(value, int):
                 setattr(instance, '_' + self.name, int(value))
                 return
 

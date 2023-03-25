@@ -111,16 +111,7 @@ class Model:
         return instance
     
     def get_values(self, fields) -> list:
-        values = []
-        for field in fields:
-            match self.__field_types__[field]:
-                case Field.String | Field.Int:
-                    values.append(str(getattr(self, field)))
-                case Field.Bool | Field.DateTime:
-                    # get raw types for datetime and bool (both are stored as integers under the hood)
-                    values.append(str(getattr(self, '_' + field, self.__field_defaults__[field])))
-        
-        return values
+        return [getattr(self, '_' + field, self.__field_defaults__[field]) for field in fields]
     
     def delete(self, lazy=None):
         if self.is_new:

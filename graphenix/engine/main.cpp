@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include "parser.hpp"
 #include "managers/managers.h"
 #include "managers/schema_manager.cpp"
 #include "managers/record_manager.cpp"
@@ -14,46 +15,53 @@ long heartbeat()
     return 12l;
 }
 
-void create_schema(const std::string& schema_name, const std::vector<std::string>& model_names, 
+void create_schema(const std::string &schema_name, const std::vector<std::string> &model_names,
                    const bool delete_old)
 {
     SchemaManager::create_schema(schema_name, model_names, delete_old);
 }
 
-void delete_schema(const std::string& schema_name)
+void delete_schema(const std::string &schema_name)
 {
     SchemaManager::delete_schema(schema_name);
 }
 
-bool schema_exists(const std::string& schema_name)
+bool schema_exists(const std::string &schema_name)
 {
     return SchemaManager::schema_exists(schema_name);
 }
 
-long long schema_add_record(const std::string& db_name, const std::string& table_name, 
-                            const std::vector<std::string>& values, const std::vector<int>& field_lengths,
-                            const int64_t record_size, const std::vector<int>& field_types)
+long long schema_add_record(const std::string &db_name, const std::string &table_name,
+                            const py::list &py_values, const std::vector<int> &field_lengths,
+                            const int64_t record_size, const std::vector<int> &field_types)
 {
-    return RecordManager::create_record(db_name, table_name, values, field_lengths, record_size, field_types);
+    vector<char *> parsed_values = PARSE_RECORD(py_values, field_types, field_lengths);
+    int64_t return_val = RecordManager::create_record(db_name, table_name, parsed_values, field_lengths, record_size, field_types);
+    DEALLOCATE_RECORD(parsed_values);
+    return return_val;
 }
 
-void schema_update_record(const std::string& schema_name, const std::string& model_name, 
-                          const int64_t id, const std::vector<std::string>& values, 
-                          const std::vector<int>& field_lengths, const int64_t record_size,
-                          const std::vector<int>& field_types)
+void schema_update_record(const std::string &schema_name, const std::string &model_name,
+                          const int64_t id, const py::list &py_values,
+                          const std::vector<int> &field_lengths, const int64_t record_size,
+                          const std::vector<int> &field_types)
 {
-    RecordManager::update_record(schema_name, model_name, id, values, field_lengths, record_size, field_types);
+    vector<char *> parsed_values = PARSE_RECORD(py_values, field_types, field_lengths);
+    RecordManager::update_record(schema_name, model_name, id, parsed_values, field_lengths, record_size, field_types);
+    DEALLOCATE_RECORD(parsed_values);
 }
 
-py::list schema_get_record(const std::string& schema_name, const std::string& model_name, 
-                           const int64_t id, const std::vector<int>& field_lengths,
-                           const std::vector<int>& field_types)
+py::list schema_get_record(const std::string &schema_name, const std::string &model_name,
+                           const int64_t id, const std::vector<int> &field_lengths,
+                           const std::vector<int> &field_types)
 {
-    std::vector<std::string> fields = RecordManager::get_record(schema_name, model_name, id, field_lengths, field_types);
-    return py::cast(fields);
+    vector<char *> parsed_values = RecordManager::get_record(schema_name, model_name, id, field_lengths, field_types);
+    py::list py_record = PYTHNOIZE_RECORD(parsed_values, field_types, field_lengths);
+    DEALLOCATE_RECORD(parsed_values);
+    return py_record;
 }
 
-void schema_delete_record(const std::string& schema_name, const std::string& model_name, 
+void schema_delete_record(const std::string &schema_name, const std::string &model_name,
                           const int64_t id, bool is_lazy_delete,
                           const int64_t record_size)
 {
@@ -71,9 +79,9 @@ PYBIND11_MODULE(graphenix_engine2, m)
     m.def("schema_get_record", &schema_get_record, "Get a record from the given table");
     m.def("schema_delete_record", &schema_delete_record, "Delete a record from a given table");
 
-    #ifdef VERSION_INFO
-        m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
-    #else
-        m.attr("__version__") = "dev";
-    #endif
+#ifdef VERSION_INFO
+    m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
+#else
+    m.attr("__version__") = "dev";
+#endif
 }
