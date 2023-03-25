@@ -173,6 +173,7 @@ vector<char*> RecordManager::get_record(const string &db_name, const string &tab
     file.seekg(record_offset, ios::beg);
     const size_t fields_count = field_lengths.size();
 
+    // TODO: read the whole record at once and then split it into a vector
     vector<char*> bin_values(fields_count);
     for (size_t i = 0; i < fields_count; i++)
     {

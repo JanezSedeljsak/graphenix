@@ -95,7 +95,7 @@ inline std::vector<char *> PARSE_RECORD(const py::list &py_values, const std::ve
             str_val = py::cast<std::string>(py_values[i]);
             if (static_cast<int>(str_val.length()) > field_lengths[i])
             {
-                std::string msg = message("Field exceeds max length ", field_lengths[i], "(", str_val, ")");
+                std::string msg = message("Field exceeds max length ", field_lengths[i], " (", str_val, ")");
                 throw std::runtime_error(msg);
             }
             strncpy(parsed_values[i], str_val.c_str(), field_lengths[i]);

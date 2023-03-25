@@ -14,19 +14,14 @@ class GraphenixPerfTests(CommonTestBase):
         AMOUNT = 10_000
 
         amount_half = AMOUNT // 2
-        tmp_user = User(first_name="John", last_name="Doe", email="john.doe@example.com", age=25)
         dt = datetime.now()
+        tmp_user = User(first_name="John", last_name="Doe", email="john.doe@example.com", age=25, created_at=dt)
         for uid in range(AMOUNT):
-            new_user = User(
-                first_name=tmp_user.first_name,
-                last_name=tmp_user.last_name,
-                email=tmp_user.email,
-                age=tmp_user.age,
-                is_admin=uid<amount_half,
-                created_at=dt+timedelta(days=uid)
-            )
+            tmp_user.is_admin = uid < amount_half
+            tmp_user.created_at = dt + timedelta(days=uid)
 
-            new_user.save()
+            tmp_user.save()
+            tmp_user._id = -1
 
         for uid in range(AMOUNT):
             read_user = User.get(uid)
@@ -35,7 +30,7 @@ class GraphenixPerfTests(CommonTestBase):
             self.assertEqual(uid, read_user.id)
             self.assertFalse(read_user.is_new)
             self.assertEqual(uid<amount_half, read_user.is_admin)
-            temp_dt = dt+timedelta(days=uid)
+            temp_dt = dt + timedelta(days=uid)
             self.assertEqual(temp_dt.day, read_user.created_at.day)
 
     # @CommonTestBase.ignore
@@ -46,13 +41,8 @@ class GraphenixPerfTests(CommonTestBase):
 
         temp_record = City(name="Ljubljana", country="SLO", population_thousands=280)
         for _ in range(AMOUNT):
-            new_rec = City(
-                name=temp_record.name,
-                country=temp_record.country,
-                population_thousands=temp_record.population_thousands
-            )
-
-            new_rec.save()
+            temp_record.save()
+            temp_record._id = -1
 
         for rid in range(AMOUNT):
             city = City.get(rid)
