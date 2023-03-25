@@ -103,7 +103,7 @@ class Model:
 
         record = graphenix_engine2.schema_get_record(cls.__db__, cls.__name__, # type: ignore
                                                      record_id, sizes_as_list,
-                                                     raw_type_as_list)
+                                                     raw_type_as_list, cls.__total_size__)
         
         record_as_dict = {field: record[idx] for idx, field in enumerate(fields)}
         instance = cls(**record_as_dict)

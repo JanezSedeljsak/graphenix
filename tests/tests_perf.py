@@ -7,7 +7,7 @@ from .tests_data import *
 class GraphenixPerfTests(CommonTestBase):
     
     # @CommonTestBase.ignore
-    @CommonTestBase.perf("Create 10K users and read them by IDs", times=3)
+    @CommonTestBase.perf("Create 10K users and read them by IDs", times=5)
     @CommonTestBase().prepare_and_destroy
     def test_create_10k_users_and_read(self):
         """ Create 10K users and read them by IDs """
@@ -34,7 +34,7 @@ class GraphenixPerfTests(CommonTestBase):
             self.assertEqual(temp_dt.day, read_user.created_at.day)
 
     # @CommonTestBase.ignore
-    @CommonTestBase.perf("Create 100K basic codelist records and read them by IDs", times=3)
+    @CommonTestBase.perf("Create 100K basic codelist records and read them by IDs", times=5)
     @CommonTestBase().prepare_and_destroy
     def test_create_100k_records_and_read(self):
         AMOUNT = 100_000

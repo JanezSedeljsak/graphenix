@@ -53,9 +53,9 @@ void schema_update_record(const std::string &schema_name, const std::string &mod
 
 py::list schema_get_record(const std::string &schema_name, const std::string &model_name,
                            const int64_t id, const std::vector<int> &field_lengths,
-                           const std::vector<int> &field_types)
+                           const std::vector<int> &field_types, const int record_size)
 {
-    vector<char *> parsed_values = RecordManager::get_record(schema_name, model_name, id, field_lengths, field_types);
+    vector<char *> parsed_values = RecordManager::get_record(schema_name, model_name, id, field_lengths, field_types, record_size);
     py::list py_record = PYTHNOIZE_RECORD(parsed_values, field_types, field_lengths);
     DEALLOCATE_RECORD(parsed_values);
     return py_record;

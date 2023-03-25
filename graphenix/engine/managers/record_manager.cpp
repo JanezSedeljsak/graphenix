@@ -149,8 +149,8 @@ void RecordManager::delete_record(const string &db_name, const string &table_nam
 }
 
 vector<char*> RecordManager::get_record(const string &db_name, const string &table_name,
-                                         const int64_t record_id, const vector<int> &field_lengths,
-                                         const std::vector<int> &field_types)
+                                        const int64_t record_id, const vector<int> &field_lengths,
+                                        const std::vector<int> &field_types, const int record_size)
 {
     string file_name = get_file_name(db_name, table_name);
     string ix_file_name = get_ix_file_name(db_name, table_name);
@@ -172,15 +172,20 @@ vector<char*> RecordManager::get_record(const string &db_name, const string &tab
 
     file.seekg(record_offset, ios::beg);
     const size_t fields_count = field_lengths.size();
+    char* buffer = new char[record_size];
+    file.read(buffer, record_size);
 
-    // TODO: read the whole record at once and then split it into a vector
     vector<char*> bin_values(fields_count);
+    size_t offset = 0;
     for (size_t i = 0; i < fields_count; i++)
     {
         char *field_buffer = new char[field_lengths[i]];
-        file.read(field_buffer, field_lengths[i]);
+        memcpy(field_buffer, buffer + offset, field_lengths[i]);
+        offset += field_lengths[i];
         bin_values[i] = field_buffer;
     }
+
+    delete[] buffer;
 
     ix_file.close();
     file.close();

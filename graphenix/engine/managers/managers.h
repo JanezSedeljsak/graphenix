@@ -48,7 +48,8 @@ public:
         const string &table_name, 
         const int64_t record_id, 
         const vector<int>& field_lengths,
-        const vector<int>& field_types
+        const vector<int>& field_types,
+        const int record_size
     );
 };
 
