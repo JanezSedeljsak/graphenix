@@ -36,10 +36,10 @@ jobs:
         run: python -c "import sys; print(sys.version)"
 
       - name: Try importing graphenix_engine2 module
-        run: python -m "import graphenix_engine2;"
+        run: python -c "import graphenix_engine2;"
 
       - name: Try importing graphenix module
-        run: python -m "import graphenix;"
+        run: python -c "import graphenix;"
 
       - name: Run Graphenix unit tests
         run: python -m tests.tests_unit
