@@ -1,7 +1,10 @@
 import graphenix_engine2
 
-from graphenix.query import Query
-from graphenix.field import Field, FieldTypeEnum
+from typing import TypeVar, cast, Union
+from datetime import datetime, timedelta
+from .query import Query
+
+T = TypeVar('T', bound='Model')
 
 class Model:
     __db__ = None
@@ -56,6 +59,7 @@ class Model:
                 actual_type = type(field)
                 cls.__field_types__[field_name] = actual_type
                 cls.__field_defaults__[field_name] = field.default
+
                 match actual_type:
                     case Field.Int:
                         raw_type_index = FieldTypeEnum.INT
@@ -65,6 +69,10 @@ class Model:
                         raw_type_index = FieldTypeEnum.BOOL
                     case Field.DateTime:
                         raw_type_index = FieldTypeEnum.DATETIME
+                    case Field.Link:
+                        raw_type_index = FieldTypeEnum.LINK_SINGLE
+                    case Field.LinkMultiple:
+                        raw_type_index = FieldTypeEnum.LINK_MULTIPLE
                     case _:
                         raise AttributeError("Field type is not valid!")
                 
@@ -91,8 +99,24 @@ class Model:
         return Query(cls).first()
     
     @classmethod
-    def filter(cls, **filters) -> Query:
-        return Query(cls, **filters)
+    def query(cls):
+        return Query(cls)
+    
+    @classmethod
+    def link(cls, **link_map):
+        return Query(cls).link(link_map)
+    
+    @classmethod
+    def filter(cls, *conditions) -> Query:
+        return Query(cls, *conditions)
+    
+    @classmethod
+    def limit(cls, count) -> Query:
+        return Query(cls).limit(count)
+
+    @classmethod
+    def order(cls, attr, asc: bool = True) -> Query:
+        return Query(cls).order(attr, asc=asc)
     
     @classmethod
     def get(cls, record_id):
@@ -123,6 +147,10 @@ class Model:
         graphenix_engine2.schema_delete_record(self.__db__, self.__name__, # type: ignore
                                                self.id, lazy, self.__total_size__)
         self._id = -1 # set flag to is_new again so you don't update an inactive record
+
+    def make(self: T) -> T:
+        self.save()
+        return self
     
     def save(self):
         fields = self.get_fields()
@@ -143,3 +171,106 @@ class Model:
                                                    self.__total_size__,
                                                    raw_type_as_list)
 
+
+class FieldTypeEnum:
+    INT = 0
+    STRING = 1
+    BOOL = 2
+    DATETIME = 3
+    LINK_SINGLE = 4
+    LINK_MULTIPLE = 5
+
+class Field:
+
+    class BaseType:
+        size = None
+        default = None
+
+        def __get__(self, instance, owner):
+            return getattr(instance, '_' + self.name, self.default)
+        
+        def __set__(self, instance, value):
+            setattr(instance, '_' + self.name, value)
+        
+        def __set_name__(self, owner, name):
+            self.name = name
+
+    class Int(BaseType):
+        def __init__(self, default: int = 0):
+            self.default = default
+            self.size = 8
+
+        def __get__(self, instance, owner) -> int:
+            return getattr(instance, '_' + self.name, self.default)
+
+        def __set__(self, instance, value):
+            setattr(instance, '_' + self.name, value)
+
+    class String(BaseType):
+        def __init__(self, size=255, default: str = ''):
+            self.size = size
+            self.default = default
+
+    class Bool(Int):
+        def __init__(self, default: bool = False):
+            self.default = default
+            self.size = 1
+
+        def __get__(self, instance, owner) -> bool:
+            return getattr(instance, '_' + self.name, self.default)
+
+        def __set__(self, instance, value):
+            setattr(instance, '_' + self.name, int(value))
+
+    class DateTime(BaseType):
+        """ Datetime field is stored as ammount of seconds from 1.1.1970 (POSIX) format """
+        epoch = datetime.utcfromtimestamp(0)
+
+        def __init__(self, default = 0):
+            self.default = default
+            self.size = 8
+
+        def __get__(self, instance, owner) -> datetime:
+            diff: int = getattr(instance, '_' + self.name, self.default)
+            dt = self.epoch + timedelta(seconds=diff)
+            return dt
+        
+        def __set__(self, instance, value: datetime | int):
+            if isinstance(value, int):
+                setattr(instance, '_' + self.name, int(value))
+                return
+
+            diff = int((value - self.epoch).total_seconds())
+            setattr(instance, '_' + self.name, diff)
+    
+    class Link(BaseType):
+        def __init__(self, default = -1):
+            self.default = default
+            self.size = 8
+
+        def __set__(self, instance, value: T | int | None) -> None:
+            if value is None:
+                setattr(instance, '_' + self.name, -1) 
+                setattr(instance, '_link' + self.name, None)
+                return
+
+            if isinstance(value, int):
+                setattr(instance, '_' + self.name, value)
+                return
+
+            # set both the id stored id _{field_name} & the actual model in  _link{field_name}
+            setattr(instance, '_' + self.name, int(value.id)) # type: ignore
+            setattr(instance, '_link' + self.name, value)
+
+        
+        def __get__(self, instance, owner) -> T | int:
+            linked : T | None = getattr(instance, '_link' + self.name, None)
+            if linked is not None:
+                return linked
+            
+            return getattr(instance, '_' + self.name, self.default)
+
+
+
+    class LinkMultiple(Int):
+        ...

@@ -1,18 +1,26 @@
+
 class Query:
-    def __init__(self, model, **query):
-        self.db = model.__db__
-        self.model = model.__name__
-        self.lazy_delete = model.__lazy_delete__
-        self.query = query
+    def __init__(self, model):
+        self.base_model = model
 
-    def all(self):
-        ... # this executes the actual query to the schema engine
+    def filter(self) -> "Query":
+        ...
 
-    def first(self):
+    def limit(self, count) -> "Query":
+        ...
+
+    def order(self, attr, asc: bool = True) -> "Query":
+        ...
+
+    def all(self) -> list[object]:
+        data = []
+        for i in range(2):
+            data.append(self.base_model.get(i))
+
+        return data
+
+    def first(self) -> object:
         ... # this exectures the actual query to the schema engine
 
-    def delete(self):
-        if self.lazy_delete:
-            ... # call lazy delete method under the hood
-        else:
-            ... # call full delete 
+    def link(self, link_map: dict) -> "Query":
+        ...

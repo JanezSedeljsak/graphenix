@@ -8,9 +8,13 @@ class User(Model):
     is_admin = Field.Bool()
     created_at = Field.DateTime()
 
+class Task(Model):
+    name = Field.String(size=20)
+    owner = Field.Link()
+
 class City(Model):
     name = Field.String(size=50)
     country = Field.String(size=50)
     population_thousands = Field.Int()
 
-mock_schema = Schema('test_school', models=[User, City])
+mock_schema = Schema('test_school', models=[User, City, Task])
