@@ -160,14 +160,16 @@ class GraphenixUnitTests(CommonTestBase):
         user = User(first_name="user1", last_name="last1", email="fl@gmail.com", age=30).make()
         task_no_user : Task = Task(name="Learn Python").make()
         task_with_user = Task(name="Learn C++", owner=user).make()
-        self.assertEqual(-1, task_no_user.owner)
+        self.assertIsNone(task_no_user.owner)
         self.assertTrue(isinstance(task_with_user.owner, User))
-        self.assertEqual(user.first_name, task_with_user.owner.first_name)
+        task_owner : User = task_with_user.owner
+        self.assertEqual(user.first_name, task_owner.first_name)
 
         task_with_user.owner = None
-        self.assertEqual(-1, task_with_user.owner)
+        self.assertIsNone(task_with_user.owner)
         task_with_user.owner = User.get(0)
-        self.assertEqual(user.first_name, task_with_user.owner.first_name)
+        task_owner : User = task_with_user.owner
+        self.assertEqual(user.first_name, task_owner.first_name)
 
     
 
