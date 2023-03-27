@@ -1,14 +1,4 @@
-
-class QueryExecutionMixin:
-    def all(self) -> list[object]:
-        data = []
-        for i in range(2):
-            data.append(self.base_model.get(i))
-        return data
-
-    def first(self) -> object:
-        ... # this exectures the actual query to the schema engine
-
+from .mixins.mixin_query_execution import QueryExecutionMixin
 
 class Query(QueryExecutionMixin):
     def __init__(self, model):
