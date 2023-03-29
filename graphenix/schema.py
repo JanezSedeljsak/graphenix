@@ -5,7 +5,7 @@ class Schema:
         self.name = name
         self.models = {}
         for model_class in (models or []):
-            model_class.__db__ = self.name
+            model_class._db = self.name
             setattr(self, name, model_class)
             self.models[model_class.__name__] = model_class
     

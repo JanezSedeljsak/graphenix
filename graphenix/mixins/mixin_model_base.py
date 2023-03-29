@@ -5,7 +5,8 @@ T = TypeVar('T', bound='ModelBaseMixin')
 
 class ModelBaseMixin(metaclass=abc.ABCMeta):
 
-    _id = -1
+    _id: int = -1
+    _db: None | str
 
     # cached values
     _cache_init: bool = False
@@ -22,10 +23,6 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
     
     @abc.abstractclassmethod
     def get(cls, id: int):
-        raise NotImplementedError
-    
-    @abc.abstractclassmethod
-    def _get_fields(cls):
         raise NotImplementedError
 
     @abc.abstractclassmethod

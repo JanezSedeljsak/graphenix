@@ -53,7 +53,6 @@ class Field:
 
     class DateTime(BaseType):
         """ Datetime field is stored as ammount of seconds from 1.1.1970 (POSIX) format """
-        epoch = datetime.utcfromtimestamp(0)
 
         def __init__(self, default = 0):
             self.default = default
@@ -61,15 +60,14 @@ class Field:
 
         def __get__(self, instance, owner) -> datetime:
             diff: int = getattr(instance, '_' + self.name, self.default)
-            dt = self.epoch + timedelta(seconds=diff)
-            return dt
+            return datetime.fromtimestamp(diff)
         
         def __set__(self, instance, value: datetime | int):
             if isinstance(value, int):
                 setattr(instance, '_' + self.name, int(value))
                 return
 
-            diff = int((value - self.epoch).total_seconds())
+            diff = int(value.timestamp())
             setattr(instance, '_' + self.name, diff)
     
     class Link(BaseType):
