@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from .mixins.mixin_model_base import T
+from typing import TypeVar
 
 class FieldTypeEnum:
     INT = 0
@@ -9,11 +10,14 @@ class FieldTypeEnum:
     LINK_SINGLE = 4
     LINK_MULTIPLE = 5
 
+F = TypeVar('F', bound='Field.BaseType')
+
 class Field:
 
     class BaseType:
         size = None
         default = None
+        index: bool = False
 
         def __get__(self, instance, owner):
             return getattr(instance, '_' + self.name, self.default)
@@ -23,6 +27,10 @@ class Field:
         
         def __set_name__(self, owner, name):
             self.name = name
+
+        def as_index(self: F) -> F:
+            self.index = True
+            return self
 
     class Int(BaseType):
         def __init__(self, default: int = 0):
@@ -40,7 +48,7 @@ class Field:
             self.size = size
             self.default = default
 
-    class Bool(Int):
+    class Bool(BaseType):
         def __init__(self, default: bool = False):
             self.default = default
             self.size = 1
@@ -49,7 +57,7 @@ class Field:
             return getattr(instance, '_' + self.name, self.default)
 
         def __set__(self, instance, value):
-            setattr(instance, '_' + self.name, int(value))
+            setattr(instance, '_' + self.name, value)
 
     class DateTime(BaseType):
         """ Datetime field is stored as ammount of seconds from 1.1.1970 (POSIX) format """

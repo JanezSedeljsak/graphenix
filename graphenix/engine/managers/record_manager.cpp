@@ -30,28 +30,31 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
 
     int num_values = values.size();
 
-    char *record = new char[record_size];
+    char *record = new char[record_size + IX_SIZE];
     int64_t offset = file.tellp();
 
-    int field_offset = 0;
+    int field_offset = IX_SIZE;
+    int64_t ix = -1;
+    memcpy(record, reinterpret_cast<const char*>(&ix), IX_SIZE);
+
     for (int i = 0; i < num_values; i++)
     {
         int field_size = field_lengths[i];
-        memcpy(record + field_offset, values[i], field_lengths[i]);
+        memcpy(record + field_offset, values[i], field_size);
         field_offset += field_size;
     }
 
-    file.write(record, record_size);
+    file.write(record, record_size + IX_SIZE);
     file.close();
     delete[] record;
 
     // insert the offset into the binary file (a pointer to the table file)
     int ix_offset = ix_file.tellp();
-    ix_file.write(reinterpret_cast<const char *>(&offset), IX_SZIE);
+    ix_file.write(reinterpret_cast<const char *>(&offset), IX_SIZE);
     ix_file.close();
 
     // return the index of the record in the index file
-    return ix_offset / IX_SZIE;
+    return ix_offset / IX_SIZE - 1;
 }
 
 void RecordManager::update_record(const string &db_name, const string &table_name,
@@ -71,8 +74,8 @@ void RecordManager::update_record(const string &db_name, const string &table_nam
     }
 
     int num_values = values.size();
-    // int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
 
+    // don't update deleted_head_index field because it has to stay -1
     char *record = new char[record_size];
 
     int64_t record_offset = get_record_offset(record_id, ix_file);
@@ -82,7 +85,7 @@ void RecordManager::update_record(const string &db_name, const string &table_nam
         throw runtime_error(msg);
     }
 
-    file.seekp(record_offset);
+    file.seekp(record_offset + IX_SIZE);
 
     int field_offset = 0;
     for (int i = 0; i < num_values; i++)
@@ -100,18 +103,10 @@ void RecordManager::update_record(const string &db_name, const string &table_nam
 }
 
 void RecordManager::delete_record(const string &db_name, const string &table_name,
-                                  const int64_t record_id, const bool is_lazy_delete,
-                                  const int64_t record_size)
+                                  const int64_t record_id, const int64_t record_size)
 {
     string ix_file_name = get_ix_file_name(db_name, table_name);
     fstream ix_file(ix_file_name, ios::binary | ios::in | ios::out);
-
-    if (is_lazy_delete)
-    {
-        set_record_inactive(record_id, ix_file);
-        ix_file.close();
-        return;
-    }
 
     int64_t record_offset = get_record_offset(record_id, ix_file);
     set_record_inactive(record_id, ix_file);
@@ -119,33 +114,10 @@ void RecordManager::delete_record(const string &db_name, const string &table_nam
     string file_name = get_file_name(db_name, table_name);
     fstream file(file_name, ios::binary | ios::in | ios::out);
 
-    // int record_size = accumulate(field_lengths.begin(), field_lengths.end(), 0);
-
     file.seekp(0, ios::end);
-    int64_t bytes_to_move = file.tellp() - (record_offset + record_size);
-
-    if (bytes_to_move > 0)
-    {
-        char *buffer = new char[CHUNK_SIZE];
-        int64_t remaining_bytes = bytes_to_move;
-        file.seekp(record_offset + record_size, ios::beg);
-
-        while (remaining_bytes > 0)
-        {
-            int64_t bytes_to_read = min(remaining_bytes, (int64_t)CHUNK_SIZE);
-            file.read(buffer, bytes_to_read);
-            file.seekp(record_offset + record_size + bytes_to_move - remaining_bytes, ios::beg);
-            file.write(buffer, bytes_to_read);
-            remaining_bytes -= bytes_to_read;
-        }
-
-        adjust_indexes(record_id + 1, record_size, ix_file);
-        delete[] buffer;
-    }
 
     file.close();
     ix_file.close();
-    filesystem::resize_file(file_name, record_offset + bytes_to_move);
 }
 
 vector<char*> RecordManager::get_record(const string &db_name, const string &table_name,
@@ -164,13 +136,14 @@ vector<char*> RecordManager::get_record(const string &db_name, const string &tab
     }
 
     int64_t record_offset = get_record_offset(record_id, ix_file);
+    // cout << "Record offset" << record_offset << endl;
     if (record_offset == -1)
     {
         string msg = message("Record with id ", record_id, " has been deleted!");
         throw runtime_error(msg);
     }
 
-    file.seekg(record_offset, ios::beg);
+    file.seekg(record_offset + IX_SIZE, ios::beg);
     const size_t fields_count = field_lengths.size();
     char* buffer = new char[record_size];
     file.read(buffer, record_size);

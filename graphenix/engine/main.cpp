@@ -62,10 +62,9 @@ py::list schema_get_record(const std::string &schema_name, const std::string &mo
 }
 
 void schema_delete_record(const std::string &schema_name, const std::string &model_name,
-                          const int64_t id, bool is_lazy_delete,
-                          const int64_t record_size)
+                          const int64_t id, const int64_t record_size)
 {
-    RecordManager::delete_record(schema_name, model_name, id, is_lazy_delete, record_size);
+    RecordManager::delete_record(schema_name, model_name, id, record_size);
 }
 
 PYBIND11_MODULE(graphenix_engine2, m)

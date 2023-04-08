@@ -45,6 +45,8 @@ void SchemaManager::create_schema(const string &db_name, const vector<string> &t
             throw runtime_error("Failed to create binary file for table index!");
         }
 
+        int64_t deleted_head = -1;
+        ix_outfile.write(reinterpret_cast<const char*>(&deleted_head), IX_SIZE);
         ix_outfile.close();
     }
 }

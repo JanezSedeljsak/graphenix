@@ -7,7 +7,6 @@ from .field import Field, FieldTypeEnum
 
 class Model(ModelBaseMixin, ModelQueryMixin):
     _db = None
-    __lazy_delete__ = False
 
     def __init__(self, **fields):
         self._id = -1
@@ -101,15 +100,12 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         
         return result
     
-    def delete(self, lazy=None):
+    def delete(self):
         if self.is_new:
             raise Exception("Record doesn't exist in the db!")
 
-        if lazy is None:
-            lazy = self.__lazy_delete__
-
         graphenix_engine2.schema_delete_record(self._db, self.__name__, # type: ignore
-                                               self.id, lazy, self._total_size)
+                                               self.id, self._total_size)
         self._id = -1 # set flag to is_new again so you don't update an inactive record
 
     def make(self: T) -> T:

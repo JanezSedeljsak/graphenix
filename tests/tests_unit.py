@@ -115,16 +115,7 @@ class GraphenixUnitTests(CommonTestBase):
         user0 = User(first_name="user1", last_name="last1", email="fl@gmail.com", age=30)
         user0.save()
 
-        user0.delete(lazy=True)
-        with self.assertRaises(RuntimeError):
-            User.get(0)
-
-    @CommonTestBase().prepare_and_destroy
-    def test_insert_and_delete_not_lazy(self):
-        user0 = User(first_name="user1", last_name="last1", email="fl@gmail.com", age=30)
-        user0.save()
-
-        user0.delete(lazy=False)
+        user0.delete()
         with self.assertRaises(RuntimeError):
             User.get(0)
 
@@ -137,7 +128,7 @@ class GraphenixUnitTests(CommonTestBase):
 
         for i in range(len(users)):
             usr = User.get(i)
-            usr.delete(lazy=False)
+            usr.delete()
             with self.assertRaises(RuntimeError):
                 User.get(i)
 
@@ -150,7 +141,7 @@ class GraphenixUnitTests(CommonTestBase):
 
         for i in range(-len(users), -1, -1):
             usr = User.get(i)
-            usr.delete(lazy=False)
+            usr.delete()
             with self.assertRaises(RuntimeError):
                 User.get(i)
 

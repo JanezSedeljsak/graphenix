@@ -28,5 +28,6 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
     @abc.abstractclassmethod
     def _make_cache(cls):
         raise NotImplementedError
+    
 
     
