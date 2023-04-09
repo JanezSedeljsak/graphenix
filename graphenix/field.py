@@ -8,7 +8,6 @@ class FieldTypeEnum:
     BOOL = 2
     DATETIME = 3
     LINK_SINGLE = 4
-    LINK_MULTIPLE = 5
 
 F = TypeVar('F', bound='Field.BaseType')
 
@@ -18,12 +17,6 @@ class Field:
         size = None
         default = None
         index: bool = False
-
-        def __get__(self, instance, owner):
-            return getattr(instance, '_' + self.name, self.default)
-        
-        def __set__(self, instance, value):
-            setattr(instance, '_' + self.name, value)
         
         def __set_name__(self, owner, name):
             self.name = name
@@ -47,6 +40,12 @@ class Field:
         def __init__(self, size=255, default: str = ''):
             self.size = size
             self.default = default
+
+        def __get__(self, instance, owner) -> str:
+            return getattr(instance, '_' + self.name, self.default)
+        
+        def __set__(self, instance, value: str) -> None:
+            setattr(instance, '_' + self.name, value)
 
     class Bool(BaseType):
         def __init__(self, default: bool = False):
@@ -83,7 +82,7 @@ class Field:
             self.default = default
             self.size = 8
 
-        def __set__(self, instance, value: T | int | None) -> None:
+        def __set__(self, instance, value: T) -> None:
             if value is None:
                 setattr(instance, '_' + self.name + '_id', -1)
                 setattr(instance, '_' + self.name, None)
@@ -97,10 +96,6 @@ class Field:
             setattr(instance, '_' + self.name + '_id', int(value.id)) # type: ignore
             setattr(instance, '_' + self.name, value)
         
-        def __get__(self, instance, owner) -> T | None:
-            linked : T | None = getattr(instance, '_' + self.name, None)
+        def __get__(self, instance, owner) -> T:
+            linked : T = getattr(instance, '_' + self.name, None)
             return linked
-
-
-    class LinkMultiple(Int):
-        ...

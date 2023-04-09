@@ -5,7 +5,8 @@
 #include <string>
 #include "parser.hpp"
 
-#define IX_SIZE sizeof(int64_t)
+#define IX_SIZE 8 // size of 8 bytes <==> sizeof(int64_t)
+#define PK_IX_HEAD_SIZE IX_SIZE * 2
 #define CHUNK_SIZE 10 * 1024 * 1024
 
 #ifdef _WIN32
@@ -37,15 +38,15 @@ string get_ix_file_name(const string &schema_name, const string &model_name)
 
 int64_t get_record_offset(const int64_t record_id, fstream &ix_file)
 {
-    const int64_t position = record_id * IX_SIZE + IX_SIZE;
+    const int64_t position = record_id * IX_SIZE + PK_IX_HEAD_SIZE;
     ix_file.clear();
     ix_file.seekg(0, ios::end);
     
     const int64_t file_size = ix_file.tellg();
-    // cout << "file size: " << file_size << " position " << position << endl;
+    // cout << "file size: " << file_size << " position " << position << " rec id " << record_id << endl;
     if (position >= file_size)
     {
-        int64_t last_id = file_size > static_cast<int64_t>(IX_SIZE) ? (file_size / IX_SIZE - 1) - 1 : -1;
+        int64_t last_id = file_size > static_cast<int64_t>(PK_IX_HEAD_SIZE) ? (file_size / IX_SIZE - 3) : -1;
         string msg = last_id > - 1 
             ? message("Record ID (", record_id, ") is out of range!\nLast inserted: ", last_id)
             : message("No records exist in the table yet");
@@ -63,7 +64,7 @@ int64_t get_record_offset(const int64_t record_id, fstream &ix_file)
 void set_record_inactive(const int64_t record_id, fstream &ix_file)
 {
     // cout << "Set record inactive: " << record_id << endl;
-    ix_file.seekp(record_id * IX_SIZE + IX_SIZE, ios::beg);
+    ix_file.seekp(record_id * IX_SIZE + PK_IX_HEAD_SIZE, ios::beg);
     int64_t inactive_status = -1;
     ix_file.write(reinterpret_cast<const char*>(&inactive_status), IX_SIZE);
 

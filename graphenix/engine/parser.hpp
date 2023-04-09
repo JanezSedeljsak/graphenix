@@ -15,8 +15,7 @@ enum FIELD_TYPE
     STRING = 1,
     BOOL = 2,
     DATETIME = 3,
-    LINK_SINGLE = 4,
-    LINK_MULTIPLE = 5
+    LINK_SINGLE = 4
 };
 
 namespace py = pybind11;
@@ -46,7 +45,6 @@ inline py::list PYTHNOIZE_RECORD(const std::vector<char *> bin_values, const std
         case INT:
         case DATETIME:
         case LINK_SINGLE:
-        case LINK_MULTIPLE:
             memcpy(&int_val, bin_values[i], sizeof(int64_t));
             record[i] = py::cast(int_val);
             // std::cout << "int value  " << int_val << std::endl;
@@ -90,7 +88,6 @@ inline std::vector<char *> PARSE_RECORD(const py::list &py_values, const std::ve
         case INT:
         case DATETIME:
         case LINK_SINGLE:
-        case LINK_MULTIPLE:
             int_val = py::cast<int64_t>(py_values[i]);
             memcpy(parsed_values[i], &int_val, sizeof(int64_t));
             break;

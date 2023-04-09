@@ -20,22 +20,52 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
     string file_name = get_file_name(db_name, table_name);
     string ix_file_name = get_ix_file_name(db_name, table_name);
 
-    ofstream file(file_name, ios::binary | ios::app);
-    ofstream ix_file(ix_file_name, ios::binary | ios::app);
+    fstream file(file_name, ios::binary | ios::in | ios::out);
+    fstream ix_file(ix_file_name, ios::binary | ios::in | ios::out);
 
     if (!file.is_open())
     {
-        return -1;
+        throw runtime_error("Failed to open the data file!");
     }
 
     int num_values = values.size();
 
-    char *record = new char[record_size + IX_SIZE];
-    int64_t offset = file.tellp();
+    int64_t head_ptr;
+    ix_file.seekg(0, ios::beg);
+    ix_file.read(reinterpret_cast<char*>(&head_ptr), IX_SIZE);
+    int64_t ix_offset, offset, ix;
 
-    int field_offset = IX_SIZE;
-    int64_t ix = -1;
+    if (head_ptr == -1)
+    {
+        // insert the offset into the binary file (a pointer to the table file)
+        ix_file.seekg(0, ios::end);
+        ix_offset = ix_file.tellg();
+        file.seekg(0, ios::end);
+        offset = file.tellg();
+        ix_file.write(reinterpret_cast<char *>(&offset), IX_SIZE);
+    }
+    else
+    {
+        offset = head_ptr;
+        file.seekg(offset, ios::beg);
+        file.read(reinterpret_cast<char*>(&ix), IX_SIZE); // read next ptr (this will be the new head)
+        ix_file.seekg(0, ios::beg);
+        ix_file.write(reinterpret_cast<char*>(&ix), IX_SIZE);
+        if (ix == -1)
+        {
+            // if head is deleted so needs to be the tail...
+            ix_file.write(reinterpret_cast<char*>(&ix), IX_SIZE); 
+        }
+
+        ix_file.seekg(0, ios::end);
+        ix_offset = ix_file.tellg();
+        ix_file.write(reinterpret_cast<char *>(&offset), IX_SIZE);
+    }
+
+    char *record = new char[record_size + IX_SIZE];
+    ix = -1;
     memcpy(record, reinterpret_cast<const char*>(&ix), IX_SIZE);
+    int field_offset = IX_SIZE;
 
     for (int i = 0; i < num_values; i++)
     {
@@ -44,17 +74,15 @@ int64_t RecordManager::create_record(const string &db_name, const string &table_
         field_offset += field_size;
     }
 
+    file.seekg(offset, ios::beg);
     file.write(record, record_size + IX_SIZE);
     file.close();
     delete[] record;
 
-    // insert the offset into the binary file (a pointer to the table file)
-    int ix_offset = ix_file.tellp();
-    ix_file.write(reinterpret_cast<const char *>(&offset), IX_SIZE);
-    ix_file.close();
 
+    ix_file.close();
     // return the index of the record in the index file
-    return ix_offset / IX_SIZE - 1;
+    return (ix_offset - PK_IX_HEAD_SIZE) / IX_SIZE;
 }
 
 void RecordManager::update_record(const string &db_name, const string &table_name,
@@ -114,8 +142,31 @@ void RecordManager::delete_record(const string &db_name, const string &table_nam
     string file_name = get_file_name(db_name, table_name);
     fstream file(file_name, ios::binary | ios::in | ios::out);
 
-    file.seekp(0, ios::end);
+    // read head offset
+    ix_file.seekg(0, ios::beg);
+    int64_t ix;
+    ix_file.read(reinterpret_cast<char*>(&ix), IX_SIZE);
+    char* rec_offset_ptr = new char[IX_SIZE];
+    memcpy(rec_offset_ptr, reinterpret_cast<const char*>(&record_offset), IX_SIZE);
+    
+    if (ix == -1)
+    {
+        // if no deletd records yet => set head and tail to deleted offset
+        ix_file.seekg(0, ios::beg);
+        ix_file.write(rec_offset_ptr, IX_SIZE);
+        ix_file.write(rec_offset_ptr, IX_SIZE);
+    }
+    else
+    {
+        // read tail offset
+        ix_file.seekg(IX_SIZE, ios::beg);
+        ix_file.read(reinterpret_cast<char*>(&ix), IX_SIZE);
 
+        file.seekg(ix, ios::beg);
+        file.write(rec_offset_ptr, IX_SIZE);
+    }
+
+    delete[] rec_offset_ptr;
     file.close();
     ix_file.close();
 }

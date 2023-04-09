@@ -46,7 +46,8 @@ void SchemaManager::create_schema(const string &db_name, const vector<string> &t
         }
 
         int64_t deleted_head = -1;
-        ix_outfile.write(reinterpret_cast<const char*>(&deleted_head), IX_SIZE);
+        ix_outfile.write(reinterpret_cast<const char*>(&deleted_head), IX_SIZE); // head pointer
+        ix_outfile.write(reinterpret_cast<const char*>(&deleted_head), IX_SIZE); // tail pointer
         ix_outfile.close();
     }
 }

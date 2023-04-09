@@ -62,8 +62,6 @@ class Model(ModelBaseMixin, ModelQueryMixin):
                         raw_type_index = FieldTypeEnum.DATETIME
                     case Field.Link:
                         raw_type_index = FieldTypeEnum.LINK_SINGLE
-                    case Field.LinkMultiple:
-                        raw_type_index = FieldTypeEnum.LINK_MULTIPLE
                     case _:
                         raise AttributeError("Field type is not valid!")
 
@@ -73,7 +71,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         cls._cache_init = True
     
     @classmethod
-    def get(cls: Type[T], record_id):
+    def get(cls: Type[T], record_id: int):
         cls._make_cache()
 
         field_sizes = cls._field_sizes
