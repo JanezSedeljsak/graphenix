@@ -4,6 +4,7 @@
 #include "managers/managers.h"
 #include "managers/schema_manager.cpp"
 #include "managers/record_manager.cpp"
+#include "managers/query_manager.cpp"
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -56,7 +57,8 @@ py::list schema_get_record(const std::string &schema_name, const std::string &mo
                            const std::vector<int> &field_types, const int record_size)
 {
     vector<char *> parsed_values = RecordManager::get_record(schema_name, model_name, id, field_lengths, field_types, record_size);
-    py::list py_record = PYTHNOIZE_RECORD(parsed_values, field_types, field_lengths);
+    vector<py::object> record = PYTHNOIZE_RECORD(parsed_values, field_types, field_lengths);
+    py::list py_record = py::cast(record);
     DEALLOCATE_RECORD(parsed_values);
     return py_record;
 }
@@ -77,6 +79,9 @@ PYBIND11_MODULE(graphenix_engine2, m)
     m.def("schema_update_record", &schema_update_record, "Update a record in the given table");
     m.def("schema_get_record", &schema_get_record, "Get a record from the given table");
     m.def("schema_delete_record", &schema_delete_record, "Delete a record from a given table");
+
+    m.def("execute_query", &QueryManager::execute_query, "Executes query and retrieves the desired rows");
+    m.def("build_record", &QueryManager::build_record, "Builds a record from raw bytes");
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

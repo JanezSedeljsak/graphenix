@@ -1,12 +1,12 @@
-from .mixins.mixin_query_execution import QueryExecutionMixin
+from .mixins.mixin_model_base import T
+from typing import Type, Generator
+import graphenix_engine2 as ge2
 
-class Query(QueryExecutionMixin):
-    def __init__(self, model):
+class Query:
+    base_model: Type[T]
+
+    def __init__(self, model: Type[T]):
         self.base_model = model
-
-    # this method needs to be called on root so it then generates the sub queries accordingly
-    def __build_query():
-        ...
 
     def filter(self, *conditions) -> "Query":
         ...
@@ -19,11 +19,32 @@ class Query(QueryExecutionMixin):
 
     def link(self, **link_map) -> "Query":
         ...
+    
+    def all(self) -> tuple[int, Generator[T, None, None]]:
+        self.base_model.make_cache()
+ 
+        sizes_as_list = [self.base_model._field_sizes[field] for field in self.base_model._model_fields]
+        raw_type_as_list = [self.base_model._field_types_raw[field] for field in self.base_model._model_fields]
+
+        data = ge2.execute_query(self.base_model._db, self.base_model.__name__,
+                                 self.base_model._total_size)
+
+        def generator_func():
+            for row in data:
+                record_dict = ge2.build_record(sizes_as_list, raw_type_as_list,
+                                               self.base_model._model_fields, 
+                                               self.base_model._total_size,
+                                               row)
+                
+                yield self.base_model(**record_dict)
+
+        return len(data), generator_func()
+    
 
 class ModelQueryMixin:
     
     @classmethod
-    def all(cls):
+    def all(cls) -> tuple[int, Generator[T, None, None]]:
         return Query(cls).all()
 
     @classmethod

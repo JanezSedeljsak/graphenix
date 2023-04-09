@@ -18,6 +18,10 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
     _field_defaults: dict = {} # can't add type hints since there are different types for default (base of field type)
 
     @abc.abstractmethod
+    def get_values(self, fields) -> list:
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def save(self) -> None:
         raise NotImplementedError
     
@@ -26,7 +30,7 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractclassmethod
-    def _make_cache(cls):
+    def make_cache(cls):
         raise NotImplementedError
     
 

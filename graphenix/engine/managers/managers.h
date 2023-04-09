@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -43,9 +44,9 @@ public:
     );
 
     static vector<char*> get_record(
-        const string &db_name, 
-        const string &table_name, 
-        const int64_t record_id, 
+        const string &db_name,
+        const string &table_name,
+        const int64_t record_id,
         const vector<int>& field_lengths,
         const vector<int>& field_types,
         const int record_size
@@ -54,7 +55,19 @@ public:
 
 class QueryManager {
 public:
-    // TODO
+    static vector<py::bytes> execute_query(
+        const string &db_name,
+        const string &table_name,
+        const int record_size
+    );
+
+    static py::dict build_record(
+        const vector<int>& field_lengths,
+        const vector<int>& field_types,
+        const vector<string>& field_names,
+        const int record_size,
+        const py::bytes raw_record
+    );
 };
 
 class TypeManager {

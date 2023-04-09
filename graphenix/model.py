@@ -1,4 +1,4 @@
-import graphenix_engine2
+import graphenix_engine2 as ge2
 
 from typing import Type
 from .mixins.mixin_model_base import ModelBaseMixin, T
@@ -12,16 +12,18 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         self._id = -1
         self.__name__ = self.__class__.__name__
         for key, value in fields.items():
-            setattr(self, key, value)
+            if key in self._model_fields or key == '_id':
+                setattr(self, key, value)
+
 
     def __str__(self):
-        self._make_cache()
+        self.make_cache()
         fields = ['id', *self._model_fields]
         attrs = ', '.join([f"{k}={getattr(self, k)}" for k in fields])
         return f"{self.__name__}({attrs})"
     
     def __setattr__(self, name, value):
-        self._make_cache()
+        self.make_cache()
         if name not in self._model_fields and not name.startswith("_"):
             raise AttributeError(f"Cannot assign member '{name}' for type '{self.__name__}'")
         
@@ -36,7 +38,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         return self.id == -1
     
     @classmethod
-    def _make_cache(cls: Type[T]) -> None:
+    def make_cache(cls: Type[T]) -> None:
         if cls._cache_init:
             return
         
@@ -72,13 +74,13 @@ class Model(ModelBaseMixin, ModelQueryMixin):
     
     @classmethod
     def get(cls: Type[T], record_id: int):
-        cls._make_cache()
+        cls.make_cache()
 
         field_sizes = cls._field_sizes
         sizes_as_list = [field_sizes[field] for field in cls._model_fields]
         raw_type_as_list = [cls._field_types_raw[field] for field in cls._model_fields]
 
-        record = graphenix_engine2.schema_get_record(cls._db, cls.__name__, # type: ignore
+        record = ge2.schema_get_record(cls._db, cls.__name__, # type: ignore
                                                      record_id, sizes_as_list,
                                                      raw_type_as_list, cls._total_size)
         
@@ -87,7 +89,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         instance._id = record_id
         return instance
     
-    def __get_values(self, fields) -> list:
+    def get_values(self, fields) -> list:
         result: list = []
         for field in fields:
             match self._field_types[field]:
@@ -102,7 +104,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         if self.is_new:
             raise Exception("Record doesn't exist in the db!")
 
-        graphenix_engine2.schema_delete_record(self._db, self.__name__, # type: ignore
+        ge2.schema_delete_record(self._db, self.__name__, # type: ignore
                                                self.id, self._total_size)
         self._id = -1 # set flag to is_new again so you don't update an inactive record
 
@@ -111,20 +113,19 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         return self
     
     def save(self):
-        self._make_cache()
-
-        field_sizes = self._field_sizes
-        sizes_as_list = [field_sizes[field] for field in self._model_fields]
-        values_as_list = self.__get_values(self._model_fields)
+        self.make_cache()
+ 
+        sizes_as_list = [self._field_sizes[field] for field in self._model_fields]
+        values_as_list = self.get_values(self._model_fields)
         raw_type_as_list = [self._field_types_raw[field] for field in self._model_fields]
 
         if self.is_new:
-            self._id = graphenix_engine2.schema_add_record(self._db, self.__name__, # type: ignore
+            self._id = ge2.schema_add_record(self._db, self.__name__, # type: ignore
                                                             values_as_list, sizes_as_list,
                                                             self._total_size,
                                                             raw_type_as_list)
         else:
-            graphenix_engine2.schema_update_record(self._db, self.__name__, self.id,  # type: ignore
+            ge2.schema_update_record(self._db, self.__name__, self.id,  # type: ignore
                                                    values_as_list, sizes_as_list,
                                                    self._total_size,
                                                    raw_type_as_list)

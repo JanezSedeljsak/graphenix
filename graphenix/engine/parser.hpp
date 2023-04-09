@@ -29,8 +29,8 @@ std::string message(Args &&...args)
     return oss.str();
 }
 
-inline py::list PYTHNOIZE_RECORD(const std::vector<char *> bin_values, const std::vector<int> &field_types,
-                                 const std::vector<int> &field_lengths)
+inline std::vector<py::object> PYTHNOIZE_RECORD(const std::vector<char *> bin_values, const std::vector<int> &field_types,
+                                                const std::vector<int> &field_lengths)
 {
     const size_t fields_count = field_types.size();
     std::vector<py::object> record(fields_count);
@@ -68,7 +68,7 @@ inline py::list PYTHNOIZE_RECORD(const std::vector<char *> bin_values, const std
         }
     }
 
-    return py::cast(record);
+    return record;
 }
 
 inline std::vector<char *> PARSE_RECORD(const py::list &py_values, const std::vector<int> &field_types,

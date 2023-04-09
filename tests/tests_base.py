@@ -39,6 +39,20 @@ class CommonTestBase(unittest.TestCase):
             return result
         
         return callable
+    
+    def prepare_1M_cities(self, method):
+        """ A decorator that inserts 1M cities into the db """
+        def callable(*args, **kwargs):
+            AMOUNT = 1_000_000
+            temp_record = City(name="Ljubljana", country="SLO", population_thousands=280)
+            for _ in range(AMOUNT):
+                temp_record.save()
+                temp_record._id = -1
+
+            result = method(*args, **kwargs)
+            return result
+        
+        return callable
 
 
     def delete_if_exists_and_create(self):
