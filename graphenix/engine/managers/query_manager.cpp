@@ -96,23 +96,18 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
 
     file.close();
     if (qobject.field_indexes.size() > 0)
-    {
         std::sort(raw_rows, raw_rows + map_size, [&](char* a, char* b) {
             return qobject(a, b);
         });
-    }
 
-    for (int64_t i = 0; i < map_size; i++)
-    {
-        rows[i] = py::bytes(raw_rows[i], mdef.record_size + IX_SIZE);
-        delete[] raw_rows[i];
-    }
-
-    
     if (check_limit && idx > qobject.limit)
-    {
         rows.resize(qobject.limit);
-    }
+
+    for (size_t i = 0, n = rows.size(); i < n; i++)
+        rows[i] = py::bytes(raw_rows[i], mdef.record_size + IX_SIZE);
+
+    for (int64_t i = 0; i < idx; i++)
+        delete[] raw_rows[i];
 
     delete[] raw_rows;
     return rows;
