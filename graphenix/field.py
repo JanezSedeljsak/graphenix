@@ -1,29 +1,31 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from .mixins.mixin_model_base import T
-from typing import TypeVar
+from .mixins.mixin_field_order import FO, FieldOrderMixin
 
 class FieldTypeEnum:
     INT = 0
     STRING = 1
     BOOL = 2
     DATETIME = 3
-    LINK_SINGLE = 4
-
-F = TypeVar('F', bound='Field.BaseType')
+    LINK = 4
 
 class Field:
 
-    class BaseType:
-        size = None
+    class BaseType(FieldOrderMixin):
+        size: int = 8
         default = None
         index: bool = False
+        name: str
         
-        def __set_name__(self, owner, name):
+        def __set_name__(self, owner, name) -> None:
             self.name = name
 
-        def as_index(self: F) -> F:
+        def as_index(self: FO) -> FO:
             self.index = True
             return self
+        
+        def desc(self: FO) -> str:
+            return self.name
 
     class Int(BaseType):
         def __init__(self, default: int = 0):

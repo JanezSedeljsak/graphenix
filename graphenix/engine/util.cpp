@@ -5,11 +5,6 @@
 #include <string>
 #include "parser.hpp"
 
-#define IX_SIZE 8 // size of 8 bytes <==> IX_SIZE
-#define PK_IX_HEAD_SIZE IX_SIZE * 2
-#define CHUNK_SIZE 10 * 1024 * 1024
-#define ID_KEY "_id"
-
 #ifdef _WIN32
 #include <direct.h>
 #define MAKE_GRAPHENIX_DB_DIR() _mkdir("graphenix_db")

@@ -9,22 +9,97 @@
 
 #include <pybind11/pybind11.h>
 
+#define IX_SIZE 8 // size of 8 bytes <==> IX_SIZE
+#define PK_IX_HEAD_SIZE IX_SIZE * 2
+#define CHUNK_SIZE 10 * 1024 * 1024
+#define ID_KEY "_id"
+
 enum FIELD_TYPE
 {
     INT = 0,
     STRING = 1,
     BOOL = 2,
     DATETIME = 3,
-    LINK_SINGLE = 4
+    LINK = 4
 };
 
-struct model_def {
+struct model_def
+{
     std::string db_name;
     std::string table_name;
     std::vector<int> field_sizes;
     std::vector<int> field_types;
+    std::vector<int> field_offsets;
     std::vector<std::string> field_names;
     int64_t record_size;
+};
+
+struct query_object
+{
+    model_def mdef;
+    std::vector<int> field_indexes;
+    std::vector<bool> order_asc;
+    int64_t limit;
+
+    bool operator()(char *a, char *b) const
+    {
+        size_t len = field_indexes.size();
+        for (size_t i = 0; i < len; i++)
+        {
+            const int idx = field_indexes[i];
+            const bool not_pk = idx != -1;
+
+            // if idx equals -1 it means the column is PK (primary key - id)
+            const int offset = not_pk ? mdef.field_offsets[idx] : mdef.record_size;
+            const int size = not_pk ? mdef.field_sizes[idx] : IX_SIZE;
+            const FIELD_TYPE type = not_pk ? static_cast<FIELD_TYPE>(mdef.field_types[idx]) : INT;
+
+            char *val_a = a + offset;
+            char *val_b = b + offset;
+
+            int cmp_res = 0;
+            switch (type)
+            {
+            case INT:
+            case DATETIME:
+            {
+                int64_t int_a = *reinterpret_cast<int64_t *>(val_a);
+                int64_t int_b = *reinterpret_cast<int64_t *>(val_b);
+                cmp_res = int_a - int_b;
+                break;
+            }
+            case STRING:
+            {
+                cmp_res = std::memcmp(val_a, val_b, size);
+                break;
+            }
+            case BOOL:
+            {
+                bool bool_a = *reinterpret_cast<bool *>(val_a);
+                bool bool_b = *reinterpret_cast<bool *>(val_b);
+                cmp_res = bool_a - bool_b;
+                break;
+            }
+            default:
+                throw std::runtime_error("Invalid comperator type!");
+                break;
+            }
+
+            if (!order_asc[i])
+            {
+                // order desc
+                cmp_res = -cmp_res;
+            }
+
+            if (cmp_res != 0)
+            {
+                // values are not equal
+                return cmp_res < 0;
+            }
+        }
+
+        return false;
+    }
 };
 
 namespace py = pybind11;
@@ -38,9 +113,9 @@ std::string message(Args &&...args)
     return oss.str();
 }
 
-inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def& mdef, const std::vector<char *> bin_values)
+inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def &mdef, const std::vector<char *> bin_values)
 {
-    const auto& field_types = mdef.field_types;
+    const auto &field_types = mdef.field_types;
     const size_t fields_count = field_types.size();
     std::vector<py::object> record(fields_count);
     for (size_t i = 0; i < fields_count; i++)
@@ -53,7 +128,7 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def& mdef, const std
         {
         case INT:
         case DATETIME:
-        case LINK_SINGLE:
+        case LINK:
             memcpy(&int_val, bin_values[i], sizeof(int64_t));
             record[i] = py::cast(int_val);
             // std::cout << "int value  " << int_val << std::endl;
@@ -80,10 +155,10 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def& mdef, const std
     return record;
 }
 
-inline std::vector<char *> PARSE_RECORD(const model_def& mdef, const py::list &py_values)
+inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &py_values)
 {
-    const auto& field_types = mdef.field_types;
-    const auto& field_sizes = mdef.field_sizes;
+    const auto &field_types = mdef.field_types;
+    const auto &field_sizes = mdef.field_sizes;
 
     const size_t fields_count = field_types.size();
     std::vector<char *> parsed_values(fields_count);
@@ -98,7 +173,7 @@ inline std::vector<char *> PARSE_RECORD(const model_def& mdef, const py::list &p
         {
         case INT:
         case DATETIME:
-        case LINK_SINGLE:
+        case LINK:
             int_val = py::cast<int64_t>(py_values[i]);
             memcpy(parsed_values[i], &int_val, sizeof(int64_t));
             break;

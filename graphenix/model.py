@@ -55,6 +55,8 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         field_sizes_dict = {}
         field_types_raw_dict = {}
         cls._field_types = {}
+        field_offsets = []
+        current_offset = 0
 
         for field_name, field in cls.__dict__.items():
             if isinstance(field, Field.BaseType):
@@ -62,6 +64,8 @@ class Model(ModelBaseMixin, ModelQueryMixin):
                     raise AttributeError(f'Size for field {field_name} is not defined or is not a positive integer!')
 
                 field_sizes_dict[field_name] = field.size
+                field_offsets.append(current_offset)
+                current_offset += field.size
                 actual_type = type(field)
                 cls._field_types[field_name] = actual_type
                 cls._field_defaults[field_name] = field.default
@@ -76,7 +80,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
                     case Field.DateTime:
                         raw_type_index = FieldTypeEnum.DATETIME
                     case Field.Link:
-                        raw_type_index = FieldTypeEnum.LINK_SINGLE
+                        raw_type_index = FieldTypeEnum.LINK
                     case _:
                         raise AttributeError("Field type is not valid!")
 
@@ -85,6 +89,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         mdef.record_size = sum(field_sizes_dict.values())
         mdef.field_sizes = [field_sizes_dict[field] for field in cls._model_fields]
         mdef.field_types = [field_types_raw_dict[field] for field in cls._model_fields]
+        mdef.field_offsets = field_offsets
 
         cls._mdef = mdef
         cls._cache_init = True

@@ -13,6 +13,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <omp.h>
+#include <algorithm>
 
 #include "managers.h"
 #include "../util.cpp"
@@ -50,31 +51,70 @@ inline std::map<int64_t, int64_t> ix_read_all(std::fstream &ix_file)
     return ix2offset;
 }
 
-std::vector<py::bytes> QueryManager::execute_query(const model_def& mdef)
+std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
 {
+    const auto& mdef = qobject.mdef;
     std::string file_name = get_file_name(mdef.db_name, mdef.table_name);
     std::string ix_file_name = get_ix_file_name(mdef.db_name, mdef.table_name);
 
     std::fstream file(file_name, std::ios::binary | std::ios::in | std::ios::out);
     std::fstream ix_file(ix_file_name, std::ios::binary | std::ios::in | std::ios::out);
 
-    std::map<int64_t, int64_t> ix2offset = ix_read_all(ix_file);
-    int64_t map_size = static_cast<int64_t>(ix2offset.size());
-    std::vector<py::bytes> rows(map_size);
-    char* buffer = new char[mdef.record_size + IX_SIZE];
+    // TODO: if any field is defined that has a index tree find those records 
+    // if there are multiple read all of them and then make a set intersection between them
+    // later it will also need to handle OR/AND operators
+    // if there are no filters and no order fields that don't have index trees and a limit is defined take only <qobject.limit> amount of records
+    const std::map<int64_t, int64_t> ix2offset = ix_read_all(ix_file);
+    ix_file.close();
+    
+    std::map<int64_t, int64_t> offset2ix;
+    std::transform(ix2offset.begin(), ix2offset.end(), std::inserter(offset2ix, offset2ix.end()),
+                [](const std::pair<int64_t, int64_t>& p) {
+                    return std::make_pair(p.second, p.first);
+                });
 
-    int idx = 0;
-    for (const auto& [ix, record_offset] : ix2offset)
+    int64_t map_size = static_cast<int64_t>(ix2offset.size());
+    char** raw_rows = new char*[map_size];
+    std::vector<py::bytes> rows(map_size);
+
+    bool check_limit = qobject.limit > 0;
+    int64_t idx = 0;
+    for (const auto& [record_offset, ix] : offset2ix)
     {
+        raw_rows[idx] = new char[mdef.record_size + IX_SIZE];
         file.seekg(record_offset + IX_SIZE, ios::beg);
-        file.read(buffer, mdef.record_size);
-        memcpy(buffer + mdef.record_size, reinterpret_cast<const char *>(&ix), IX_SIZE);
-        rows[idx++] = py::bytes(buffer, mdef.record_size + IX_SIZE);
+        file.read(raw_rows[idx], mdef.record_size);
+        memcpy(raw_rows[idx++] + mdef.record_size, reinterpret_cast<const char *>(&ix), IX_SIZE);
+        // TODO: add filtering of objects that don't have index trees
+        // it needs to be here if we have a limit so we can break out of reading
+        // another problem is that we would first need to order and then cut the amount of records...
+        // if (check_limit && idx >= qobject.limit)
+        // {
+        //     break;
+        // }
     }
 
-    delete[] buffer;
-    ix_file.close();
     file.close();
+    if (qobject.field_indexes.size() > 0)
+    {
+        std::sort(raw_rows, raw_rows + map_size, [&](char* a, char* b) {
+            return qobject(a, b);
+        });
+    }
+
+    for (int64_t i = 0; i < map_size; i++)
+    {
+        rows[i] = py::bytes(raw_rows[i], mdef.record_size + IX_SIZE);
+        delete[] raw_rows[i];
+    }
+
+    
+    if (check_limit && idx > qobject.limit)
+    {
+        rows.resize(qobject.limit);
+    }
+
+    delete[] raw_rows;
     return rows;
 }
 

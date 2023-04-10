@@ -15,9 +15,10 @@ class BuildExt(build_ext):
         for ext in self.extensions:
             if ext.name == __engine_name__:
                 ext.define_macros.append(("WITH_OPENMP", None))
-                ext.extra_compile_args.extend(["-fopenmp", "-O3"])
+                ext.extra_compile_args.extend(["-std=c++20", "-fopenmp", "-O3"])
                 ext.extra_link_args.append("-fopenmp")
                 ext.include_dirs.append(get_include())
+                ext.libraries.append("gomp")
         super().build_extensions()
 
 

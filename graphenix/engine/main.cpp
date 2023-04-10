@@ -60,8 +60,16 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def_readwrite("table_name", &model_def::table_name)
         .def_readwrite("field_sizes", &model_def::field_sizes)
         .def_readwrite("field_types", &model_def::field_types)
+        .def_readwrite("field_offsets", &model_def::field_offsets)
         .def_readwrite("field_names", &model_def::field_names)
         .def_readwrite("record_size", &model_def::record_size);
+
+    py::class_<query_object>(m, "query_object")
+        .def(py::init<>())
+        .def_readwrite("mdef", &query_object::mdef)
+        .def_readwrite("limit", &query_object::limit)
+        .def_readwrite("field_indexes", &query_object::field_indexes)
+        .def_readwrite("order_asc", &query_object::order_asc);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

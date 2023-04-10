@@ -41,7 +41,7 @@ public:
 
 class QueryManager {
 public:
-    static vector<py::bytes> execute_query(const model_def& mdef);
+    static vector<py::bytes> execute_query(const query_object& qobject);
     static py::dict build_record(const model_def& mdef, const py::bytes raw_record);
 };
 
