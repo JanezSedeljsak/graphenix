@@ -52,8 +52,8 @@ class GraphenixPerfTests(CommonTestBase):
 
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
-    @CommonTestBase.perf("Create 1M basic codelist records and do bulk read", times=5)
-    def test_create_1M_records_and_bulk_read(self):
+    @CommonTestBase.perf("Read 1M reacords at once", times=5)
+    def test_read_1M_records(self):
         AMOUNT = 1_000_000
         count, _ = City.all()
         self.assertEqual(AMOUNT, count)

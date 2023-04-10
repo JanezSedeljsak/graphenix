@@ -9,12 +9,13 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
     _db: None | str
 
     # cached values
+    _mdef: object
     _cache_init: bool = False
-    _model_fields: tuple = tuple()
-    _total_size: int = 0
-    _field_sizes: dict[str, int] = {}
+    _model_fields: list = []
+    #_total_size: int = 0
+    #_field_sizes: dict[str, int] = {}
+    #_field_types_raw: dict[str, int] = {} # for parsing in c++
     _field_types: dict[str, type] = {}
-    _field_types_raw: dict[str, int] = {} # for parsing in c++
     _field_defaults: dict = {} # can't add type hints since there are different types for default (base of field type)
 
     @abc.abstractmethod
@@ -31,6 +32,10 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractclassmethod
     def make_cache(cls):
+        raise NotImplementedError
+    
+    @abc.abstractclassmethod
+    def get_mdef(cls):
         raise NotImplementedError
     
 

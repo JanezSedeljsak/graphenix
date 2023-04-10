@@ -18,8 +18,6 @@
 #include "../util.cpp"
 #include "../parser.hpp"
 
-namespace py = pybind11;
-
 inline std::map<int64_t, int64_t> ix_read_all(std::fstream &ix_file)
 {
     ix_file.seekg(0, std::ios::end);
@@ -52,11 +50,10 @@ inline std::map<int64_t, int64_t> ix_read_all(std::fstream &ix_file)
     return ix2offset;
 }
 
-std::vector<py::bytes> QueryManager::execute_query(const std::string& db_name, const std::string& table_name, 
-                                                   const int record_size)
+std::vector<py::bytes> QueryManager::execute_query(const model_def& mdef)
 {
-    std::string file_name = get_file_name(db_name, table_name);
-    std::string ix_file_name = get_ix_file_name(db_name, table_name);
+    std::string file_name = get_file_name(mdef.db_name, mdef.table_name);
+    std::string ix_file_name = get_ix_file_name(mdef.db_name, mdef.table_name);
 
     std::fstream file(file_name, std::ios::binary | std::ios::in | std::ios::out);
     std::fstream ix_file(ix_file_name, std::ios::binary | std::ios::in | std::ios::out);
@@ -64,15 +61,15 @@ std::vector<py::bytes> QueryManager::execute_query(const std::string& db_name, c
     std::map<int64_t, int64_t> ix2offset = ix_read_all(ix_file);
     int64_t map_size = static_cast<int64_t>(ix2offset.size());
     std::vector<py::bytes> rows(map_size);
-    char* buffer = new char[record_size + IX_SIZE];
+    char* buffer = new char[mdef.record_size + IX_SIZE];
 
     int idx = 0;
     for (const auto& [ix, record_offset] : ix2offset)
     {
         file.seekg(record_offset + IX_SIZE, ios::beg);
-        file.read(buffer, record_size);
-        memcpy(buffer + record_size, reinterpret_cast<const char *>(&ix), IX_SIZE);
-        rows[idx++] = py::bytes(buffer, record_size + IX_SIZE);
+        file.read(buffer, mdef.record_size);
+        memcpy(buffer + mdef.record_size, reinterpret_cast<const char *>(&ix), IX_SIZE);
+        rows[idx++] = py::bytes(buffer, mdef.record_size + IX_SIZE);
     }
 
     delete[] buffer;
@@ -81,37 +78,35 @@ std::vector<py::bytes> QueryManager::execute_query(const std::string& db_name, c
     return rows;
 }
 
-py::dict QueryManager::build_record(const vector<int>& field_lengths, const vector<int>& field_types,
-                                    const vector<string>& field_names, const int record_size,
-                                    const py::bytes raw_record)
+py::dict QueryManager::build_record(const model_def& mdef, const py::bytes raw_record)
 {
-    char* buffer = new char[record_size + IX_SIZE];
+    char* buffer = new char[mdef.record_size + IX_SIZE];
     char* raw_record_data;
     Py_ssize_t raw_rec_size;
     PyBytes_AsStringAndSize(raw_record.ptr(), &raw_record_data, &raw_rec_size);
-    memcpy(buffer, raw_record_data, record_size + IX_SIZE);
+    memcpy(buffer, raw_record_data, mdef.record_size + IX_SIZE);
 
-    const int64_t fields_count = field_lengths.size();
+    const int64_t fields_count = mdef.field_sizes.size();
     vector<char*> bin_values(fields_count);
     int64_t offset = 0;
 
     for (int64_t i = 0; i < fields_count; i++)
     {
-        char *field_buffer = new char[field_lengths[i]];
-        memcpy(field_buffer, buffer + offset, field_lengths[i]);
-        offset += field_lengths[i];
+        char *field_buffer = new char[mdef.field_sizes[i]];
+        memcpy(field_buffer, buffer + offset, mdef.field_sizes[i]);
+        offset += mdef.field_sizes[i];
         bin_values[i] = field_buffer;
     }
 
-    std::vector<py::object> record_vector = PYTHNOIZE_RECORD(bin_values, field_types, field_lengths);
+    std::vector<py::object> record_vector = PYTHNOIZE_RECORD(mdef, bin_values);
     std::unordered_map<std::string, py::object> record;
     for (int64_t i = 0; i < fields_count; i++) 
     {
-        record[field_names[i]] = record_vector[i];
+        record[mdef.field_names[i]] = record_vector[i];
     }
 
     int64_t ix;
-    memcpy(&ix, buffer + record_size, IX_SIZE);
+    memcpy(&ix, buffer + mdef.record_size, IX_SIZE);
     record[ID_KEY] = py::cast(ix);
 
     delete[] buffer;

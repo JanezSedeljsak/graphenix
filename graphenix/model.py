@@ -42,13 +42,26 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         if cls._cache_init:
             return
         
-        cls._model_fields = tuple(attr for attr, val in cls.__dict__.items() if isinstance(val, Field.BaseType))
+        if not cls._db:
+            raise AttributeError("Model is missing a _db property!")
+        
+        mdef = ge2.model_def()
+        mdef.db_name = cls._db
+        mdef.table_name = cls.__name__
+
+        cls._model_fields = [attr for attr, val in cls.__dict__.items() if isinstance(val, Field.BaseType)]
+        mdef.field_names = cls._model_fields
+
+        field_sizes_dict = {}
+        field_types_raw_dict = {}
+        cls._field_types = {}
+
         for field_name, field in cls.__dict__.items():
             if isinstance(field, Field.BaseType):
                 if not field.size:
                     raise AttributeError(f'Size for field {field_name} is not defined or is not a positive integer!')
 
-                cls._field_sizes[field_name] = field.size
+                field_sizes_dict[field_name] = field.size
                 actual_type = type(field)
                 cls._field_types[field_name] = actual_type
                 cls._field_defaults[field_name] = field.default
@@ -67,22 +80,25 @@ class Model(ModelBaseMixin, ModelQueryMixin):
                     case _:
                         raise AttributeError("Field type is not valid!")
 
-                cls._field_types_raw[field_name] = raw_type_index
+                field_types_raw_dict[field_name] = raw_type_index
         
-        cls._total_size = sum(cls._field_sizes.values())
+        mdef.record_size = sum(field_sizes_dict.values())
+        mdef.field_sizes = [field_sizes_dict[field] for field in cls._model_fields]
+        mdef.field_types = [field_types_raw_dict[field] for field in cls._model_fields]
+
+        cls._mdef = mdef
         cls._cache_init = True
+
+    @classmethod
+    def get_mdef(cls: Type[T]) -> object:
+        cls.make_cache()
+        return cls._mdef
     
     @classmethod
     def get(cls: Type[T], record_id: int):
         cls.make_cache()
 
-        field_sizes = cls._field_sizes
-        sizes_as_list = [field_sizes[field] for field in cls._model_fields]
-        raw_type_as_list = [cls._field_types_raw[field] for field in cls._model_fields]
-
-        record = ge2.schema_get_record(cls._db, cls.__name__, # type: ignore
-                                                     record_id, sizes_as_list,
-                                                     raw_type_as_list, cls._total_size)
+        record = ge2.model_get_record(cls._mdef, record_id)
         
         record_as_dict = {field: record[idx] for idx, field in enumerate(cls._model_fields)}
         instance = cls(**record_as_dict)
@@ -104,8 +120,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         if self.is_new:
             raise Exception("Record doesn't exist in the db!")
 
-        ge2.schema_delete_record(self._db, self.__name__, # type: ignore
-                                               self.id, self._total_size)
+        ge2.model_delete_record(self._mdef, self.id)
         self._id = -1 # set flag to is_new again so you don't update an inactive record
 
     def make(self: T) -> T:
@@ -114,20 +129,11 @@ class Model(ModelBaseMixin, ModelQueryMixin):
     
     def save(self):
         self.make_cache()
- 
-        sizes_as_list = [self._field_sizes[field] for field in self._model_fields]
         values_as_list = self.get_values(self._model_fields)
-        raw_type_as_list = [self._field_types_raw[field] for field in self._model_fields]
 
         if self.is_new:
-            self._id = ge2.schema_add_record(self._db, self.__name__, # type: ignore
-                                                            values_as_list, sizes_as_list,
-                                                            self._total_size,
-                                                            raw_type_as_list)
+            self._id = ge2.model_add_record(self._mdef, values_as_list)
         else:
-            ge2.schema_update_record(self._db, self.__name__, self.id,  # type: ignore
-                                                   values_as_list, sizes_as_list,
-                                                   self._total_size,
-                                                   raw_type_as_list)
+            ge2.model_update_record(self._mdef, values_as_list, self.id)
 
 

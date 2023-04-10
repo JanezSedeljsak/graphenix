@@ -18,66 +18,31 @@ public:
 class RecordManager {
 public:
     static int64_t create_record(
-        const string& db_name, 
-        const string& table_name, 
-        const vector<char*> &values,
-        const vector<int>& field_lengths,
-        const int64_t record_size,
-        const vector<int>& field_types
+        const model_def& mdef,
+        const vector<char*> &values
     );
 
     static void update_record(
-        const string& db_name, 
-        const string& table_name, 
-        const int64_t record_id, 
+        const model_def& mdef,
         const vector<char*> &values,
-        const vector<int>& field_lengths,
-        const int64_t record_size,
-        const vector<int>& field_types
+        const int64_t record_id
     );
 
     static void delete_record(
-        const string& db_name, 
-        const string& table_name, 
-        const int64_t record_id,
-        const int64_t record_size
+        const model_def& mdef, 
+        const int64_t record_id
     );
 
     static vector<char*> get_record(
-        const string &db_name,
-        const string &table_name,
-        const int64_t record_id,
-        const vector<int>& field_lengths,
-        const vector<int>& field_types,
-        const int record_size
+        const model_def& mdef, 
+        const int64_t record_id
     );
 };
 
 class QueryManager {
 public:
-    static vector<py::bytes> execute_query(
-        const string &db_name,
-        const string &table_name,
-        const int record_size
-    );
-
-    static py::dict build_record(
-        const vector<int>& field_lengths,
-        const vector<int>& field_types,
-        const vector<string>& field_names,
-        const int record_size,
-        const py::bytes raw_record
-    );
-};
-
-class TypeManager {
-public:
-    // TODO
-};
-
-class ErrorManager {
-public:
-    // TODO (this will handle errors in raw CPP so the errors can then be generated for python)
+    static vector<py::bytes> execute_query(const model_def& mdef);
+    static py::dict build_record(const model_def& mdef, const py::bytes raw_record);
 };
 
 #endif

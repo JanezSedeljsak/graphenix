@@ -18,6 +18,15 @@ enum FIELD_TYPE
     LINK_SINGLE = 4
 };
 
+struct model_def {
+    std::string db_name;
+    std::string table_name;
+    std::vector<int> field_sizes;
+    std::vector<int> field_types;
+    std::vector<std::string> field_names;
+    int64_t record_size;
+};
+
 namespace py = pybind11;
 
 template <typename... Args>
@@ -29,9 +38,9 @@ std::string message(Args &&...args)
     return oss.str();
 }
 
-inline std::vector<py::object> PYTHNOIZE_RECORD(const std::vector<char *> bin_values, const std::vector<int> &field_types,
-                                                const std::vector<int> &field_lengths)
+inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def& mdef, const std::vector<char *> bin_values)
 {
+    const auto& field_types = mdef.field_types;
     const size_t fields_count = field_types.size();
     std::vector<py::object> record(fields_count);
     for (size_t i = 0; i < fields_count; i++)
@@ -71,9 +80,11 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const std::vector<char *> bin_va
     return record;
 }
 
-inline std::vector<char *> PARSE_RECORD(const py::list &py_values, const std::vector<int> &field_types,
-                                        const std::vector<int> &field_lengths)
+inline std::vector<char *> PARSE_RECORD(const model_def& mdef, const py::list &py_values)
 {
+    const auto& field_types = mdef.field_types;
+    const auto& field_sizes = mdef.field_sizes;
+
     const size_t fields_count = field_types.size();
     std::vector<char *> parsed_values(fields_count);
     for (size_t i = 0; i < fields_count; i++)
@@ -81,7 +92,7 @@ inline std::vector<char *> PARSE_RECORD(const py::list &py_values, const std::ve
         int64_t int_val;
         bool bool_val;
         std::string str_val;
-        parsed_values[i] = new char[field_lengths[i]];
+        parsed_values[i] = new char[field_sizes[i]];
 
         switch (field_types[i])
         {
@@ -94,12 +105,12 @@ inline std::vector<char *> PARSE_RECORD(const py::list &py_values, const std::ve
 
         case STRING:
             str_val = py::cast<std::string>(py_values[i]);
-            if (static_cast<int>(str_val.length()) > field_lengths[i])
+            if (static_cast<int>(str_val.length()) > field_sizes[i])
             {
-                std::string msg = message("Field exceeds max length ", field_lengths[i], " (", str_val, ")");
+                std::string msg = message("Field exceeds max length ", field_sizes[i], " (", str_val, ")");
                 throw std::runtime_error(msg);
             }
-            strncpy(parsed_values[i], str_val.c_str(), field_lengths[i]);
+            strncpy(parsed_values[i], str_val.c_str(), field_sizes[i]);
             break;
 
         case BOOL:
