@@ -14,6 +14,9 @@
 #define CHUNK_SIZE 10 * 1024 * 1024
 #define ID_KEY "_id"
 
+#define MIN_CLUSTER_SIZE 3
+#define MAX_CLUSTER_SIZE 100000 // 100 KB
+
 enum FIELD_TYPE
 {
     INT = 0,

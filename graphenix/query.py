@@ -9,6 +9,7 @@ class Query:
 
     def __init__(self, model: Type[T]):
         self.base_model = model
+        self.base_model.make_cache()
         self.query_object = ge2.query_object()
         self.query_object.mdef = self.base_model._mdef
         self.query_object.field_indexes = []

@@ -19,12 +19,12 @@
 #include "../util.cpp"
 #include "../parser.hpp"
 
-inline std::map<int64_t, int64_t> ix_read_all(std::fstream &ix_file)
+inline std::unordered_map<int64_t, int64_t> ix_read_all(std::fstream &ix_file)
 {
     ix_file.seekg(0, std::ios::end);
     const int64_t file_size = ix_file.tellg();
 
-    std::map<int64_t, int64_t> ix2offset;
+    std::unordered_map<int64_t, int64_t> ix2offset;
     std::vector<char> buffer(CHUNK_SIZE);
 
     int64_t offset = PK_IX_HEAD_SIZE;
@@ -64,38 +64,49 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     // if there are multiple read all of them and then make a set intersection between them
     // later it will also need to handle OR/AND operators
     // if there are no filters and no order fields that don't have index trees and a limit is defined take only <qobject.limit> amount of records
-    const std::map<int64_t, int64_t> ix2offset = ix_read_all(ix_file);
+    const std::unordered_map<int64_t, int64_t> ix2offset = ix_read_all(ix_file);
+    const size_t map_size = ix2offset.size();
     ix_file.close();
-    
-    std::map<int64_t, int64_t> offset2ix;
-    std::transform(ix2offset.begin(), ix2offset.end(), std::inserter(offset2ix, offset2ix.end()),
-                [](const std::pair<int64_t, int64_t>& p) {
-                    return std::make_pair(p.second, p.first);
-                });
-
-    int64_t map_size = static_cast<int64_t>(ix2offset.size());
-    char** raw_rows = new char*[map_size];
-    std::vector<py::bytes> rows(map_size);
-
-    bool check_limit = qobject.limit > 0;
     int64_t idx = 0;
-    for (const auto& [record_offset, ix] : offset2ix)
+    
+    std::unordered_map<int64_t, int64_t> offset2ix;
+    std::vector<int64_t> offsets(map_size);
+    for (const auto& [ix, record_offset] : ix2offset)
     {
-        raw_rows[idx] = new char[mdef.record_size + IX_SIZE];
-        file.seekg(record_offset + IX_SIZE, ios::beg);
-        file.read(raw_rows[idx], mdef.record_size);
-        memcpy(raw_rows[idx++] + mdef.record_size, reinterpret_cast<const char *>(&ix), IX_SIZE);
-        // TODO: add filtering of objects that don't have index trees
-        // it needs to be here if we have a limit so we can break out of reading
-        // another problem is that we would first need to order and then cut the amount of records...
-        // if (check_limit && idx >= qobject.limit)
-        // {
-        //     break;
-        // }
+        offset2ix[record_offset] = ix;
+        offsets[idx++] = record_offset;
     }
 
+    std::sort(offsets.begin(), offsets.end());
+    std::vector<std::vector<int64_t>> clusters = clusterify(offsets);
+
+    char** raw_rows = new char*[map_size];
+    std::vector<py::bytes> rows(map_size);
+    bool check_limit = qobject.limit > 0;
+    bool is_sorting = qobject.field_indexes.size() > 0;
+    idx = 0;
+
+    char* buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
+    for (const auto& cluster : clusters)
+    {
+        const int64_t first_offset = cluster.front();
+        const int64_t last_offset = cluster.back();
+        file.seekg(first_offset, ios::beg);
+        file.read(buffer, last_offset + mdef.record_size + IX_SIZE - first_offset);
+        for (const auto& offset : cluster)
+        {
+            raw_rows[idx] = new char[mdef.record_size + IX_SIZE];
+            memcpy(raw_rows[idx], buffer + offset + IX_SIZE - first_offset, mdef.record_size);
+            memcpy(raw_rows[idx++] + mdef.record_size, reinterpret_cast<const char *>(&offset2ix[offset]), IX_SIZE);
+            // TODO: filtering for non indexed fields should be here
+            // TODO: if we don't have sorting added we should execute limiting here aswell
+        }
+    }
+
+    delete[] buffer;
     file.close();
-    if (qobject.field_indexes.size() > 0)
+
+    if (is_sorting)
         std::sort(raw_rows, raw_rows + map_size, [&](char* a, char* b) {
             return qobject(a, b);
         });

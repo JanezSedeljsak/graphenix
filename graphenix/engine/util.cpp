@@ -65,12 +65,32 @@ void set_record_inactive(const int64_t record_id, fstream &ix_file)
     ix_file.write(reinterpret_cast<const char *>(&inactive_status), IX_SIZE);
 }
 
-/*
-map<int64_t, int64_t> my_map = ;
-set<int64_t> my_set;
+inline vector<vector<int64_t>> clusterify(vector<int64_t> &offsets)
+{
+    vector<vector<int64_t>> clusters;
+    size_t i = 0;
+    while (i < offsets.size())
+    {
+        size_t j = i;
+        while (j < offsets.size() - 1 && offsets[j + 1] - offsets[i] <= MAX_CLUSTER_SIZE && j - i + 2 < MAX_CLUSTER_SIZE)
+        {
+            j++;
+        }
+        if (j - i + 1 >= MIN_CLUSTER_SIZE)
+        {
+            clusters.emplace_back(offsets.begin() + i, offsets.begin() + j + 1);
+        }
+        else
+        {
+            for (size_t k = i; k <= j; k++)
+            {
+                clusters.emplace_back(vector<int64_t>{offsets[k]});
+            }
+        }
+        i = j + 1;
+    }
 
-transform(my_map.begin(), my_map.end(), inserter(my_set, my_set.end()),
-    [](const pair<int64_t, int64_t>& p) { return p.first; });
-*/
+    return clusters;
+}
 
 #endif
