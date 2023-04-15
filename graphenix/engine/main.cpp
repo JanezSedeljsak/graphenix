@@ -57,10 +57,11 @@ PYBIND11_MODULE(graphenix_engine2, m)
     py::class_<model_def>(m, "model_def")
         .def(py::init<>())
         .def_readwrite("db_name", &model_def::db_name)
-        .def_readwrite("table_name", &model_def::table_name)
+        .def_readwrite("model_name", &model_def::model_name)
         .def_readwrite("field_sizes", &model_def::field_sizes)
         .def_readwrite("field_types", &model_def::field_types)
         .def_readwrite("field_offsets", &model_def::field_offsets)
+        .def_readwrite("field_indexes", &model_def::field_indexes)
         .def_readwrite("field_names", &model_def::field_names)
         .def_readwrite("record_size", &model_def::record_size);
 

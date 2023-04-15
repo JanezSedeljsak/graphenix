@@ -28,14 +28,21 @@ class Query:
         order_asc = []
 
         for field in fields:
-            if isinstance(field, type) and issubclass(field, FieldOrderMixin):
+            if isinstance(field, FieldOrderMixin):
                 order_asc.append(True)
                 field_indexes.append(self.base_model._model_fields.index(field.name))
 
             elif isinstance(field, str):
                 # if we recieve string it means the name of the field + desc
                 order_asc.append(False)
-                field_indexes.append(self.base_model._model_fields.index(field))
+                idx = self.base_model._model_fields.index(field) if field != 'id' else -1
+                field_indexes.append(idx)
+            
+            elif isinstance(field, type) and issubclass(field, ModelBaseMixin):
+                # if we pass the class directly it means we order by id asc
+                order_asc.append(True)
+                field_indexes.append(-1)
+
 
         self.query_object.field_indexes = field_indexes
         self.query_object.order_asc = order_asc

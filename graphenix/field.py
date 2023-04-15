@@ -33,6 +33,9 @@ class Field:
             self.size = 8
 
         def __get__(self, instance, owner) -> int:
+            if not instance:
+                return self
+            
             return getattr(instance, '_' + self.name, self.default)
 
         def __set__(self, instance, value):
@@ -44,6 +47,9 @@ class Field:
             self.default = default
 
         def __get__(self, instance, owner) -> str:
+            if not instance:
+                return self
+            
             return getattr(instance, '_' + self.name, self.default)
         
         def __set__(self, instance, value: str) -> None:
@@ -55,6 +61,9 @@ class Field:
             self.size = 1
 
         def __get__(self, instance, owner) -> bool:
+            if not instance:
+                return self
+            
             return getattr(instance, '_' + self.name, self.default)
 
         def __set__(self, instance, value):
@@ -68,6 +77,9 @@ class Field:
             self.size = 8
 
         def __get__(self, instance, owner) -> datetime:
+            if not instance:
+                return self
+            
             diff: int = getattr(instance, '_' + self.name, self.default)
             return datetime.fromtimestamp(diff)
         
@@ -99,5 +111,8 @@ class Field:
             setattr(instance, '_' + self.name, value)
         
         def __get__(self, instance, owner) -> T:
+            if not instance:
+                return self
+            
             linked : T = getattr(instance, '_' + self.name, None)
             return linked

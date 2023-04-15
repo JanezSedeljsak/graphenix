@@ -51,16 +51,17 @@ inline std::unordered_map<int64_t, int64_t> ix_read_all(std::fstream &ix_file)
     return ix2offset;
 }
 
+
 std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
 {
     const auto& mdef = qobject.mdef;
-    std::string file_name = get_file_name(mdef.db_name, mdef.table_name);
-    std::string ix_file_name = get_ix_file_name(mdef.db_name, mdef.table_name);
+    std::string file_name = get_file_name(mdef.db_name, mdef.model_name);
+    std::string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
 
     std::fstream file(file_name, std::ios::binary | std::ios::in | std::ios::out);
     std::fstream ix_file(ix_file_name, std::ios::binary | std::ios::in | std::ios::out);
 
-    // TODO: if any field is defined that has a index tree find those records 
+    // TODO: if any field is defined that has a index tree find those records - only if conidtions on thoose fields are set
     // if there are multiple read all of them and then make a set intersection between them
     // later it will also need to handle OR/AND operators
     // if there are no filters and no order fields that don't have index trees and a limit is defined take only <qobject.limit> amount of records
@@ -86,7 +87,8 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     bool is_sorting = qobject.field_indexes.size() > 0;
     idx = 0;
 
-    char* buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
+    char* buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size + IX_SIZE];
+    bool break_cluster_loop = false;
     for (const auto& cluster : clusters)
     {
         const int64_t first_offset = cluster.front();
@@ -99,7 +101,17 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
             memcpy(raw_rows[idx], buffer + offset + IX_SIZE - first_offset, mdef.record_size);
             memcpy(raw_rows[idx++] + mdef.record_size, reinterpret_cast<const char *>(&offset2ix[offset]), IX_SIZE);
             // TODO: filtering for non indexed fields should be here
-            // TODO: if we don't have sorting added we should execute limiting here aswell
+            if (check_limit && !is_sorting && idx > qobject.limit)
+            {
+                std::cout << "break early\n";
+                break_cluster_loop = true;
+                break;
+            }
+        }
+
+        if (break_cluster_loop)
+        {
+            break;
         }
     }
 

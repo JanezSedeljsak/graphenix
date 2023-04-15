@@ -27,6 +27,10 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
         raise NotImplementedError
     
     @abc.abstractclassmethod
+    def desc(cls) -> str:
+        raise NotImplementedError
+    
+    @abc.abstractclassmethod
     def get(cls, id: int):
         raise NotImplementedError
 

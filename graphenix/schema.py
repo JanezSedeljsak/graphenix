@@ -6,6 +6,7 @@ class Schema:
         self.models = {}
         for model_class in (models or []):
             model_class._db = self.name
+            model_class.make_cache()
             setattr(self, name, model_class)
             self.models[model_class.__name__] = model_class
     
@@ -13,8 +14,8 @@ class Schema:
         return self.models[key]
 
     def create(self, delete_old=False):
-        model_names = [m_name for m_name in self.models.keys()]
-        ge2.create_schema(self.name, model_names, delete_old) # type: ignore
+        mdefs = [model._mdef for _, model in self.models.items()]
+        ge2.create_schema(self.name, mdefs, delete_old) # type: ignore
 
     def delete(self):
         ge2.delete_schema(self.name) # type: ignore

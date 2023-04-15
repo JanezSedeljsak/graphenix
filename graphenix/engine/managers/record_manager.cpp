@@ -16,8 +16,8 @@ using namespace std;
 
 int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> &values)
 {
-    string file_name = get_file_name(mdef.db_name, mdef.table_name);
-    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.table_name);
+    string file_name = get_file_name(mdef.db_name, mdef.model_name);
+    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
 
     fstream file(file_name, ios::binary | ios::in | ios::out);
     fstream ix_file(ix_file_name, ios::binary | ios::in | ios::out);
@@ -86,8 +86,8 @@ int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> 
 
 void RecordManager::update_record(const model_def& mdef, const vector<char*> &values, const int64_t record_id)
 {
-    string file_name = get_file_name(mdef.db_name, mdef.table_name);
-    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.table_name);
+    string file_name = get_file_name(mdef.db_name, mdef.model_name);
+    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
 
     fstream file(file_name, ios::binary | ios::in | ios::out);
     fstream ix_file(ix_file_name, ios::binary | ios::in);
@@ -128,13 +128,13 @@ void RecordManager::update_record(const model_def& mdef, const vector<char*> &va
 
 void RecordManager::delete_record(const model_def& mdef, const int64_t record_id)
 {
-    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.table_name);
+    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
     fstream ix_file(ix_file_name, ios::binary | ios::in | ios::out);
 
     int64_t record_offset = get_record_offset(record_id, ix_file);
     set_record_inactive(record_id, ix_file);
 
-    string file_name = get_file_name(mdef.db_name, mdef.table_name);
+    string file_name = get_file_name(mdef.db_name, mdef.model_name);
     fstream file(file_name, ios::binary | ios::in | ios::out);
 
     // read head offset
@@ -168,8 +168,8 @@ void RecordManager::delete_record(const model_def& mdef, const int64_t record_id
 
 vector<char*> RecordManager::get_record(const model_def& mdef, const int64_t record_id)
 {
-    string file_name = get_file_name(mdef.db_name, mdef.table_name);
-    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.table_name);
+    string file_name = get_file_name(mdef.db_name, mdef.model_name);
+    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
 
     fstream file(file_name, ios::binary | ios::in);
     fstream ix_file(ix_file_name, ios::binary | ios::in);

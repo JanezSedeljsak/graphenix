@@ -29,10 +29,11 @@ enum FIELD_TYPE
 struct model_def
 {
     std::string db_name;
-    std::string table_name;
+    std::string model_name;
     std::vector<int> field_sizes;
     std::vector<int> field_types;
     std::vector<int> field_offsets;
+    std::vector<bool> field_indexes;
     std::vector<std::string> field_names;
     int64_t record_size;
 };

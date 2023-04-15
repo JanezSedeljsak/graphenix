@@ -38,6 +38,10 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         return self.id == -1
     
     @classmethod
+    def desc(cls: Type[T]) -> str:
+        return 'id'
+
+    @classmethod
     def make_cache(cls: Type[T]) -> None:
         if cls._cache_init:
             return
@@ -47,7 +51,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         
         mdef = ge2.model_def()
         mdef.db_name = cls._db
-        mdef.table_name = cls.__name__
+        mdef.model_name = cls.__name__
 
         cls._model_fields = [attr for attr, val in cls.__dict__.items() if isinstance(val, Field.BaseType)]
         mdef.field_names = cls._model_fields
@@ -55,8 +59,9 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         field_sizes_dict = {}
         field_types_raw_dict = {}
         cls._field_types = {}
-        field_offsets = []
-        current_offset = 0
+        field_offsets: list[int] = []
+        field_indexes: list[bool] = []
+        current_offset: int = 0
 
         for field_name, field in cls.__dict__.items():
             if isinstance(field, Field.BaseType):
@@ -65,6 +70,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
 
                 field_sizes_dict[field_name] = field.size
                 field_offsets.append(current_offset)
+                field_indexes.append(field.index)
                 current_offset += field.size
                 actual_type = type(field)
                 cls._field_types[field_name] = actual_type
@@ -90,6 +96,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         mdef.field_sizes = [field_sizes_dict[field] for field in cls._model_fields]
         mdef.field_types = [field_types_raw_dict[field] for field in cls._model_fields]
         mdef.field_offsets = field_offsets
+        mdef.field_indexes = field_indexes
 
         cls._mdef = mdef
         cls._cache_init = True

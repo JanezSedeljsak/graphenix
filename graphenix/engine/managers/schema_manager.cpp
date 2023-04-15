@@ -6,10 +6,11 @@
 #include <filesystem>
 #include <omp.h>
 #include "../util.cpp"
+#include "../parser.hpp"
 
 using namespace std;
 
-void SchemaManager::create_schema(const string &db_name, const vector<string> &table_names, bool delete_old)
+void SchemaManager::create_schema(const string &db_name, const vector<model_def> &models, bool delete_old)
 {
     MAKE_GRAPHENIX_DB_DIR();
     if (delete_old && SchemaManager::schema_exists(db_name)) 
@@ -25,10 +26,10 @@ void SchemaManager::create_schema(const string &db_name, const vector<string> &t
     }
 
     #pragma omp parallel for schedule(static) 
-    for (const auto &table_name : table_names)
+    for (const auto &model : models)
     {
         // create model file
-        string filename = get_file_name(db_name, table_name);
+        string filename = get_file_name(db_name, model.model_name);
         ofstream table_outfile(filename, ios::out | ios::binary);
         if (!table_outfile)
         {
@@ -38,7 +39,7 @@ void SchemaManager::create_schema(const string &db_name, const vector<string> &t
         table_outfile.close();
 
         // create index file
-        string ix_filename = get_ix_file_name(db_name, table_name);
+        string ix_filename = get_ix_file_name(db_name, model.model_name);
         ofstream ix_outfile(ix_filename, ios::out | ios::binary);
         if (!ix_outfile)
         {
@@ -49,6 +50,22 @@ void SchemaManager::create_schema(const string &db_name, const vector<string> &t
         ix_outfile.write(reinterpret_cast<const char*>(&deleted_head), IX_SIZE); // head pointer
         ix_outfile.write(reinterpret_cast<const char*>(&deleted_head), IX_SIZE); // tail pointer
         ix_outfile.close();
+
+        // loop through the fields to check if any index files need to be created
+        for (size_t i = 0; i < model.field_indexes.size(); i++) 
+        {
+            if (model.field_indexes[i])
+            {
+                const string fix_file_name = get_field_ix_file_name(db_name, model.model_name, model.field_names[i]);
+                ofstream fix_file(fix_file_name, ios::out | ios::binary);
+                if (!fix_file)
+                {
+                    throw runtime_error("Failed to create binary file for field index!");
+                }
+
+                fix_file.close();
+            }
+        }
     }
 }
 

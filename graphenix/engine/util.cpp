@@ -15,21 +15,27 @@
 
 using namespace std;
 
-string get_db_path(const string &schema_name)
+inline string get_db_path(const string &schema_name)
 {
     return "graphenix_db/" + schema_name;
 }
 
-string get_file_name(const string &schema_name, const string &model_name)
+inline string get_file_name(const string &schema_name, const string &model_name)
 {
     // eg. school/students.bin;
     return "graphenix_db/" + schema_name + "/" + model_name + ".bin";
 }
 
-string get_ix_file_name(const string &schema_name, const string &model_name)
+inline string get_ix_file_name(const string &schema_name, const string &model_name)
 {
     // eg. school/ix_students.bin; <- primary key index
     return "graphenix_db/" + schema_name + "/ix_" + model_name + ".bin";
+}
+
+inline string get_field_ix_file_name(const string &schema_name, const string &model_name, const string &field_name)
+{
+    // eg. school/fix_students_birthdate.bin; <- field search tree
+    return "graphenix_db/" + schema_name + "/fix_" + model_name + "_" + field_name + ".bin";
 }
 
 int64_t get_record_offset(const int64_t record_id, fstream &ix_file)
