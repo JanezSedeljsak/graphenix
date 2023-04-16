@@ -81,29 +81,28 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     std::sort(offsets.begin(), offsets.end());
     std::vector<std::vector<int64_t>> clusters = clusterify(offsets);
 
-    char** raw_rows = new char*[map_size];
-    std::vector<py::bytes> rows(map_size);
     bool check_limit = qobject.limit > 0;
     bool is_sorting = qobject.field_indexes.size() > 0;
+    char** raw_rows = new char*[map_size];
+    std::vector<py::bytes> rows(!check_limit ? map_size : qobject.limit);
     idx = 0;
 
-    char* buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size + IX_SIZE];
+    char* buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
     bool break_cluster_loop = false;
     for (const auto& cluster : clusters)
     {
         const int64_t first_offset = cluster.front();
         const int64_t last_offset = cluster.back();
-        file.seekg(first_offset, ios::beg);
-        file.read(buffer, last_offset + mdef.record_size + IX_SIZE - first_offset);
+        file.seekg(first_offset + IX_SIZE, ios::beg);
+        file.read(buffer, last_offset + mdef.record_size - first_offset);
         for (const auto& offset : cluster)
         {
             raw_rows[idx] = new char[mdef.record_size + IX_SIZE];
-            memcpy(raw_rows[idx], buffer + offset + IX_SIZE - first_offset, mdef.record_size);
+            memcpy(raw_rows[idx], buffer + offset - first_offset, mdef.record_size);
             memcpy(raw_rows[idx++] + mdef.record_size, reinterpret_cast<const char *>(&offset2ix[offset]), IX_SIZE);
             // TODO: filtering for non indexed fields should be here
             if (check_limit && !is_sorting && idx > qobject.limit)
             {
-                std::cout << "break early\n";
                 break_cluster_loop = true;
                 break;
             }
@@ -119,7 +118,7 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     file.close();
 
     if (is_sorting)
-        std::sort(raw_rows, raw_rows + map_size, [&](char* a, char* b) {
+        std::sort(raw_rows, raw_rows + idx, [&](char* a, char* b) {
             return qobject(a, b);
         });
 
