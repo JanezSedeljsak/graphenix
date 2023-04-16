@@ -52,13 +52,39 @@ class GraphenixPerfTests(CommonTestBase):
 
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
-    @CommonTestBase.perf("Read 1M reacords at once", times=5)
+    @CommonTestBase.perf("Read 1M records at once", times=5)
     def test_read_1M_records(self):
         AMOUNT = 1_000_000
-        count, _ = City.all()
+        count, rows = City.all()
         self.assertEqual(AMOUNT, count)
+        self.assertIsInstance(next(rows), City)
 
+    @CommonTestBase().prepare_and_destroy
+    @CommonTestBase().prepare_1M_cities
+    @CommonTestBase.perf("Read with limit 100 from Model with 1M records", times=5)
+    def test_read_with_limit_1M_records_table(self):
+        LIMIT = 100
+        count, rows = City.limit(LIMIT).all()
+        self.assertEqual(LIMIT, count)
+        self.assertIsInstance(next(rows), City)
 
+    @CommonTestBase().prepare_and_destroy
+    @CommonTestBase().prepare_1M_cities
+    @CommonTestBase.perf("Read with order by country from Model with 1M records", times=5)
+    def test_read_with_order_by_1M_records_table(self):
+        AMOUNT = 1_000_000
+        count, rows = City.order(City.country).all()
+        self.assertEqual(AMOUNT, count)
+        self.assertIsInstance(next(rows), City)
+
+    @CommonTestBase().prepare_and_destroy
+    @CommonTestBase().prepare_1M_cities
+    @CommonTestBase.perf("Read with limit 100 + order by country from Model with 1M records", times=5)
+    def test_read_with_limit_order_by_1M_records_table(self):
+        LIMIT = 100
+        count, rows = City.order(City.country).limit(LIMIT).all()
+        self.assertEqual(LIMIT, count)
+        self.assertIsInstance(next(rows), City)
 
 
 if __name__ == '__main__':

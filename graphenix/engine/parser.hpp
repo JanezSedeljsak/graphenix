@@ -43,7 +43,7 @@ struct query_object
     model_def mdef;
     std::vector<int> field_indexes;
     std::vector<bool> order_asc;
-    int64_t limit;
+    size_t limit;
 
     bool operator()(char *a, char *b) const
     {

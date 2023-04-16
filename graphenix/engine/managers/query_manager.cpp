@@ -83,9 +83,9 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
 
     bool check_limit = qobject.limit > 0;
     bool is_sorting = qobject.field_indexes.size() > 0;
-    char** raw_rows = new char*[map_size];
+    std::vector<char*> raw_rows;
+    raw_rows.reserve(!check_limit ? map_size : qobject.limit);
     std::vector<py::bytes> rows(!check_limit ? map_size : qobject.limit);
-    idx = 0;
 
     char* buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
     bool break_cluster_loop = false;
@@ -97,14 +97,31 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
         file.read(buffer, last_offset + mdef.record_size - first_offset);
         for (const auto& offset : cluster)
         {
-            raw_rows[idx] = new char[mdef.record_size + IX_SIZE];
-            memcpy(raw_rows[idx], buffer + offset - first_offset, mdef.record_size);
-            memcpy(raw_rows[idx++] + mdef.record_size, reinterpret_cast<const char *>(&offset2ix[offset]), IX_SIZE);
+            char* current_record = new char[mdef.record_size + IX_SIZE];
+            memcpy(current_record, buffer + offset - first_offset, mdef.record_size);
+            memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset2ix[offset]), IX_SIZE);
             // TODO: filtering for non indexed fields should be here
-            if (check_limit && !is_sorting && idx > qobject.limit)
+            // if (conditions_not_meet) continue;
+            if (is_sorting)
             {
-                break_cluster_loop = true;
-                break;
+                auto it = std::lower_bound(raw_rows.begin(), raw_rows.end(), current_record, [&](char* a, char* b) {
+                    return qobject(a, b);
+                });
+                raw_rows.insert(it, current_record);
+                if (raw_rows.size() > qobject.limit)
+                {
+                    raw_rows.resize(qobject.limit);
+                }
+            }
+            else
+            {
+                raw_rows.push_back(current_record);
+                if (check_limit && raw_rows.size() > qobject.limit)
+                {
+                    raw_rows.resize(qobject.limit);
+                    break_cluster_loop = true;
+                    break;
+                }
             }
         }
 
@@ -117,21 +134,12 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     delete[] buffer;
     file.close();
 
-    if (is_sorting)
-        std::sort(raw_rows, raw_rows + idx, [&](char* a, char* b) {
-            return qobject(a, b);
-        });
-
-    if (check_limit && idx > qobject.limit)
-        rows.resize(qobject.limit);
-
-    for (size_t i = 0, n = rows.size(); i < n; i++)
-        rows[i] = py::bytes(raw_rows[i], mdef.record_size + IX_SIZE);
-
-    for (int64_t i = 0; i < idx; i++)
+    for (size_t i = 0, n = raw_rows.size(); i < n; i++)
+    {
+        rows[i] = py::bytes(raw_rows[i], mdef.record_size + IX_SIZE); 
         delete[] raw_rows[i];
+    }
 
-    delete[] raw_rows;
     return rows;
 }
 
