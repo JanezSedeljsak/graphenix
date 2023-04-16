@@ -19,12 +19,10 @@
 #include "../util.cpp"
 #include "../parser.hpp"
 
-inline std::unordered_map<int64_t, int64_t> ix_read_all(std::fstream &ix_file)
+inline void ix_read_all(std::fstream &ix_file, hashmap_ii &offset2ix, vector_i64 &offsets)
 {
     ix_file.seekg(0, std::ios::end);
     const int64_t file_size = ix_file.tellg();
-
-    std::unordered_map<int64_t, int64_t> ix2offset;
     std::vector<char> buffer(CHUNK_SIZE);
 
     int64_t offset = PK_IX_HEAD_SIZE;
@@ -41,14 +39,14 @@ inline std::unordered_map<int64_t, int64_t> ix_read_all(std::fstream &ix_file)
             if (rec_offset >= 0)
             {
                 int64_t rec_ix = (i + offset) / IX_SIZE - 2;
-                ix2offset[rec_ix] = rec_offset;
+                // ix2offset[rec_ix] = rec_offset;
+                offset2ix[rec_offset] = rec_ix;
+                offsets.push_back(rec_offset);
             }
         }
 
         offset += current_chunk_size;
     }
-
-    return ix2offset;
 }
 
 
@@ -65,29 +63,24 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     // if there are multiple read all of them and then make a set intersection between them
     // later it will also need to handle OR/AND operators
     // if there are no filters and no order fields that don't have index trees and a limit is defined take only <qobject.limit> amount of records
-    const std::unordered_map<int64_t, int64_t> ix2offset = ix_read_all(ix_file);
-    const size_t map_size = ix2offset.size();
-    ix_file.close();
-    int64_t idx = 0;
-    
-    std::unordered_map<int64_t, int64_t> offset2ix;
-    std::vector<int64_t> offsets(map_size);
-    for (const auto& [ix, record_offset] : ix2offset)
-    {
-        offset2ix[record_offset] = ix;
-        offsets[idx++] = record_offset;
-    }
+    // hashmap_ii ix2offset;
+    hashmap_ii offset2ix;
+    vector_i64 offsets;
 
+    ix_read_all(ix_file, offset2ix, offsets);
+    const size_t ix_amount = offsets.size();
+    ix_file.close();
+    
     std::sort(offsets.begin(), offsets.end());
-    std::vector<std::vector<int64_t>> clusters = clusterify(offsets);
+    std::vector<vector_i64> clusters = clusterify(offsets);
 
     // check limit is implemented this way so that if limit is >= 1000 it sorts at the end
     const bool check_limit = 0 < qobject.limit;
     const bool dynamic_check_limit = check_limit && qobject.limit < 1000;
     const bool is_sorting = qobject.field_indexes.size() > 0;
     std::vector<char*> raw_rows;
-    raw_rows.reserve(!dynamic_check_limit ? map_size : qobject.limit);
-    std::vector<py::bytes> rows(qobject.limit == 0 ? map_size : qobject.limit);
+    raw_rows.reserve(!dynamic_check_limit ? ix_amount : qobject.limit);
+    std::vector<py::bytes> rows(qobject.limit == 0 ? ix_amount : qobject.limit);
 
     char* buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
     bool break_cluster_loop = false;

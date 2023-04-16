@@ -17,6 +17,10 @@
 #define MIN_CLUSTER_SIZE 3
 #define MAX_CLUSTER_SIZE 100000 // 100 KB
 
+typedef std::unordered_map<int64_t, int64_t> hashmap_ii;
+typedef std::vector<int64_t> vector_i64;
+typedef std::vector<int> vector_i;
+
 enum FIELD_TYPE
 {
     INT = 0,
@@ -30,9 +34,9 @@ struct model_def
 {
     std::string db_name;
     std::string model_name;
-    std::vector<int> field_sizes;
-    std::vector<int> field_types;
-    std::vector<int> field_offsets;
+    vector_i field_sizes;
+    vector_i field_types;
+    vector_i field_offsets;
     std::vector<bool> field_indexes;
     std::vector<std::string> field_names;
     int64_t record_size;
@@ -41,7 +45,7 @@ struct model_def
 struct query_object
 {
     model_def mdef;
-    std::vector<int> field_indexes;
+    vector_i field_indexes;
     std::vector<bool> order_asc;
     size_t limit;
 
