@@ -57,7 +57,10 @@ class GraphenixPerfTests(CommonTestBase):
         AMOUNT = 1_000_000
         count, rows = City.all()
         self.assertEqual(AMOUNT, count)
-        self.assertIsInstance(next(rows), City)
+        first = next(rows)
+        self.assertIsInstance(first, City)
+        self.assertEqual(0, first.id)
+        self.assertEqual('SLO0', first.country)
 
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
@@ -66,25 +69,51 @@ class GraphenixPerfTests(CommonTestBase):
         LIMIT = 100
         count, rows = City.limit(LIMIT).all()
         self.assertEqual(LIMIT, count)
-        self.assertIsInstance(next(rows), City)
+        first = next(rows)
+        self.assertIsInstance(first, City)
+        self.assertEqual(0, first.id)
+        self.assertEqual('SLO0', first.country)
 
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with order by country from Model with 1M records", times=5)
     def test_read_with_order_by_1M_records_table(self):
         AMOUNT = 1_000_000
-        count, rows = City.order(City.country).all()
+        count, rows = City.order(City.country.desc()).all()
         self.assertEqual(AMOUNT, count)
-        self.assertIsInstance(next(rows), City)
+        first = next(rows)
+        last_id = AMOUNT - 1
+        self.assertIsInstance(first, City)
+        self.assertEqual(last_id, first.id)
+        self.assertEqual(f'SLO{last_id}', first.country)
 
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with limit 100 + order by country from Model with 1M records", times=5)
     def test_read_with_limit_order_by_1M_records_table(self):
+        AMOUNT = 1_000_000
         LIMIT = 100
-        count, rows = City.order(City.country).limit(LIMIT).all()
+        count, rows = City.order(City.country.desc()).limit(LIMIT).all()
         self.assertEqual(LIMIT, count)
-        self.assertIsInstance(next(rows), City)
+        first = next(rows)
+        last_id = AMOUNT - 1
+        self.assertIsInstance(first, City)
+        self.assertEqual(last_id, first.id)
+        self.assertEqual(f'SLO{last_id}', first.country)
+
+    @CommonTestBase().prepare_and_destroy
+    @CommonTestBase().prepare_1M_cities
+    @CommonTestBase.perf("Read with limit 1500 + order by country from Model with 1M records", times=5)
+    def test_read_with_limit1500_order_by_1M_records_table(self):
+        AMOUNT = 1_000_000
+        LIMIT = 1500
+        count, rows = City.order(City.country.desc()).limit(LIMIT).all()
+        self.assertEqual(LIMIT, count)
+        first = next(rows)
+        last_id = AMOUNT - 1
+        self.assertIsInstance(first, City)
+        self.assertEqual(last_id, first.id)
+        self.assertEqual(f'SLO{last_id}', first.country)
 
 
 if __name__ == '__main__':

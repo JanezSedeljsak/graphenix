@@ -46,9 +46,9 @@ class CommonTestBase(unittest.TestCase):
             AMOUNT = 1_000_000
             temp_record = City(name="Ljubljana", country="SLO", population_thousands=280)
             for i in range(AMOUNT):
-                temp_record.save()
                 temp_record.country = f'SLO{i}'
                 temp_record._id = -1
+                temp_record.save()
 
             result = method(*args, **kwargs)
             return result
