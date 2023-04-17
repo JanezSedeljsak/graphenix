@@ -19,7 +19,7 @@
 #include "../util.cpp"
 #include "../parser.hpp"
 
-inline void ix_read_all(std::fstream &ix_file, hashmap_ii &offset2ix, vector_i64 &offsets)
+inline void ix_read_all(std::fstream &ix_file, std::vector<std::pair<int64_t, int64_t>> &offsets)
 {
     ix_file.seekg(0, std::ios::end);
     const int64_t file_size = ix_file.tellg();
@@ -40,8 +40,8 @@ inline void ix_read_all(std::fstream &ix_file, hashmap_ii &offset2ix, vector_i64
             {
                 int64_t rec_ix = (i + offset) / IX_SIZE - 2;
                 // ix2offset[rec_ix] = rec_offset;
-                offset2ix[rec_offset] = rec_ix;
-                offsets.push_back(rec_offset);
+                // offset2ix[rec_offset] = rec_ix;
+                offsets.push_back(std::make_pair(rec_offset, rec_ix));
             }
         }
 
@@ -64,15 +64,15 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     // later it will also need to handle OR/AND operators
     // if there are no filters and no order fields that don't have index trees and a limit is defined take only <qobject.limit> amount of records
     // hashmap_ii ix2offset;
-    hashmap_ii offset2ix;
-    vector_i64 offsets;
+    // hashmap_ii offset2ix;
+    std::vector<std::pair<int64_t, int64_t>> offsets;
 
-    ix_read_all(ix_file, offset2ix, offsets);
+    ix_read_all(ix_file, offsets);
     const size_t ix_amount = offsets.size();
     ix_file.close();
     
     std::sort(offsets.begin(), offsets.end());
-    std::vector<vector_i64> clusters = clusterify(offsets);
+    auto const& clusters = clusterify(offsets);
 
     // check limit is implemented this way so that if limit is >= 1000 it sorts at the end
     const bool check_limit = 0 < qobject.limit;
@@ -80,21 +80,21 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     const bool is_sorting = qobject.field_indexes.size() > 0;
     std::vector<char*> raw_rows;
     raw_rows.reserve(!dynamic_check_limit ? ix_amount : qobject.limit);
-    std::vector<py::bytes> rows(qobject.limit == 0 ? ix_amount : qobject.limit);
+    std::vector<py::bytes> rows(!check_limit ? ix_amount : qobject.limit);
 
     char* buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
     bool break_cluster_loop = false;
     for (const auto& cluster : clusters)
     {
-        const int64_t first_offset = cluster.front();
-        const int64_t last_offset = cluster.back();
+        const int64_t first_offset = cluster.front().first;
+        const int64_t last_offset = cluster.back().first;
         file.seekg(first_offset + IX_SIZE, ios::beg);
         file.read(buffer, last_offset + mdef.record_size - first_offset);
         for (const auto& offset : cluster)
         {
             char* current_record = new char[mdef.record_size + IX_SIZE];
-            memcpy(current_record, buffer + offset - first_offset, mdef.record_size);
-            memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset2ix[offset]), IX_SIZE);
+            memcpy(current_record, buffer + offset.first - first_offset, mdef.record_size);
+            memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset.second), IX_SIZE);
             // TODO: filtering for non indexed fields should be here
             // if (conditions_not_meet) delete[] current_record; continue;
             if (is_sorting && dynamic_check_limit)

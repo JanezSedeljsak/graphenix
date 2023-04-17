@@ -71,26 +71,28 @@ void set_record_inactive(const int64_t record_id, fstream &ix_file)
     ix_file.write(reinterpret_cast<const char *>(&inactive_status), IX_SIZE);
 }
 
-inline vector<vector<int64_t>> clusterify(vector<int64_t> &offsets)
+inline vector<vector<pair<int64_t, int64_t>>> clusterify(vector<pair<int64_t, int64_t>> &offsets)
 {
-    vector<vector<int64_t>> clusters;
+    vector<vector<pair<int64_t, int64_t>>> clusters;
+    const size_t n = offsets.size();
     size_t i = 0;
-    while (i < offsets.size())
+    
+    while (i < n)
     {
         size_t j = i;
-        while (j < offsets.size() - 1 && offsets[j + 1] - offsets[i] <= MAX_CLUSTER_SIZE && j - i + 2 < MAX_CLUSTER_SIZE)
+        while (j < n - 1 && offsets[j + 1].first - offsets[i].first <= MAX_CLUSTER_SIZE && j - i + 2 < MAX_CLUSTER_SIZE)
         {
             j++;
         }
         if (j - i + 1 >= MIN_CLUSTER_SIZE)
         {
-            clusters.emplace_back(offsets.begin() + i, offsets.begin() + j + 1);
+            clusters.emplace_back(make_move_iterator(offsets.begin() + i), make_move_iterator(offsets.begin() + j + 1));
         }
         else
         {
             for (size_t k = i; k <= j; k++)
             {
-                clusters.emplace_back(vector<int64_t>{offsets[k]});
+                clusters.emplace_back(vector<pair<int64_t, int64_t>>{move(offsets[k])});
             }
         }
         i = j + 1;

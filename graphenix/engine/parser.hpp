@@ -15,7 +15,7 @@
 #define ID_KEY "_id"
 
 #define MIN_CLUSTER_SIZE 3
-#define MAX_CLUSTER_SIZE 100000 // 100 KB
+#define MAX_CLUSTER_SIZE 1000000 // 1 MB
 
 typedef std::unordered_map<int64_t, int64_t> hashmap_ii;
 typedef std::vector<int64_t> vector_i64;
