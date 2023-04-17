@@ -1,10 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <vector>
-#include <map>
-#include <unordered_map>
 #include <string>
 #include <numeric>
 #include <filesystem>
@@ -12,8 +8,6 @@
 #include <algorithm>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <omp.h>
-#include <algorithm>
 
 #include "managers.h"
 #include "../util.cpp"
@@ -49,10 +43,9 @@ inline void ix_read_all(std::fstream &ix_file, std::vector<std::pair<int64_t, in
     }
 }
 
-
-std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
+std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
 {
-    const auto& mdef = qobject.mdef;
+    const auto &mdef = qobject.mdef;
     std::string file_name = get_file_name(mdef.db_name, mdef.model_name);
     std::string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
 
@@ -70,41 +63,48 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     ix_read_all(ix_file, offsets);
     const size_t ix_amount = offsets.size();
     ix_file.close();
-    
+
     std::sort(offsets.begin(), offsets.end());
-    auto const& clusters = clusterify(offsets);
+    const auto &clusters = clusterify(offsets);
 
     // check limit is implemented this way so that if limit is >= 1000 it sorts at the end
     const bool check_limit = 0 < qobject.limit;
     const bool dynamic_check_limit = check_limit && qobject.limit < 1000;
     const bool is_sorting = qobject.field_indexes.size() > 0;
-    std::vector<char*> raw_rows;
+    std::vector<char *> raw_rows;
     raw_rows.reserve(!dynamic_check_limit ? ix_amount : qobject.limit);
     std::vector<py::bytes> rows(!check_limit ? ix_amount : qobject.limit);
 
-    char* buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
+    char *buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
     bool break_cluster_loop = false;
-    for (const auto& cluster : clusters)
+
+    for (const auto &cluster : clusters)
     {
         const int64_t first_offset = cluster.front().first;
         const int64_t last_offset = cluster.back().first;
         file.seekg(first_offset + IX_SIZE, ios::beg);
         file.read(buffer, last_offset + mdef.record_size - first_offset);
-        for (const auto& offset : cluster)
+        for (const auto &offset : cluster)
         {
-            char* current_record = new char[mdef.record_size + IX_SIZE];
+            char *current_record = new char[mdef.record_size + IX_SIZE];
             memcpy(current_record, buffer + offset.first - first_offset, mdef.record_size);
             memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset.second), IX_SIZE);
             // TODO: filtering for non indexed fields should be here
             // if (conditions_not_meet) delete[] current_record; continue;
             if (is_sorting && dynamic_check_limit)
             {
-                auto it = std::lower_bound(raw_rows.begin(), raw_rows.end(), current_record, [&](char* a, char* b) {
-                    return qobject(a, b);
-                });
-                raw_rows.insert(it, current_record);
-                if (dynamic_check_limit && raw_rows.size() > qobject.limit)
+                if (raw_rows.size() >= qobject.limit && qobject(raw_rows.back(), current_record))
                 {
+                    delete[] current_record;
+                    continue;
+                }
+
+                auto it = std::lower_bound(raw_rows.begin(), raw_rows.end(), current_record, [&](char *a, char *b)
+                                           { return qobject(a, b); });
+                raw_rows.insert(it, current_record);
+                if (raw_rows.size() > qobject.limit)
+                {
+                    delete[] raw_rows[qobject.limit];
                     raw_rows.resize(qobject.limit);
                 }
             }
@@ -113,6 +113,7 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
                 raw_rows.push_back(current_record);
                 if (!is_sorting && dynamic_check_limit && raw_rows.size() > qobject.limit)
                 {
+                    delete[] raw_rows[qobject.limit];
                     raw_rows.resize(qobject.limit);
                     break_cluster_loop = true;
                     break;
@@ -130,12 +131,11 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     file.close();
 
     if (is_sorting && !dynamic_check_limit)
-        std::sort(raw_rows.begin(), raw_rows.end(), [&](char* a, char* b) {
-            return qobject(a, b);
-        });
+        std::sort(raw_rows.begin(), raw_rows.end(), [&](char *a, char *b)
+                  { return qobject(a, b); });
 
     for (size_t i = 0, n = check_limit ? qobject.limit : raw_rows.size(); i < n; i++)
-        rows[i] = py::bytes(raw_rows[i], mdef.record_size + IX_SIZE); 
+        rows[i] = py::bytes(raw_rows[i], mdef.record_size + IX_SIZE);
 
     for (size_t i = 0, n = raw_rows.size(); i < n; i++)
         delete[] raw_rows[i];
@@ -143,16 +143,16 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object& qobject)
     return rows;
 }
 
-py::dict QueryManager::build_record(const model_def& mdef, const py::bytes raw_record)
+py::dict QueryManager::build_record(const model_def &mdef, const py::bytes raw_record)
 {
-    char* buffer = new char[mdef.record_size + IX_SIZE];
-    char* raw_record_data;
+    char *buffer = new char[mdef.record_size + IX_SIZE];
+    char *raw_record_data;
     Py_ssize_t raw_rec_size;
     PyBytes_AsStringAndSize(raw_record.ptr(), &raw_record_data, &raw_rec_size);
     memcpy(buffer, raw_record_data, mdef.record_size + IX_SIZE);
 
     const int64_t fields_count = mdef.field_sizes.size();
-    vector<char*> bin_values(fields_count);
+    vector<char *> bin_values(fields_count);
     int64_t offset = 0;
 
     for (int64_t i = 0; i < fields_count; i++)
@@ -165,7 +165,7 @@ py::dict QueryManager::build_record(const model_def& mdef, const py::bytes raw_r
 
     std::vector<py::object> record_vector = PYTHNOIZE_RECORD(mdef, bin_values);
     std::unordered_map<std::string, py::object> record;
-    for (int64_t i = 0; i < fields_count; i++) 
+    for (int64_t i = 0; i < fields_count; i++)
     {
         record[mdef.field_names[i]] = record_vector[i];
     }
