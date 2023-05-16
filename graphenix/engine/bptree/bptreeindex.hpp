@@ -31,7 +31,7 @@ public:
         ix_file.close();
     }
 
-    void make()
+    void write()
     {
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         root->write(ix_file);

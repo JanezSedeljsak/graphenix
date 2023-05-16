@@ -11,7 +11,8 @@ using namespace std;
 class BPTreeNode
 {
 public:
-    inline void set_defaults()
+
+    inline void flush()
     {
         is_leaf = true;
         offset = 0;
@@ -19,6 +20,8 @@ public:
         prev = -1;
         keys.clear();
         data.clear();
+        children.clear();
+        actual_children.clear();
     }
 
     int64_t offset;
@@ -31,7 +34,7 @@ public:
     BPTreeNode(int64_t _offset)
     {
         offset = _offset;
-        set_defaults();
+        flush();
     }
 
     void write(fstream &ix_file)
@@ -73,6 +76,13 @@ public:
         delete[] buffer;
     }
 
+    BPTreeNode *get_nth_child(int idx)
+    {
+        int file_offset = children[idx];
+        BPTreeNode *child = new BPTreeNode(file_offset);
+        return child;
+    }
+
     /**
      * @brief This method is a simple DFS to read the tree into memory
      * @param ix_file : stream for reading the file (shouldn't be closed while reading)
@@ -94,7 +104,7 @@ public:
 
     void read(fstream &ix_file)
     {
-        set_defaults();
+        flush();
         ix_file.seekg(offset, ios::beg);
         char *buffer = new char[BLOCK_SIZE];
         ix_file.read(buffer, BLOCK_SIZE);
@@ -127,7 +137,8 @@ public:
         for (size_t i = 0; i < keys.size(); i++)
         {
             cout << "Node: " << keys[i];
-            if (is_leaf) {
+            if (is_leaf)
+            {
                 cout << ", " << data[i];
             }
             cout << endl;
