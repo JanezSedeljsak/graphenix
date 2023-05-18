@@ -17,7 +17,7 @@ public:
     vector<int64_t> children, data;
     vector<unique_ptr<BPTreeNode>> actual_children;
     int64_t prev, next;
-    
+
     // inline void deallocate_children()
     // {
     //     // children are stored on the heap and thus need to be deallocated manually
@@ -40,6 +40,13 @@ public:
         children.clear();
         actual_children.clear();
         // deallocate_children();
+    }
+
+    inline BPTreeNode *get_from_offset(fstream &ix_file, int offset)
+    {
+        BPTreeNode *child = new BPTreeNode(offset);
+        child->read(ix_file);
+        return child;
     }
 
     BPTreeNode(int64_t _offset)
@@ -87,11 +94,14 @@ public:
         delete[] buffer;
     }
 
-    BPTreeNode *get_child_from_offset(fstream &ix_file, int offset)
+    BPTreeNode *get_prev(fstream &ix_file)
     {
-        BPTreeNode *child = new BPTreeNode(offset);
-        child->read(ix_file);
-        return child;
+        return get_from_offset(prev);
+    }
+
+    BPTreeNode *get_next(fstream &ix_file)
+    {
+        return get_from_offset(next);
     }
 
     /**
@@ -107,7 +117,7 @@ public:
         {
             if (offset != -1)
             {
-                BPTreeNode *temp = BPTreeNode::get_child_from_offset(ix_file, offset);
+                BPTreeNode *temp = get_from_offset(ix_file, offset);
                 actual_children.push_back(unique_ptr<BPTreeNode>(temp));
             }
         }
