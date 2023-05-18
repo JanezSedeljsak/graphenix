@@ -63,4 +63,39 @@ public:
         if (filesystem::exists(ix_filename))
             filesystem::remove(ix_filename);
     }
+
+    inline BPTreeNode* search_leaf(BPTreeNode *node, fstream &ix_file)
+    {
+        for (const auto &child : node->actual_children)
+        {
+
+        }
+
+        return NULL;
+    }
+
+    inline BPTreeNode* search_internal(BPTreeNode *node, fstream &ix_file)
+    {
+        for (const auto &child : node->children)
+        {
+            
+        }
+
+        return NULL;
+    }
+
+    BPTreeNode* find()
+    {
+        if (root == NULL)
+            return NULL;
+        
+        fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        root->read(ix_file);
+        BPTreeNode *node = !root->is_leaf 
+            ? search_leaf(root, ix_file) 
+            : search_internal(root, ix_file);
+
+        ix_file.close();
+        return node;
+    }
 };

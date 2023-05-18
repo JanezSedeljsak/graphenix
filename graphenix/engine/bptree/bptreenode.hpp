@@ -11,6 +11,16 @@ using namespace std;
 class BPTreeNode
 {
 public:
+    // inline void deallocate_children()
+    // {
+    //     // children are stored on the heap and thus need to be deallocated manually
+    //     for (auto &child : actual_children)
+    //     {
+    //         child->deallocate_children();
+    //         delete child;
+    //     }
+    //     actual_children.clear();
+    // }
 
     inline void flush()
     {
@@ -22,13 +32,14 @@ public:
         data.clear();
         children.clear();
         actual_children.clear();
+        // deallocate_children();
     }
 
     int64_t offset;
     bool is_leaf;
     vector<int64_t> keys;
     vector<int64_t> children, data;
-    vector<BPTreeNode> actual_children;
+    vector<unique_ptr<BPTreeNode>> actual_children;
     int64_t prev, next;
 
     BPTreeNode(int64_t _offset)
@@ -76,10 +87,10 @@ public:
         delete[] buffer;
     }
 
-    BPTreeNode *get_nth_child(int idx)
+    BPTreeNode *get_child_from_offset(fstream &ix_file, int offset)
     {
-        int file_offset = children[idx];
-        BPTreeNode *child = new BPTreeNode(file_offset);
+        BPTreeNode *child = new BPTreeNode(offset);
+        child->read(ix_file);
         return child;
     }
 
@@ -90,14 +101,14 @@ public:
     void read_recursive(fstream &ix_file)
     {
         read(ix_file); // read current
+        // deallocate_children();
         actual_children.clear();
-        for (const auto &child : children)
+        for (const auto &offset : children)
         {
-            if (child != -1)
+            if (offset != -1)
             {
-                BPTreeNode temp(child); // create with offset
-                temp.read(ix_file);
-                actual_children.push_back(temp);
+                BPTreeNode *temp = BPTreeNode::get_child_from_offset(ix_file, offset);
+                actual_children.push_back(unique_ptr<BPTreeNode>(temp));
             }
         }
     }
@@ -148,6 +159,6 @@ public:
             return;
 
         for (auto &child : actual_children)
-            child.print(true);
+            child->print(true);
     }
 };
