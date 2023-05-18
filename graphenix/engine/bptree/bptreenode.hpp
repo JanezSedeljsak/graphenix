@@ -11,6 +11,13 @@ using namespace std;
 class BPTreeNode
 {
 public:
+    int64_t offset;
+    bool is_leaf;
+    vector<int64_t> keys;
+    vector<int64_t> children, data;
+    vector<unique_ptr<BPTreeNode>> actual_children;
+    int64_t prev, next;
+    
     // inline void deallocate_children()
     // {
     //     // children are stored on the heap and thus need to be deallocated manually
@@ -34,13 +41,6 @@ public:
         actual_children.clear();
         // deallocate_children();
     }
-
-    int64_t offset;
-    bool is_leaf;
-    vector<int64_t> keys;
-    vector<int64_t> children, data;
-    vector<unique_ptr<BPTreeNode>> actual_children;
-    int64_t prev, next;
 
     BPTreeNode(int64_t _offset)
     {

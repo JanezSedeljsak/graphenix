@@ -64,36 +64,57 @@ public:
             filesystem::remove(ix_filename);
     }
 
-    inline BPTreeNode* search_leaf(BPTreeNode *node, fstream &ix_file)
+    inline BPTreeNode *search_leaf(int64_t search, BPTreeNode *node, fstream &ix_file)
     {
-        for (const auto &child : node->actual_children)
+        int low = 0, high = node->keys.size();
+        while (low < high)
         {
+            int mid = (low + high) / 2;
+            if (node->keys[mid] == search)
+                return node;
 
+            if (node->keys[mid] > search)
+                high = mid;
+            else
+                low = mid + 1;
         }
 
         return NULL;
     }
 
-    inline BPTreeNode* search_internal(BPTreeNode *node, fstream &ix_file)
+    inline BPTreeNode *search_internal(int64_t search, BPTreeNode *node, std::fstream &ix_file)
     {
-        for (const auto &child : node->children)
+        int low = 0, high = node->keys.size();
+        while (low < high)
         {
-            
+            int mid = (low + high) / 2;
+            if (node->keys[mid] == search) 
+                break;
+
+            if (node->keys[mid] > search)
+                high = mid;
+            else
+                low = mid + 1;
         }
 
-        return NULL;
+        unique_ptr<BPTreeNode> child(new BPTreeNode(node->children[low]));
+        child->read(ix_file);
+
+        return child->is_leaf 
+            ? search_leaf(search, child.get(), ix_file) 
+            : search_internal(search, child.get(), ix_file);
     }
 
-    BPTreeNode* find()
+    BPTreeNode *find(int64_t search)
     {
         if (root == NULL)
             return NULL;
-        
+
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         root->read(ix_file);
-        BPTreeNode *node = !root->is_leaf 
-            ? search_leaf(root, ix_file) 
-            : search_internal(root, ix_file);
+        BPTreeNode *node = !root->is_leaf
+                               ? search_leaf(search, root, ix_file)
+                               : search_internal(search, root, ix_file);
 
         ix_file.close();
         return node;
