@@ -8,15 +8,17 @@
 
 using namespace std;
 
+template<typename T>
 class BPTreeNode
 {
 public:
     int64_t offset;
     bool is_leaf;
-    vector<int64_t> keys;
+    vector<T> keys;
     vector<int64_t> children, data;
-    vector<unique_ptr<BPTreeNode>> actual_children;
+    vector<unique_ptr<BPTreeNode<T>>> actual_children;
     int64_t prev, next;
+    int key_size;
 
     // inline void deallocate_children()
     // {
@@ -42,15 +44,23 @@ public:
         // deallocate_children();
     }
 
-    inline BPTreeNode *get_from_offset(fstream &ix_file, int offset)
+    inline BPTreeNode<T> *get_from_offset(fstream &ix_file, int offset)
     {
-        BPTreeNode *child = new BPTreeNode(offset);
+        BPTreeNode<T> *child = new BPTreeNode<T>(offset);
         child->read(ix_file);
         return child;
     }
 
-    BPTreeNode(int64_t _offset)
+    BPTreeNode<T>(int64_t _offset)
     {
+        key_size = IX_SIZE;
+        offset = _offset;
+        flush();
+    }
+
+    BPTreeNode<T>(int64_t _offset, int size)
+    {
+        key_size = size;
         offset = _offset;
         flush();
     }
@@ -94,14 +104,14 @@ public:
         delete[] buffer;
     }
 
-    BPTreeNode *get_prev(fstream &ix_file)
+    BPTreeNode<T> *get_prev(fstream &ix_file)
     {
-        return get_from_offset(prev);
+        return get_from_offset(ix_file, prev);
     }
 
-    BPTreeNode *get_next(fstream &ix_file)
+    BPTreeNode<T> *get_next(fstream &ix_file)
     {
-        return get_from_offset(next);
+        return get_from_offset(ix_file, next);
     }
 
     /**
@@ -117,8 +127,8 @@ public:
         {
             if (offset != -1)
             {
-                BPTreeNode *temp = get_from_offset(ix_file, offset);
-                actual_children.push_back(unique_ptr<BPTreeNode>(temp));
+                BPTreeNode<T> *temp = get_from_offset(ix_file, offset);
+                actual_children.push_back(unique_ptr<BPTreeNode<T>>(temp));
             }
         }
     }

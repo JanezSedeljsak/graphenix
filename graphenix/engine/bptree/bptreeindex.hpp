@@ -7,11 +7,12 @@
 
 using namespace std;
 
+template <typename T>
 class BPTreeIndex
 {
 public:
     string ix_filename;
-    BPTreeNode *root;
+    BPTreeNode<T> *root;
 
     BPTreeIndex(string model_name, string field_name)
     {
@@ -27,7 +28,7 @@ public:
 
         ofstream ix_file(ix_filename, ios::binary | ios::out);
         ix_file.close();
-        root = new BPTreeNode(0);
+        root = new BPTreeNode<T>(0);
         ix_file.close();
     }
 
@@ -64,14 +65,14 @@ public:
             filesystem::remove(ix_filename);
     }
 
-    inline BPTreeNode *search_leaf(int64_t search, BPTreeNode *node, fstream &ix_file)
+    inline pair<int, BPTreeNode<T> *> search_leaf(int64_t search, BPTreeNode<T> *node, fstream &ix_file)
     {
         int low = 0, high = node->keys.size();
         while (low < high)
         {
             int mid = (low + high) / 2;
             if (node->keys[mid] == search)
-                return node;
+                return make_pair(mid, node);
 
             if (node->keys[mid] > search)
                 high = mid;
@@ -79,16 +80,16 @@ public:
                 low = mid + 1;
         }
 
-        return NULL;
+        return make_pair<int, BPTreeNode<T> *>(-1, NULL);
     }
 
-    inline BPTreeNode *search_internal(int64_t search, BPTreeNode *node, std::fstream &ix_file)
+    inline pair<int, BPTreeNode<T> *> search_internal(int64_t search, BPTreeNode<T> *node, std::fstream &ix_file)
     {
         int low = 0, high = node->keys.size();
         while (low < high)
         {
             int mid = (low + high) / 2;
-            if (node->keys[mid] == search) 
+            if (node->keys[mid] == search)
                 break;
 
             if (node->keys[mid] > search)
@@ -97,26 +98,26 @@ public:
                 low = mid + 1;
         }
 
-        unique_ptr<BPTreeNode> child(new BPTreeNode(node->children[low]));
+        unique_ptr<BPTreeNode<T>> child(new BPTreeNode<T>(node->children[low]));
         child->read(ix_file);
 
-        return child->is_leaf 
-            ? search_leaf(search, child.get(), ix_file) 
-            : search_internal(search, child.get(), ix_file);
+        return child->is_leaf
+                   ? search_leaf(search, child.get(), ix_file)
+                   : search_internal(search, child.get(), ix_file);
     }
 
-    BPTreeNode *find(int64_t search)
+    pair<int, BPTreeNode<T> *> find(T search)
     {
         if (root == NULL)
-            return NULL;
+            return make_pair<int, BPTreeNode<T> *>(-1, NULL);
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         root->read(ix_file);
-        BPTreeNode *node = !root->is_leaf
-                               ? search_leaf(search, root, ix_file)
-                               : search_internal(search, root, ix_file);
+        pair<int, BPTreeNode<T> *> res = root->is_leaf
+                                             ? search_leaf(search, root, ix_file)
+                                             : search_internal(search, root, ix_file);
 
         ix_file.close();
-        return node;
+        return res;
     }
 };
