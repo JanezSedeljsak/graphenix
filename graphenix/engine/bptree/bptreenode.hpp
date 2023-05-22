@@ -13,7 +13,7 @@ class BPTreeNode
 {
 public:
     int64_t offset;
-    bool is_leaf;
+    bool is_leaf, is_cached;
     vector<T> keys;
     vector<int64_t> children, data;
     vector<unique_ptr<BPTreeNode<T>>> actual_children;
@@ -33,6 +33,7 @@ public:
 
     inline void flush()
     {
+        is_cached = false;
         is_leaf = true;
         offset = 0;
         next = -1;
@@ -119,7 +120,7 @@ public:
     void read_recursive(fstream &ix_file)
     {
         read(ix_file); // read current
-        // deallocate_children();
+        is_cached = true;
         actual_children.clear();
         for (const auto &offset : children)
         {

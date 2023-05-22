@@ -175,11 +175,19 @@ public:
 
         while (to < node->keys.size() - 1 && generic_equal(node->keys[to + 1], search))
             to++;
-        
+
         for (int i = from; i <= to; i++)
         {
-            unique_ptr<BPTreeNode<T>> child(new BPTreeNode<T>(node->children[low], key_size));
-            child->read(ix_file);
+            unique_ptr<BPTreeNode<T>> child;
+            if (!node->is_cached)
+            {
+                child = make_unique<BPTreeNode<T>>(node->children[i], key_size);
+                child->read(ix_file);
+            }
+            else
+            {
+                child = move(node->actual_children[i]);
+            }
 
             if (child->is_leaf)
                 nodes.push_back(search_leaf(search, child.get(), ix_file));
@@ -188,6 +196,9 @@ public:
                 const auto &curr_nodes = search_internal(search, child.get(), ix_file);
                 nodes.insert(nodes.end(), curr_nodes.begin(), curr_nodes.end());
             }
+
+            if (!node->is_cached)
+                node->actual_children[i] = move(child);
         }
 
         return nodes;
@@ -199,7 +210,9 @@ public:
             return {};
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
-        root->read(ix_file);
+        if (!root->is_cached)
+            root->read(ix_file);
+
         vector<LeafMatchInterval> nodes;
         if (root->is_leaf)
             nodes.push_back(search_leaf(search, root, ix_file));
