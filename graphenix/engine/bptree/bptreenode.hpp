@@ -35,7 +35,6 @@ public:
     {
         is_cached = false;
         is_leaf = true;
-        offset = 0;
         next = -1;
         prev = -1;
         keys.clear();
@@ -134,7 +133,6 @@ public:
 
     void read(fstream &ix_file)
     {
-        // this could potentially read data from cache
         flush();
         ix_file.seekg(offset, ios::beg);
         char *buffer = new char[BLOCK_SIZE];

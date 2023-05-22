@@ -62,21 +62,45 @@ public:
             return;
 
         ofstream ix_file(ix_filename, ios::binary | ios::out);
-        ix_file.close();
-        root = new BPTreeNode<T>(0, key_size);
+        root = new BPTreeNode<T>(2 * IX_SIZE, key_size);
+
+        int64_t head_ptr = -1, first_free = 2 * IX_SIZE;
+        char buffer[2 * IX_SIZE];
+        memcpy(buffer, reinterpret_cast<const char *>(&head_ptr), IX_SIZE);
+        memcpy(buffer + IX_SIZE, reinterpret_cast<const char *>(&first_free), IX_SIZE);
+
+        ix_file.seekp(0, ios::beg);
+        ix_file.write(buffer, 2 * IX_SIZE);
         ix_file.close();
     }
 
     void write()
     {
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        ix_file.seekp(root->offset, ios::beg);
         root->write(ix_file);
+        set_head_ptr(ix_file, root->offset);
         ix_file.close();
+    }
+
+    inline int64_t get_head_ptr(fstream &ix_file)
+    {
+        int64_t head_ptr;
+        ix_file.seekg(0, ios::beg);
+        ix_file.read(reinterpret_cast<char *>(&head_ptr), IX_SIZE);
+        return head_ptr;
+    }
+
+    inline void set_head_ptr(fstream &ix_file, int64_t head_ptr)
+    {
+        ix_file.seekp(0, ios::beg);
+        ix_file.write(reinterpret_cast<const char *>(&head_ptr), IX_SIZE);
     }
 
     void read()
     {
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        root->offset = get_head_ptr(ix_file);
         root->read(ix_file);
         ix_file.close();
     }
@@ -84,6 +108,7 @@ public:
     void load_full_tree()
     {
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        root->offset = get_head_ptr(ix_file);
         root->read_recursive(ix_file);
         ix_file.close();
     }
@@ -197,7 +222,7 @@ public:
                 nodes.insert(nodes.end(), curr_nodes.begin(), curr_nodes.end());
             }
 
-            if (!node->is_cached)
+            if (node->is_cached)
                 node->actual_children[i] = move(child);
         }
 
