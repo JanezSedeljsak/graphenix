@@ -13,12 +13,25 @@ class BPTreeIndex
 public:
     string ix_filename;
     BPTreeNode<T> *root;
+    int key_size;
 
-    BPTreeIndex(string model_name, string field_name)
+    inline void init(const string &model_name, const string &field_name)
     {
         // when stable should use -> get_field_ix_file_name;
         ix_filename = "bpt_ix_" + model_name + "_" + field_name + ".bin";
         root = NULL;
+    }
+
+    BPTreeIndex(string model_name, string field_name)
+    {
+        init(model_name, field_name);
+        key_size = IX_SIZE;
+    }
+
+    BPTreeIndex(string model_name, string field_name, int size)
+    {
+        init(model_name, field_name);
+        key_size = size;
     }
 
     void create()
@@ -28,7 +41,7 @@ public:
 
         ofstream ix_file(ix_filename, ios::binary | ios::out);
         ix_file.close();
-        root = new BPTreeNode<T>(0);
+        root = new BPTreeNode<T>(0, key_size);
         ix_file.close();
     }
 
@@ -65,16 +78,25 @@ public:
             filesystem::remove(ix_filename);
     }
 
-    inline pair<int, BPTreeNode<T> *> search_leaf(int64_t search, BPTreeNode<T> *node, fstream &ix_file)
+    inline bool generic_equal(const T &a, const T &b)
     {
+        if constexpr (is_same_v<T, string>)
+            return strcmp(a.c_str(), b.c_str()) == 0;
+        else
+            return a == b;
+    }
+
+    inline pair<int, BPTreeNode<T> *> search_leaf(const T &search, BPTreeNode<T> *node, fstream &ix_file)
+    {
+        less<T> generic_less;
         int low = 0, high = node->keys.size();
         while (low < high)
         {
             int mid = (low + high) / 2;
-            if (node->keys[mid] == search)
+            if (generic_equal(node->keys[mid], search))
                 return make_pair(mid, node);
 
-            if (node->keys[mid] > search)
+            if (!generic_less(node->keys[mid], search))
                 high = mid;
             else
                 low = mid + 1;
@@ -83,22 +105,23 @@ public:
         return make_pair<int, BPTreeNode<T> *>(-1, NULL);
     }
 
-    inline pair<int, BPTreeNode<T> *> search_internal(int64_t search, BPTreeNode<T> *node, std::fstream &ix_file)
+    inline pair<int, BPTreeNode<T> *> search_internal(const T &search, BPTreeNode<T> *node, fstream &ix_file)
     {
+        less<T> generic_less;
         int low = 0, high = node->keys.size();
         while (low < high)
         {
             int mid = (low + high) / 2;
-            if (node->keys[mid] == search)
+            if (generic_equal(node->keys[mid], search))
                 break;
 
-            if (node->keys[mid] > search)
+            if (!generic_less(node->keys[mid], search))
                 high = mid;
             else
                 low = mid + 1;
         }
 
-        unique_ptr<BPTreeNode<T>> child(new BPTreeNode<T>(node->children[low]));
+        unique_ptr<BPTreeNode<T>> child(new BPTreeNode<T>(node->children[low], key_size));
         child->read(ix_file);
 
         return child->is_leaf
@@ -106,7 +129,7 @@ public:
                    : search_internal(search, child.get(), ix_file);
     }
 
-    pair<int, BPTreeNode<T> *> find(T search)
+    pair<int, BPTreeNode<T> *> find(const T &search)
     {
         if (root == NULL)
             return make_pair<int, BPTreeNode<T> *>(-1, NULL);

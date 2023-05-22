@@ -8,7 +8,7 @@
 
 using namespace std;
 
-template<typename T>
+template <typename T>
 class BPTreeNode
 {
 public:
@@ -46,28 +46,21 @@ public:
 
     inline BPTreeNode<T> *get_from_offset(fstream &ix_file, int offset)
     {
-        BPTreeNode<T> *child = new BPTreeNode<T>(offset);
+        BPTreeNode<T> *child = new BPTreeNode<T>(offset, key_size);
         child->read(ix_file);
         return child;
     }
 
-    BPTreeNode<T>(int64_t _offset)
-    {
-        key_size = IX_SIZE;
-        offset = _offset;
-        flush();
-    }
-
     BPTreeNode<T>(int64_t _offset, int size)
     {
+        flush();
         key_size = size;
         offset = _offset;
-        flush();
     }
 
     void write(fstream &ix_file)
     {
-        ix_file.seekp(offset, std::ios::beg);
+        ix_file.seekp(offset, ios::beg);
         size_t num_keys = keys.size();
         char *buffer = new char[BLOCK_SIZE];
         memset(buffer, -1, BLOCK_SIZE);
@@ -77,10 +70,15 @@ public:
         memcpy(buffer_ptr + 2 * IX_SIZE, reinterpret_cast<const char *>(&prev), IX_SIZE);
         memcpy(buffer_ptr + 3 * IX_SIZE, reinterpret_cast<const char *>(&next), IX_SIZE);
         buffer_ptr += IX_SIZE * 4;
+        
         for (const auto &key : keys)
         {
-            memcpy(buffer_ptr, reinterpret_cast<const char *>(&key), IX_SIZE);
-            buffer_ptr += IX_SIZE;
+            if constexpr (is_same_v<T, string>)
+                memcpy(buffer_ptr, key.c_str(), key_size);
+            else
+                memcpy(buffer_ptr, reinterpret_cast<const char *>(&key), key_size);
+
+            buffer_ptr += key_size;
         }
 
         if (is_leaf)
@@ -147,8 +145,21 @@ public:
 
         cout << "Read num keys: " << num_keys << endl;
         char *buffer_ptr = buffer + 4 * IX_SIZE;
-        keys.assign(reinterpret_cast<int64_t *>(buffer_ptr), reinterpret_cast<int64_t *>(buffer_ptr + num_keys * IX_SIZE));
-        buffer_ptr += num_keys * IX_SIZE;
+        for (int i = 0; i < num_keys; i++)
+        {
+            if constexpr (is_same_v<T, string>)
+            {
+                string str_key(buffer_ptr, key_size);
+                keys.push_back(str_key);
+            }
+            else
+            {
+                keys.push_back(*reinterpret_cast<int64_t *>(buffer_ptr));
+            }
+
+            buffer_ptr += key_size;
+        }
+
         if (is_leaf)
             data.assign(
                 reinterpret_cast<int64_t *>(buffer_ptr),
