@@ -3,6 +3,7 @@
 #include <fstream>
 #include <filesystem>
 #include <fstream>
+#include <unordered_set>
 #include "bptreenode.hpp"
 
 using namespace std;
@@ -11,6 +12,7 @@ template <typename T>
 class BPTreeIndex
 {
 public:
+    typedef pair<pair<int, int>, BPTreeNode<T> *> LeafMatchInterval;
     string ix_filename;
     BPTreeNode<T> *root;
     int key_size;
@@ -19,7 +21,7 @@ public:
     {
         // when stable should use -> get_field_ix_file_name;
         ix_filename = "bpt_ix_" + model_name + "_" + field_name + ".bin";
-        root = NULL;
+        root = nullptr;
     }
 
     BPTreeIndex(string model_name, string field_name)
@@ -32,6 +34,26 @@ public:
     {
         init(model_name, field_name);
         key_size = size;
+    }
+
+    static void print_nodes_with_intervals(const vector<LeafMatchInterval> &nodes)
+    {
+        for (const auto &node : nodes)
+        {
+            cout << "Start " << node.first.first << " End: " << node.first.second << endl;
+            for (int i = node.first.first; i <= node.first.second; i++)
+                cout << "Key: " << node.second->keys[i] << " Value: " << node.second->data[i] << endl;
+        }
+    }
+
+    static unordered_set<int64_t> flatten_intervals_to_ptrs(const vector<LeafMatchInterval> &nodes)
+    {
+        unordered_set<int64_t> ptrs;
+        for (const auto &node : nodes)
+            for (int i = node.first.first; i <= node.first.second; i++)
+                ptrs.insert(node.second->data[i]);
+
+        return ptrs;
     }
 
     void create()
@@ -68,7 +90,7 @@ public:
 
     void print_index(bool is_recursive)
     {
-        if (root != NULL)
+        if (root != nullptr)
             root->print(is_recursive);
     }
 
@@ -86,7 +108,15 @@ public:
             return a == b;
     }
 
-    inline pair<int, BPTreeNode<T> *> search_leaf(const T &search, BPTreeNode<T> *node, fstream &ix_file)
+    /**
+     * @brief Returns the range[from, to] (interval) in the leaf node where the keys match
+     *
+     * @param search generic search parameter (the key we search by)
+     * @param node the actual node that was read from the file (should be type is_leaf)
+     * @param ix_file the reader object
+     * @return vector<LeafMatchRange>
+     */
+    inline LeafMatchInterval search_leaf(const T &search, BPTreeNode<T> *node, fstream &ix_file)
     {
         less<T> generic_less;
         int low = 0, high = node->keys.size();
@@ -94,7 +124,16 @@ public:
         {
             int mid = (low + high) / 2;
             if (generic_equal(node->keys[mid], search))
-                return make_pair(mid, node);
+            {
+                int from = mid, to = mid;
+                while (from > 0 && generic_equal(node->keys[from - 1], search))
+                    from--;
+
+                while (to < node->keys.size() - 1 && generic_equal(node->keys[to + 1], search))
+                    to++;
+
+                return make_pair(make_pair(from, to), node);
+            }
 
             if (!generic_less(node->keys[mid], search))
                 high = mid;
@@ -102,11 +141,20 @@ public:
                 low = mid + 1;
         }
 
-        return make_pair<int, BPTreeNode<T> *>(-1, NULL);
+        return make_pair(make_pair(-1, -1), nullptr);
     }
 
-    inline pair<int, BPTreeNode<T> *> search_internal(const T &search, BPTreeNode<T> *node, fstream &ix_file)
+    /**
+     * @brief Returns a vector of leaf nodes that match the specific value
+     *
+     * @param search
+     * @param node
+     * @param ix_file
+     * @return vector<LeafMatchRange>
+     */
+    inline vector<LeafMatchInterval> search_internal(const T &search, BPTreeNode<T> *node, fstream &ix_file)
     {
+        vector<LeafMatchInterval> nodes;
         less<T> generic_less;
         int low = 0, high = node->keys.size();
         while (low < high)
@@ -121,26 +169,44 @@ public:
                 low = mid + 1;
         }
 
-        unique_ptr<BPTreeNode<T>> child(new BPTreeNode<T>(node->children[low], key_size));
-        child->read(ix_file);
+        int from = low, to = low;
+        while (from > 0 && generic_equal(node->keys[from - 1], search))
+            from--;
 
-        return child->is_leaf
-                   ? search_leaf(search, child.get(), ix_file)
-                   : search_internal(search, child.get(), ix_file);
+        while (to < node->keys.size() - 1 && generic_equal(node->keys[to + 1], search))
+            to++;
+        
+        for (int i = from; i <= to; i++)
+        {
+            unique_ptr<BPTreeNode<T>> child(new BPTreeNode<T>(node->children[low], key_size));
+            child->read(ix_file);
+
+            if (child->is_leaf)
+                nodes.push_back(search_leaf(search, child.get(), ix_file));
+            else
+            {
+                const auto &curr_nodes = search_internal(search, child.get(), ix_file);
+                nodes.insert(nodes.end(), curr_nodes.begin(), curr_nodes.end());
+            }
+        }
+
+        return nodes;
     }
 
-    pair<int, BPTreeNode<T> *> find(const T &search)
+    vector<LeafMatchInterval> find(const T &search)
     {
-        if (root == NULL)
-            return make_pair<int, BPTreeNode<T> *>(-1, NULL);
+        if (root == nullptr)
+            return {};
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         root->read(ix_file);
-        pair<int, BPTreeNode<T> *> res = root->is_leaf
-                                             ? search_leaf(search, root, ix_file)
-                                             : search_internal(search, root, ix_file);
+        vector<LeafMatchInterval> nodes;
+        if (root->is_leaf)
+            nodes.push_back(search_leaf(search, root, ix_file));
+        else
+            nodes = search_internal(search, root, ix_file);
 
         ix_file.close();
-        return res;
+        return nodes;
     }
 };

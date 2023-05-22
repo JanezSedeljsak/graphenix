@@ -133,6 +133,7 @@ public:
 
     void read(fstream &ix_file)
     {
+        // this could potentially read data from cache
         flush();
         ix_file.seekg(offset, ios::beg);
         char *buffer = new char[BLOCK_SIZE];
