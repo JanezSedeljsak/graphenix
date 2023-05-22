@@ -183,6 +183,30 @@ public:
         return make_pair(make_pair(-1, -1), nullptr);
     }
 
+    inline void extend_node_interval(vector<LeafMatchInterval> &nodes, const T &search, BPTreeNode<T> *node, fstream &ix_file, const int64_t idx)
+    {
+        unique_ptr<BPTreeNode<T>> child;
+        if (!node->is_cached)
+        {
+            child = make_unique<BPTreeNode<T>>(node->children[idx], key_size);
+            child->read(ix_file);
+        }
+        else
+            child = move(node->actual_children[idx]);
+        
+
+        if (child->is_leaf)
+            nodes.push_back(search_leaf(search, child.get(), ix_file));
+        else
+        {
+            const auto &curr_nodes = search_internal(search, child.get(), ix_file);
+            nodes.insert(nodes.end(), curr_nodes.begin(), curr_nodes.end());
+        }
+
+        if (node->is_cached)
+            node->actual_children[idx] = move(child);
+    }
+
     /**
      * @brief Returns a vector of leaf nodes that match the specific value
      *
@@ -195,17 +219,27 @@ public:
     {
         vector<LeafMatchInterval> nodes;
         less<T> generic_less;
+        bool found_equal = false;
         int low = 0, high = node->keys.size();
         while (low < high)
         {
             int mid = (low + high) / 2;
             if (generic_equal(node->keys[mid], search))
+            {
+                found_equal = true;
                 break;
+            }
 
             if (!generic_less(node->keys[mid], search))
                 high = mid;
             else
                 low = mid + 1;
+        }
+
+        if (!found_equal)
+        {
+            extend_node_interval(nodes, search, node, ix_file, low);
+            return nodes;
         }
 
         int from = low, to = low;
@@ -216,29 +250,7 @@ public:
             to++;
 
         for (int i = from; i <= to; i++)
-        {
-            unique_ptr<BPTreeNode<T>> child;
-            if (!node->is_cached)
-            {
-                child = make_unique<BPTreeNode<T>>(node->children[i], key_size);
-                child->read(ix_file);
-            }
-            else
-            {
-                child = move(node->actual_children[i]);
-            }
-
-            if (child->is_leaf)
-                nodes.push_back(search_leaf(search, child.get(), ix_file));
-            else
-            {
-                const auto &curr_nodes = search_internal(search, child.get(), ix_file);
-                nodes.insert(nodes.end(), curr_nodes.begin(), curr_nodes.end());
-            }
-
-            if (node->is_cached)
-                node->actual_children[i] = move(child);
-        }
+            extend_node_interval(nodes, search, node, ix_file, i);
 
         return nodes;
     }
