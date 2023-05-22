@@ -91,10 +91,24 @@ public:
         return head_ptr;
     }
 
+    inline int64_t get_next_free(fstream &ix_file)
+    {
+        int64_t next_free;
+        ix_file.seekg(IX_SIZE, ios::beg);
+        ix_file.read(reinterpret_cast<char *>(&next_free), IX_SIZE);
+        return next_free;
+    }
+
     inline void set_head_ptr(fstream &ix_file, int64_t head_ptr)
     {
         ix_file.seekp(0, ios::beg);
         ix_file.write(reinterpret_cast<const char *>(&head_ptr), IX_SIZE);
+    }
+
+    inline void set_next_free(fstream &ix_file, int64_t next_free)
+    {
+        ix_file.seekp(IX_SIZE, ios::beg);
+        ix_file.write(reinterpret_cast<const char *>(&next_free), IX_SIZE);
     }
 
     void read()
@@ -246,5 +260,24 @@ public:
 
         ix_file.close();
         return nodes;
+    }
+
+    inline BPTreeNode<T> *insert_into_leaf(T &key, int64_t record_offset)
+    {
+    }
+
+    inline BPTreeNode<T> *insert_into_internal(T &key, int64_t record_offset)
+    {
+    }
+
+    BPTreeNode<T> *insert(T &key, int64_t record_offset)
+    {
+        if (root == nullptr)
+            read(); // loads root from file
+
+        if (root->is_leaf)
+            insert_into_leaf(key, record_offset);
+        else
+            insert_into_internal(key, record_offset);
     }
 };

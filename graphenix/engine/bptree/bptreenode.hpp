@@ -5,6 +5,7 @@
 
 #define BLOCK_SIZE 1024
 #define IX_SIZE 8 // size of 8 bytes <==> IX_SIZE
+#define NODE_METADATA_SIZE IX_SIZE * 4;
 
 using namespace std;
 
@@ -51,6 +52,13 @@ public:
         return child;
     }
 
+    inline int64_t get_capacity()
+    {
+        int64_t data_size = BLOCK_SIZE - NODE_METADATA_SIZE;
+        int pair_size = IX_SIZE + key_size;
+        return data_size / pair_size;
+    }
+
     BPTreeNode<T>(int64_t _offset, int size)
     {
         flush();
@@ -69,7 +77,7 @@ public:
         memcpy(buffer_ptr + IX_SIZE, reinterpret_cast<const char *>(&is_leaf), IX_SIZE);
         memcpy(buffer_ptr + 2 * IX_SIZE, reinterpret_cast<const char *>(&prev), IX_SIZE);
         memcpy(buffer_ptr + 3 * IX_SIZE, reinterpret_cast<const char *>(&next), IX_SIZE);
-        buffer_ptr += IX_SIZE * 4;
+        buffer_ptr += NODE_METADATA_SIZE;
         
         for (const auto &key : keys)
         {
