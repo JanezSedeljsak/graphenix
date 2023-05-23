@@ -62,7 +62,8 @@ public:
             return;
 
         ofstream ix_file(ix_filename, ios::binary | ios::out);
-        root = make_shared<BPTreeNode<T>>(new BPTreeNode<T>(2 * IX_SIZE, key_size));
+        BPTreeNode<T> *node_ptr = new BPTreeNode<T>(2 * IX_SIZE, key_size);
+        root = shared_ptr<BPTreeNode<T>>(node_ptr);
 
         int64_t head_ptr = -1, first_free = 2 * IX_SIZE;
         char buffer[2 * IX_SIZE];
@@ -188,18 +189,23 @@ public:
         shared_ptr<BPTreeNode<T>> child;
         if (!node->is_cached)
         {
-            child = make_shared<BPTreeNode<T>>(new BPTreeNode<T>(node->children[idx], key_size));
+            BPTreeNode<T> *node_ptr = new BPTreeNode<T>(node->children[idx], key_size);
+            child = shared_ptr<BPTreeNode<T>>(node_ptr);
             child->read(ix_file);
         }
         else
             child = node->actual_children[idx];
 
         if (child->is_leaf)
-            nodes.push_back(search_leaf(search, child, ix_file)); // only if we get valid result
+        {
+            LeafMatchInterval found = search_leaf(search, child, ix_file);
+            if (found.first.first != -1)
+                nodes.push_back(found);
+        }
         else
         {
             const auto &curr_nodes = search_internal(search, child, ix_file);
-            nodes.insert(nodes.end(), curr_nodes.begin(), curr_nodes.end()); // only if we get a valid result
+            nodes.insert(nodes.end(), curr_nodes.begin(), curr_nodes.end());
         }
     }
 
@@ -262,19 +268,23 @@ public:
 
         vector<LeafMatchInterval> nodes;
         if (root->is_leaf)
-            nodes.push_back(search_leaf(search, root, ix_file)); // only if we get a valid result
+        {
+            LeafMatchInterval found = search_leaf(search, root, ix_file);
+            if (found.first.first != -1)
+                nodes.push_back(found);
+        }
         else
-            nodes = search_internal(search, root, ix_file); // only if we get a valid result
+            nodes = search_internal(search, root, ix_file);
 
         ix_file.close();
         return nodes;
     }
 
-    inline BPTreeNode<T> *insert_into_leaf(T &key, int64_t record_offset)
+    inline BPTreeNode<T> *insert_into_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
     {
     }
 
-    inline BPTreeNode<T> *insert_into_internal(T &key, int64_t record_offset)
+    inline BPTreeNode<T> *insert_into_internal(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
     {
     }
 
@@ -284,8 +294,28 @@ public:
             read(); // loads root from file
 
         if (root->is_leaf)
-            insert_into_leaf(key, record_offset);
+            insert_into_leaf(root, key, record_offset);
         else
-            insert_into_internal(key, record_offset);
+            insert_into_internal(root, key, record_offset);
+    }
+
+    inline bool remove_from_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
+    {
+        return true;
+    }
+
+    inline bool remove_from_internal(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
+    {
+        return true;
+    }
+
+    bool remove(T &key, int64_t record_offset)
+    {
+        if (root == nullptr)
+            read(); // loads root from file
+
+        return root->is_leaf
+                   ? delete_from_leaf(root, key, record_offset)
+                   : delete_from_internal(root, key, record_offset);
     }
 };
