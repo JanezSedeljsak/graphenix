@@ -17,7 +17,7 @@ public:
     bool is_leaf, is_cached;
     vector<T> keys;
     vector<int64_t> children, data;
-    vector<unique_ptr<BPTreeNode<T>>> actual_children;
+    vector<shared_ptr<BPTreeNode<T>>> actual_children;
     int64_t prev, next;
     int key_size;
 
@@ -134,7 +134,7 @@ public:
             if (offset != -1)
             {
                 BPTreeNode<T> *temp = get_from_offset(ix_file, offset);
-                actual_children.push_back(unique_ptr<BPTreeNode<T>>(temp));
+                actual_children.push_back(shared_ptr<BPTreeNode<T>>(temp));
             }
         }
     }
@@ -186,7 +186,7 @@ public:
         cout << "Children: " << children.size() << endl;
         for (size_t i = 0; i < keys.size(); i++)
         {
-            cout << "Node: " << keys[i];
+            cout << "Key: " << keys[i];
             if (is_leaf)
             {
                 cout << ", " << data[i];

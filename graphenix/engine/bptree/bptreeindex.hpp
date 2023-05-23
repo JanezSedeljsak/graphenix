@@ -12,9 +12,9 @@ template <typename T>
 class BPTreeIndex
 {
 public:
-    typedef pair<pair<int, int>, BPTreeNode<T> *> LeafMatchInterval;
+    typedef pair<pair<int, int>, shared_ptr<BPTreeNode<T>>> LeafMatchInterval;
     string ix_filename;
-    BPTreeNode<T> *root;
+    shared_ptr<BPTreeNode<T>> root;
     int key_size;
 
     inline void init(const string &model_name, const string &field_name)
@@ -62,7 +62,7 @@ public:
             return;
 
         ofstream ix_file(ix_filename, ios::binary | ios::out);
-        root = new BPTreeNode<T>(2 * IX_SIZE, key_size);
+        root = make_shared<BPTreeNode<T>>(new BPTreeNode<T>(2 * IX_SIZE, key_size));
 
         int64_t head_ptr = -1, first_free = 2 * IX_SIZE;
         char buffer[2 * IX_SIZE];
@@ -155,7 +155,7 @@ public:
      * @param ix_file the reader object
      * @return vector<LeafMatchRange>
      */
-    inline LeafMatchInterval search_leaf(const T &search, BPTreeNode<T> *node, fstream &ix_file)
+    inline LeafMatchInterval search_leaf(const T &search, shared_ptr<BPTreeNode<T>> node, fstream &ix_file)
     {
         less<T> generic_less;
         int low = 0, high = node->keys.size();
@@ -183,28 +183,24 @@ public:
         return make_pair(make_pair(-1, -1), nullptr);
     }
 
-    inline void extend_node_interval(vector<LeafMatchInterval> &nodes, const T &search, BPTreeNode<T> *node, fstream &ix_file, const int64_t idx)
+    inline void extend_node_interval(vector<LeafMatchInterval> &nodes, const T &search, shared_ptr<BPTreeNode<T>> node, fstream &ix_file, const int64_t idx)
     {
-        unique_ptr<BPTreeNode<T>> child;
+        shared_ptr<BPTreeNode<T>> child;
         if (!node->is_cached)
         {
-            child = make_unique<BPTreeNode<T>>(node->children[idx], key_size);
+            child = make_shared<BPTreeNode<T>>(new BPTreeNode<T>(node->children[idx], key_size));
             child->read(ix_file);
         }
         else
-            child = move(node->actual_children[idx]);
-        
+            child = node->actual_children[idx];
 
         if (child->is_leaf)
-            nodes.push_back(search_leaf(search, child.get(), ix_file));
+            nodes.push_back(search_leaf(search, child, ix_file)); // only if we get valid result
         else
         {
-            const auto &curr_nodes = search_internal(search, child.get(), ix_file);
-            nodes.insert(nodes.end(), curr_nodes.begin(), curr_nodes.end());
+            const auto &curr_nodes = search_internal(search, child, ix_file);
+            nodes.insert(nodes.end(), curr_nodes.begin(), curr_nodes.end()); // only if we get a valid result
         }
-
-        if (node->is_cached)
-            node->actual_children[idx] = move(child);
     }
 
     /**
@@ -215,7 +211,7 @@ public:
      * @param ix_file
      * @return vector<LeafMatchRange>
      */
-    inline vector<LeafMatchInterval> search_internal(const T &search, BPTreeNode<T> *node, fstream &ix_file)
+    inline vector<LeafMatchInterval> search_internal(const T &search, shared_ptr<BPTreeNode<T>> node, fstream &ix_file)
     {
         vector<LeafMatchInterval> nodes;
         less<T> generic_less;
@@ -266,9 +262,9 @@ public:
 
         vector<LeafMatchInterval> nodes;
         if (root->is_leaf)
-            nodes.push_back(search_leaf(search, root, ix_file));
+            nodes.push_back(search_leaf(search, root, ix_file)); // only if we get a valid result
         else
-            nodes = search_internal(search, root, ix_file);
+            nodes = search_internal(search, root, ix_file); // only if we get a valid result
 
         ix_file.close();
         return nodes;
