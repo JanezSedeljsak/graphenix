@@ -153,7 +153,7 @@ public:
         prev = *reinterpret_cast<int64_t *>(buffer + 2 * IX_SIZE);
         next = *reinterpret_cast<int64_t *>(buffer + 3 * IX_SIZE);
 
-        cout << "Read num keys: " << num_keys << endl;
+        // cout << "Read num keys: " << num_keys << endl;
         char *buffer_ptr = buffer + 4 * IX_SIZE;
         for (int i = 0; i < num_keys; i++)
         {
