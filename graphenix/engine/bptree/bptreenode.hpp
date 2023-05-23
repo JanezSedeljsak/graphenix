@@ -52,11 +52,12 @@ public:
         return child;
     }
 
-    inline int64_t get_capacity()
+    int64_t get_capacity()
     {
-        int64_t data_size = BLOCK_SIZE - NODE_METADATA_SIZE;
-        int pair_size = IX_SIZE + key_size;
-        return data_size / pair_size;
+        return 10LL;
+        // int64_t data_size = BLOCK_SIZE - NODE_METADATA_SIZE;
+        // int pair_size = IX_SIZE + key_size;
+        // return data_size / pair_size;
     }
 
     BPTreeNode<T>(int64_t _offset, int size)

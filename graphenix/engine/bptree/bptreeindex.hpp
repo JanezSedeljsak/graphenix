@@ -280,23 +280,75 @@ public:
         return nodes;
     }
 
-    inline BPTreeNode<T> *insert_into_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
-    {
-    }
+    // inline BPTreeNode<T> *insert_into_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
+    // {
+    // }
+    // inline BPTreeNode<T> *insert_into_internal(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
+    // {
+    // }
 
-    inline BPTreeNode<T> *insert_into_internal(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
-    {
-    }
-
-    BPTreeNode<T> *insert(T &key, int64_t record_offset)
+    void insert(T &key, int64_t record_offset)
     {
         if (root == nullptr)
             read(); // loads root from file
 
-        if (root->is_leaf)
-            insert_into_leaf(root, key, record_offset);
-        else
-            insert_into_internal(root, key, record_offset);
+        fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        shared_ptr<BPTreeNode<T>> current = root;
+        shared_ptr<BPTreeNode<T>> parent;
+        less<T> generic_less;
+
+        cout << "Search for leaf" << endl;
+        while (!current->is_leaf)
+        {
+            parent = current;
+            for (int i = 0; i < current->keys.size(); i++)
+            {
+                if (generic_less(key, current->keys[i]))
+                {
+                    BPTreeNode<T> *node_ptr = new BPTreeNode<T>(current->children[i], key_size);
+                    current = shared_ptr<BPTreeNode<T>>(node_ptr);
+                    break;
+                }
+
+                if (generic_equal(key, current->keys[i]))
+                {
+                    BPTreeNode<T> *node_ptr = new BPTreeNode<T>(current->children[i + 1], key_size);
+                    current = shared_ptr<BPTreeNode<T>>(node_ptr);
+                    current->read(ix_file);
+                    break;
+                }
+            }
+        }
+
+        cout << "Reached leaf node" << endl;
+
+        // reached leaf node
+        int keys_count = current->keys.size();
+        if (keys_count < current->get_capacity())
+        {
+            int i = 0;
+            while (!generic_less(key, current->keys[i]) && i < keys_count)
+                i++;
+
+            // create placeholder item
+            current->keys.push_back(-1); 
+            current->data.push_back(-1);
+
+            for (int j = keys_count + 1; j > i; j--)
+            {
+                current->keys[j] = current->keys[j - 1];
+                current->data[j] = current->data[j - 1];
+            }
+            
+            current->data[i] = record_offset;
+            current->keys[i] = key;
+        }
+        else 
+        {
+            cout << "TODO" << endl;
+        }
+
+        ix_file.close();
     }
 
     inline bool remove_from_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
@@ -314,6 +366,7 @@ public:
         if (root == nullptr)
             read(); // loads root from file
 
+        fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         return root->is_leaf
                    ? delete_from_leaf(root, key, record_offset)
                    : delete_from_internal(root, key, record_offset);
