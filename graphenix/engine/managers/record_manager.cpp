@@ -127,9 +127,9 @@ RecordManager::update_record(const model_def& mdef, const vector<char*> &values,
 
     ix_file.close();
     //delete[] record;
-    shared_ptr<char> old_rec = shared_ptr<char>(record); // todo this needs to be read from the file
-    shared_ptr<char> new_rec = shared_ptr<char>(record);
-    return make_tuple(record_offset, old_rec, new_rec);
+    shared_ptr<char> new_rec = shared_ptr<char>(record); 
+    shared_ptr<char> old_rec = new_rec; // this should be updated
+    return make_tuple(record_offset, old_rec, old_rec);
 }
 
 void RecordManager::delete_record(const model_def& mdef, const int64_t record_id)
