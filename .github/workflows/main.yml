@@ -46,7 +46,6 @@ jobs:
           chmod +x cpp_tests.sh
           ./cpp_tests.sh
 
-
       - name: Run Graphenix unit tests
         run: python -m tests.tests_unit
       
