@@ -20,6 +20,12 @@ _unit_test:
 	sudo python3 -m tests.tests_unit
 	@echo "[graphenix] Finished tests!"
 
+_cpp_test:
+	@echo "[graphenix] Running low level tests..."
+	chmod +x cpp_tests.sh
+	./cpp_tests.sh
+	@echo "[graphenix] Finished low level tests!"
+
 _perf_test:
 	@echo "[graphenix] Running tests..."
 	sudo python3 -m tests.tests_perf

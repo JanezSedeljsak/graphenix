@@ -8,13 +8,14 @@
 #include <filesystem>
 #include <cstring>
 #include <algorithm>
+#include <tuple>
 
 #include "managers.h"
 #include "../util.cpp"
 
 using namespace std;
 
-int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> &values)
+pair<int64_t, int64_t> RecordManager::create_record(const model_def& mdef, const vector<char*> &values)
 {
     string file_name = get_file_name(mdef.db_name, mdef.model_name);
     string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
@@ -80,11 +81,13 @@ int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> 
 
 
     ix_file.close();
-    // return the index of the record in the index file
-    return (ix_offset - PK_IX_HEAD_SIZE) / IX_SIZE;
+    // return the offset in the data file and tjhe index of the record in the index file
+    return make_pair(offset, (ix_offset - PK_IX_HEAD_SIZE) / IX_SIZE);
 }
 
-void RecordManager::update_record(const model_def& mdef, const vector<char*> &values, const int64_t record_id)
+// return record_offset, old_record and new_record
+tuple<int64_t, shared_ptr<char>, shared_ptr<char>> 
+RecordManager::update_record(const model_def& mdef, const vector<char*> &values, const int64_t record_id)
 {
     string file_name = get_file_name(mdef.db_name, mdef.model_name);
     string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
@@ -123,7 +126,10 @@ void RecordManager::update_record(const model_def& mdef, const vector<char*> &va
     file.close();
 
     ix_file.close();
-    delete[] record;
+    //delete[] record;
+    shared_ptr<char> old_rec = shared_ptr<char>(record); // todo this needs to be read from the file
+    shared_ptr<char> new_rec = shared_ptr<char>(record);
+    return make_tuple(record_offset, old_rec, new_rec);
 }
 
 void RecordManager::delete_record(const model_def& mdef, const int64_t record_id)

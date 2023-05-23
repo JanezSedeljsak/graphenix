@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <memory>
 
 #define BLOCK_SIZE 1024
 #define IX_SIZE 8 // size of 8 bytes <==> IX_SIZE

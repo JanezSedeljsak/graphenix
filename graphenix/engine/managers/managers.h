@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <vector>
 
 using namespace std;
 
@@ -17,12 +18,12 @@ public:
 
 class RecordManager {
 public:
-    static int64_t create_record(
+    static pair<int64_t, int64_t> create_record(
         const model_def& mdef,
         const vector<char*> &values
     );
 
-    static void update_record(
+    static tuple<int64_t, shared_ptr<char>, shared_ptr<char>> update_record(
         const model_def& mdef,
         const vector<char*> &values,
         const int64_t record_id
