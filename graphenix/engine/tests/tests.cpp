@@ -49,6 +49,8 @@ TEST_CASE("Crete integer index and search")
     FIND_MULTIPLE(bpt);
     FIND_SINGLE(bpt);
     FIND_NONE(bpt);
+
+    bpt.delete_index();
 }
 
 inline void FIND_MULTIPLE_STR(BPTreeIndex<string> &bpt)
@@ -94,6 +96,39 @@ TEST_CASE("Crete string index and search")
     FIND_MULTIPLE_STR(bpt);
     FIND_SINGLE_STR(bpt);
     FIND_NONE_STR(bpt);
+
+    bpt.delete_index();
+}
+
+inline void CHECK_IF_BASIC_INSERT_WORKED(BPTreeIndex<int64_t> &bpt)
+{
+    CHECK(bpt.root->keys.size() == 7); // 6 existing + 1 inserted
+    const auto &found = bpt.find(3);
+    const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+    CHECK(flatten.count(256) > 0);
+}
+
+TEST_CASE("Crete index, insert and do basic search")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    bpt.root->keys = {2, 4, 6, 8, 8, 10};
+    bpt.root->data = {4, 8, 16, 32, 64, 128};
+    bpt.write();
+    bpt.root->flush();
+    // this creates a cached object if we only do read
+    // the find will read the ix_file again and the inserted record won't exist
+    bpt.load_full_tree();
+    bpt.insert(3, 256);
+    CHECK_IF_BASIC_INSERT_WORKED(bpt);
+    
+    bpt.write();
+    bpt.root->flush();
+    bpt.read();
+    CHECK_IF_BASIC_INSERT_WORKED(bpt);
+
+    bpt.delete_index();
 }
 
 #endif // is testing

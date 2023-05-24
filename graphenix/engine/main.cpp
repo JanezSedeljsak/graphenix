@@ -18,16 +18,16 @@ int64_t heartbeat()
 int64_t model_add_record(const model_def& mdef, const py::list &py_values)
 {
     vector<char *> parsed_values = PARSE_RECORD(mdef, py_values);
-    pair<int64_t, int64_t> insert_res = RecordManager::create_record(mdef, parsed_values);
+    int64_t record_id = RecordManager::create_record(mdef, parsed_values);
     // todo insert into all the bptrees
     DEALLOCATE_RECORD(parsed_values);
-    return insert_res.second;
+    return record_id;
 }
 
 void model_update_record(const model_def& mdef, const py::list &py_values, const int64_t id)
 {
     vector<char *> parsed_values = PARSE_RECORD(mdef, py_values);
-    const auto [rec_offset, old_rec, new_rec] = RecordManager::update_record(mdef, parsed_values, id);
+    const auto [old_rec, new_rec] = RecordManager::update_record(mdef, parsed_values, id);
     // todo update the records in the bptrees
     DEALLOCATE_RECORD(parsed_values);
 }

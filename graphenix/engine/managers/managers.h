@@ -18,12 +18,12 @@ public:
 
 class RecordManager {
 public:
-    static pair<int64_t, int64_t> create_record(
+    static int64_t create_record(
         const model_def& mdef,
         const vector<char*> &values
     );
 
-    static tuple<int64_t, shared_ptr<char>, shared_ptr<char>> update_record(
+    static tuple<shared_ptr<char>, shared_ptr<char>> update_record(
         const model_def& mdef,
         const vector<char*> &values,
         const int64_t record_id

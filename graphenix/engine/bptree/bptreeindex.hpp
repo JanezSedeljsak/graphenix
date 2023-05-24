@@ -287,7 +287,7 @@ public:
     // {
     // }
 
-    void insert(T &key, int64_t record_offset)
+    void insert(T key, int64_t record_offset)
     {
         if (root == nullptr)
             read(); // loads root from file

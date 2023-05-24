@@ -15,7 +15,7 @@
 
 using namespace std;
 
-pair<int64_t, int64_t> RecordManager::create_record(const model_def& mdef, const vector<char*> &values)
+int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> &values)
 {
     string file_name = get_file_name(mdef.db_name, mdef.model_name);
     string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
@@ -79,14 +79,13 @@ pair<int64_t, int64_t> RecordManager::create_record(const model_def& mdef, const
     file.close();
     delete[] record;
 
-
     ix_file.close();
-    // return the offset in the data file and tjhe index of the record in the index file
-    return make_pair(offset, (ix_offset - PK_IX_HEAD_SIZE) / IX_SIZE);
+    // return the record index
+    return (ix_offset - PK_IX_HEAD_SIZE) / IX_SIZE;
 }
 
-// return record_offset, old_record and new_record
-tuple<int64_t, shared_ptr<char>, shared_ptr<char>> 
+// return record_id, old_record and new_record
+tuple<shared_ptr<char>, shared_ptr<char>> 
 RecordManager::update_record(const model_def& mdef, const vector<char*> &values, const int64_t record_id)
 {
     string file_name = get_file_name(mdef.db_name, mdef.model_name);
@@ -129,7 +128,7 @@ RecordManager::update_record(const model_def& mdef, const vector<char*> &values,
     //delete[] record;
     shared_ptr<char> new_rec = shared_ptr<char>(record); 
     shared_ptr<char> old_rec = new_rec; // this should be updated
-    return make_tuple(record_offset, old_rec, old_rec);
+    return make_tuple(old_rec, old_rec);
 }
 
 void RecordManager::delete_record(const model_def& mdef, const int64_t record_id)
