@@ -376,6 +376,7 @@ public:
 
             current->data[i] = record_offset;
             current->keys[i] = key;
+            current->write(ix_file);
         }
         else
         {
