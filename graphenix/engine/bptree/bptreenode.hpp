@@ -13,6 +13,9 @@ using namespace std;
 template <typename T>
 class BPTreeNode
 {
+    static_assert(is_same<T, string>::value || is_same<T, int64_t>::value,
+                  "T must be string or int64_t");
+
 public:
     int64_t offset;
     bool is_leaf, is_cached;
@@ -55,7 +58,7 @@ public:
 
     int64_t get_capacity()
     {
-        return 10LL;
+        return 3LL;
         // int64_t data_size = BLOCK_SIZE - NODE_METADATA_SIZE;
         // int pair_size = IX_SIZE + key_size;
         // return data_size / pair_size;
@@ -80,7 +83,7 @@ public:
         memcpy(buffer_ptr + 2 * IX_SIZE, reinterpret_cast<const char *>(&prev), IX_SIZE);
         memcpy(buffer_ptr + 3 * IX_SIZE, reinterpret_cast<const char *>(&next), IX_SIZE);
         buffer_ptr += NODE_METADATA_SIZE;
-        
+
         for (const auto &key : keys)
         {
             if constexpr (is_same_v<T, string>)
@@ -149,7 +152,7 @@ public:
         ix_file.read(buffer, BLOCK_SIZE);
 
         int64_t num_keys = *reinterpret_cast<int64_t *>(buffer);
-        is_leaf = *reinterpret_cast<int64_t *>(buffer + 1 * IX_SIZE);
+        is_leaf = *reinterpret_cast<bool *>(buffer + 1 * IX_SIZE);
         prev = *reinterpret_cast<int64_t *>(buffer + 2 * IX_SIZE);
         next = *reinterpret_cast<int64_t *>(buffer + 3 * IX_SIZE);
 
@@ -183,7 +186,8 @@ public:
     }
 
     void print(bool is_recursive)
-    {
+    {   
+        cout << "Is leaf: " << is_leaf << endl;
         cout << "Offset: " << offset << endl;
         cout << "Children: " << children.size() << endl;
         for (size_t i = 0; i < keys.size(); i++)
