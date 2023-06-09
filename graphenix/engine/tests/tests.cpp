@@ -2,6 +2,7 @@
 #ifdef IS_TESTING
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#define FIXED_CAPACITY 10
 #include <vector>
 #include "doctest.h"
 #include "benchmark.h"
@@ -122,7 +123,7 @@ TEST_CASE("Crete index, insert and do basic search")
     bpt.load_full_tree();
     bpt.insert(3, 256);
     CHECK_IF_BASIC_INSERT_WORKED(bpt);
-    
+
     bpt.write();
     bpt.root->flush();
     bpt.read();

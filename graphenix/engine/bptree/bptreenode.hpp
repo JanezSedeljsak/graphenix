@@ -58,10 +58,13 @@ public:
 
     int64_t get_capacity()
     {
-        // return 10LL;
-        int64_t data_size = BLOCK_SIZE - NODE_METADATA_SIZE;
-        int pair_size = IX_SIZE + key_size;
-        return data_size / pair_size;
+        #ifndef FIXED_CAPACITY
+            int64_t data_size = BLOCK_SIZE - NODE_METADATA_SIZE;
+            int pair_size = IX_SIZE + key_size;
+            return data_size / pair_size;
+        #else
+            return FIXED_CAPACITY;
+        #endif
     }
 
     BPTreeNode<T>(int64_t _offset, int size)
@@ -69,6 +72,16 @@ public:
         flush();
         key_size = size;
         offset = _offset;
+    }
+
+    void set_prev(shared_ptr<BPTreeNode<T>> node)
+    {
+        prev = node->offset;
+    }
+
+    void set_next(shared_ptr<BPTreeNode<T>> node)
+    {
+        next = node->offset;
     }
 
     void write(fstream &ix_file)
@@ -186,7 +199,7 @@ public:
     }
 
     void print(bool is_recursive)
-    {   
+    {
         cout << "Is leaf: " << is_leaf << endl;
         cout << "Offset: " << offset << endl;
         cout << "Children: " << children.size() << endl;

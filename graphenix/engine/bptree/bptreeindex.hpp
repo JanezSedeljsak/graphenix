@@ -361,7 +361,7 @@ public:
         if (keys_count < current->get_capacity())
         {
             int i = 0;
-            while (!generic_less(key, current->keys[i]) && i < keys_count)
+            while (i < keys_count && !generic_less(key, current->keys[i]) && i < keys_count)
                 i++;
 
             // create placeholder item
@@ -435,11 +435,14 @@ public:
                 new_root->children.push_back(current->offset);
                 int64_t new_leaf_offset = get_and_set_next_free(ix_file);
                 new_leaf->offset = new_leaf_offset;
+                new_leaf->set_prev(current); // new_leaf is bottom right node <- prev is current
                 new_leaf->write(ix_file);
                 new_root->children.push_back(new_leaf_offset);
                 new_root->offset = get_and_set_next_free(ix_file);
                 new_root->is_leaf = false;
                 new_root->write(ix_file);
+                current->set_next(new_leaf); // current is bottom left node -> next is new_leaf
+                current->write(ix_file);
                 root = new_root;
                 set_head_ptr(ix_file, new_root->offset);
             }
