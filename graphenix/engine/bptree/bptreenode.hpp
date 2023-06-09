@@ -58,13 +58,13 @@ public:
 
     int64_t get_capacity()
     {
-        #ifndef FIXED_CAPACITY
-            int64_t data_size = BLOCK_SIZE - NODE_METADATA_SIZE;
-            int pair_size = IX_SIZE + key_size;
-            return data_size / pair_size;
-        #else
-            return FIXED_CAPACITY;
-        #endif
+#ifndef FIXED_CAPACITY
+        int64_t data_size = BLOCK_SIZE - NODE_METADATA_SIZE;
+        int pair_size = IX_SIZE + key_size;
+        return data_size / pair_size;
+#else
+        return FIXED_CAPACITY;
+#endif
     }
 
     BPTreeNode<T>(int64_t _offset, int size)
@@ -128,14 +128,16 @@ public:
         delete[] buffer;
     }
 
-    BPTreeNode<T> *get_prev(fstream &ix_file)
+    shared_ptr<BPTreeNode<T>> get_prev(fstream &ix_file)
     {
-        return get_from_offset(ix_file, prev);
+        return shared_ptr<BPTreeNode<T>>(
+            get_from_offset(ix_file, prev));
     }
 
-    BPTreeNode<T> *get_next(fstream &ix_file)
+    shared_ptr<BPTreeNode<T>> get_next(fstream &ix_file)
     {
-        return get_from_offset(ix_file, next);
+        return shared_ptr<BPTreeNode<T>>(
+            get_from_offset(ix_file, next));
     }
 
     /**

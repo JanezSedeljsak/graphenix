@@ -40,7 +40,7 @@ TEST_CASE("Crete index, insert with create subtree")
     bpt.delete_index();
 }
 
-TEST_CASE("Crete index, insert with create subtree")
+TEST_CASE("Crete index, insert with create subtree and search")
 {
     BPTreeIndex<int64_t> bpt("user", "uuid");
     bpt.delete_index();
@@ -57,6 +57,52 @@ TEST_CASE("Crete index, insert with create subtree")
     CHECK(flatten.count(170) > 0);
     CHECK(flatten.count(220) > 0);
     CHECK(flatten.count(150) == 0);
+    bpt.delete_index();
+}
+
+TEST_CASE("Crete index, insert same + create subtree and search")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    bpt.insert(1, 170);
+    bpt.insert(1, 110);
+    bpt.insert(1, 150);
+    bpt.insert(1, 220);
+    bpt.root->flush();
+    bpt.load_full_tree();
+    const auto &found = bpt.find(1);
+    const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+    CHECK(flatten.size() == 4);
+    CHECK(flatten.count(170) > 0);
+    CHECK(flatten.count(110) > 0);
+    CHECK(flatten.count(150) > 0);
+    CHECK(flatten.count(220) > 0);
+    bpt.delete_index();
+}
+
+TEST_CASE("Crete index, insert same + create subtree and search")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    bpt.insert(1, 170);
+    bpt.insert(2, 110);
+    bpt.insert(2, 150);
+    bpt.insert(1, 220);
+    bpt.root->flush();
+    bpt.load_full_tree();
+    const auto &found = bpt.find(1);
+    const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+    CHECK(flatten.size() == 2);
+    CHECK(flatten.count(170) > 0);
+    CHECK(flatten.count(220) > 0);
+
+    const auto &found_2 = bpt.find(2);
+    const auto &flatten_2 = bpt.flatten_intervals_to_ptrs(found_2);
+    CHECK(flatten_2.size() == 2);
+    CHECK(flatten_2.count(110) > 0);
+    CHECK(flatten_2.count(150) > 0);
     bpt.delete_index();
 }
 

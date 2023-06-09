@@ -242,6 +242,23 @@ public:
     }
 
     /**
+     * Currently not in use
+    */
+    inline void extend_interval_next(vector<LeafMatchInterval> &nodes, const T &search, shared_ptr<BPTreeNode<T>> current, fstream &ix_file)
+    {
+        while (current->next != -1)
+        {
+            shared_ptr<BPTreeNode<T>> next_node = current->get_next(ix_file);
+            LeafMatchInterval next_found = search_leaf(search, next_node, ix_file);
+            if (next_found.first.first == -1)
+                break;
+
+            nodes.push_back(next_found);
+            current = next_node;
+        }
+    }
+
+    /**
      * @brief Returns a vector of leaf nodes that match the specific value
      *
      * @param search
@@ -283,7 +300,8 @@ public:
         while (to < node->keys.size() - 1 && generic_equal(node->keys[to + 1], search))
             to++;
 
-        for (int i = from; i <= to; i++)
+        // check from left to right + 1 (there are more ptrs than keys)
+        for (int i = from; i <= to + 1; i++)
             extend_node_interval(nodes, search, node, ix_file, i);
 
         return nodes;
@@ -330,7 +348,7 @@ public:
         less<T> generic_less;
         int keys_count = current->keys.size();
 
-        cout << "Search for leaf" << endl;
+        //  cout << "Search for leaf" << endl;
         while (!current->is_leaf)
         {
             parent = current;
@@ -355,7 +373,7 @@ public:
             }
         }
 
-        cout << "Reached leaf node" << endl;
+        // cout << "Reached leaf node" << endl;
         // reached leaf node
 
         if (keys_count < current->get_capacity())
@@ -421,7 +439,7 @@ public:
                 current->data[i] = tmp_data[i];
             }
 
-            cout << "new size " << new_size << endl;
+            // cout << "new size " << new_size << endl;
             for (int i = 0; i < new_size; i++)
             {
                 new_leaf->keys[i] = tmp_keys[i + keys_count];
