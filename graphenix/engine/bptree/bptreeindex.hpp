@@ -377,6 +377,8 @@ public:
             current->data[i] = record_offset;
             current->keys[i] = key;
             current->write(ix_file);
+            if (keys_count == 0)
+                set_head_ptr(ix_file, current->offset);
         }
         else
         {
