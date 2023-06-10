@@ -40,6 +40,38 @@ TEST_CASE("Crete index, insert with create subtree")
     bpt.delete_index();
 }
 
+TEST_CASE("Crete index, insert with create subtree 2")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    bpt.insert(1, 500);
+    bpt.insert(2, 400);
+    bpt.insert(3, 300);
+    bpt.insert(4, 200);
+    bpt.insert(5, 150);
+    bpt.root->flush();
+    bpt.load_full_tree();
+
+    CHECK(bpt.root->keys.size() == 1);
+
+    CHECK(bpt.root->actual_children[0]->keys[0] == 1);
+    CHECK(bpt.root->actual_children[0]->data[0] == 500);
+    CHECK(bpt.root->actual_children[0]->keys[1] == 2);
+    CHECK(bpt.root->actual_children[0]->data[1] == 400);
+
+    CHECK(bpt.root->actual_children[1]->keys[0] == 3);
+    CHECK(bpt.root->actual_children[1]->data[0] == 300);
+    CHECK(bpt.root->actual_children[1]->keys[1] == 4);
+    CHECK(bpt.root->actual_children[1]->data[1] == 200);
+    CHECK(bpt.root->actual_children[1]->keys[2] == 5);
+    CHECK(bpt.root->actual_children[1]->data[2] == 150);
+
+    CHECK(bpt.root->actual_children[0]->next == bpt.root->actual_children[1]->offset);
+    CHECK(bpt.root->actual_children[1]->prev == bpt.root->actual_children[0]->offset);
+    bpt.delete_index();
+}
+
 TEST_CASE("Crete index, insert with create subtree and search")
 {
     BPTreeIndex<int64_t> bpt("user", "uuid");

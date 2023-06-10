@@ -243,7 +243,7 @@ public:
 
     /**
      * Currently not in use
-    */
+     */
     inline void extend_interval_next(vector<LeafMatchInterval> &nodes, const T &search, shared_ptr<BPTreeNode<T>> current, fstream &ix_file)
     {
         while (current->next != -1)
@@ -375,11 +375,11 @@ public:
 
         // cout << "Reached leaf node" << endl;
         // reached leaf node
-
+        keys_count = current->keys.size();
         if (keys_count < current->get_capacity())
         {
             int i = 0;
-            while (i < keys_count && !generic_less(key, current->keys[i]) && i < keys_count)
+            while (i < keys_count && !generic_less(key, current->keys[i]))
                 i++;
 
             // create placeholder item
@@ -446,15 +446,15 @@ public:
                 new_leaf->data[i] = tmp_data[i + keys_count];
             }
 
+            int64_t new_leaf_offset = get_and_set_next_free(ix_file);
+            new_leaf->offset = new_leaf_offset;
+
             if (current->offset == root->offset)
             {
                 BPTreeNode<T> *node_ptr2 = new BPTreeNode<T>(-1, key_size);
                 shared_ptr<BPTreeNode<T>> new_root = shared_ptr<BPTreeNode<T>>(node_ptr2);
                 new_root->keys.push_back(new_leaf->keys[0]);
-                new_root->children.clear();
                 new_root->children.push_back(current->offset);
-                int64_t new_leaf_offset = get_and_set_next_free(ix_file);
-                new_leaf->offset = new_leaf_offset;
                 new_leaf->set_prev(current); // new_leaf is bottom right node <- prev is current
                 new_leaf->write(ix_file);
                 new_root->children.push_back(new_leaf_offset);
@@ -467,7 +467,10 @@ public:
                 set_head_ptr(ix_file, new_root->offset);
             }
             else
+            {
+                new_leaf->write(ix_file);
                 shift_tree_level(new_leaf->keys[0], parent, new_leaf, ix_file);
+            }
         }
 
         ix_file.close();
@@ -475,7 +478,144 @@ public:
 
     inline void shift_tree_level(T key, shared_ptr<BPTreeNode<T>> parent, shared_ptr<BPTreeNode<T>> child, fstream &ix_file)
     {
-        cout << "TODO: (not implemented) reached shift tree level " << endl;
+        int keys_count = parent->keys.size();
+        if (keys_count < parent->get_capacity())
+        {
+            int i = 0;
+            while (i < keys_count && key > parent->keys[i])
+                i++;
+
+            parent->keys.resize(keys_count + 1);
+            parent->children.resize(keys_count + 2);
+
+            for (int j = keys_count; j > i; j--)
+                parent->keys[j] = parent->keys[j - 1];
+
+            for (int j = keys_count + 1; j > i + 1; j--)
+                parent->children[j] = parent->children[j - 1];
+
+            int64_t new_child_offset = get_and_set_next_free(ix_file);
+            child->offset = new_child_offset;
+
+            if (i > 0 && child->is_leaf)
+            {
+                BPTreeNode<T> *prev_ptr = new BPTreeNode<T>(parent->keys[i - 1], key_size);
+                shared_ptr<BPTreeNode<T>> prev_node = shared_ptr<BPTreeNode<T>>(prev_ptr);
+                prev_node->read(ix_file);
+                prev_node->set_next(child);
+                child->set_prev(prev_node);
+                prev_node->write(ix_file);
+            }
+
+            if (i <= keys_count && child->is_leaf)
+            {
+                BPTreeNode<T> *next_ptr = new BPTreeNode<T>(parent->keys[i + 1], key_size);
+                shared_ptr<BPTreeNode<T>> next_node = shared_ptr<BPTreeNode<T>>(next_ptr);
+                next_node->read(ix_file);
+                next_node->set_prev(child);
+                child->set_next(next_node);
+                next_node->write(ix_file);
+            }
+
+            parent->keys[i] = key;
+            parent->children[i + 1] = child->offset;
+            child->write(ix_file);
+            parent->write(ix_file);
+        }
+        else
+        {
+            // create new level
+            BPTreeNode<T> *new_internal_ptr = new BPTreeNode<T>(-1, key_size);
+            shared_ptr<BPTreeNode<T>> new_internal_node = shared_ptr<BPTreeNode<T>>(new_internal_ptr);
+
+            int max_capacity = parent->get_capacity();
+            int64_t new_keys[max_capacity + 1];
+            int64_t new_offsets[max_capacity + 2];
+
+            for (int i = 0; i < parent->keys.size(); i++)
+                new_keys[i] = parent->keys[i];
+
+            for (int i = 0; i < max_capacity + 1; i++)
+                new_offsets[i] = parent->children[i];
+
+            int i = 0;
+            while (i < max_capacity && key > new_keys[i])
+                i++;
+
+            for (int j = max_capacity + 1; j > i; j--)
+                new_keys[j] = new_keys[j - 1];
+            new_keys[i] = key;
+
+            for (int j = max_capacity + 2; j > i + 1; j--)
+                new_offsets[j] = new_offsets[j - 1];
+            new_offsets[i + 1] = child->offset;
+
+            new_internal_node->is_leaf = false;
+            int child_size = (max_capacity + 1) / 2;
+            int new_internal_size = max_capacity - (max_capacity + 1) / 2;
+
+            child->keys.resize(child_size);
+            child->children.resize(child_size + 1);
+            new_internal_node->keys.resize(new_internal_size);
+            new_internal_node->children.resize(new_internal_size + 1);
+
+            for (int i = 0; i < new_internal_size; i++)
+                new_internal_node->keys[i] = new_keys[i + child_size + 1];
+
+            for (int i = 0; i < new_internal_size + 1; i++)
+                new_internal_node->children[i] = new_offsets[i + child_size + 1];
+
+            child->write(ix_file);
+            new_internal_node->offset = get_and_set_next_free(ix_file);
+            new_internal_node->write(ix_file);
+
+            if (parent->offset == root->offset)
+            {
+                BPTreeNode<T> *new_root_ptr = new BPTreeNode<T>(-1, key_size);
+                shared_ptr<BPTreeNode<T>> new_root_node = shared_ptr<BPTreeNode<T>>(new_root_ptr);
+                new_root_node->keys.push_back(parent->keys[child_size]);
+                new_root_node->children.push_back(parent->offset);
+                new_root_node->children.push_back(new_internal_node->offset);
+                new_root_node->is_leaf = false;
+                new_root_node->offset = get_and_set_next_free(ix_file);
+                new_root_node->write(ix_file);
+                root = new_root_node;
+                set_head_ptr(ix_file, new_root_node->offset);
+            }
+            else
+                shift_tree_level(parent->keys[child_size],
+                                 get_parent(root, parent, ix_file),
+                                 new_internal_node,
+                                 ix_file);
+        }
+    }
+
+    inline shared_ptr<BPTreeNode<T>> get_parent(shared_ptr<BPTreeNode<T>> current, shared_ptr<BPTreeNode<T>> search, fstream &ix_file)
+    {
+        if (current->is_leaf)
+            return nullptr;
+
+        BPTreeNode<T> *first_child_ptr = new BPTreeNode<T>(current->children[0], key_size);
+        shared_ptr<BPTreeNode<T>> first_child = shared_ptr<BPTreeNode<T>>(first_child_ptr);
+        first_child->read(ix_file);
+        if (first_child->is_leaf)
+            return nullptr;
+
+        for (int i = 0; i < current->keys.size() + 1; i++)
+        {
+            BPTreeNode<T> *tmp_child_ptr = new BPTreeNode<T>(current->children[0], key_size);
+            shared_ptr<BPTreeNode<T>> tmp_child = shared_ptr<BPTreeNode<T>>(first_child_ptr);
+            tmp_child->read(ix_file);
+
+            if (tmp_child->offset == search->offset)
+                return current;
+
+            shared_ptr<BPTreeNode<T>> parent = get_parent(tmp_child, search, ix_file);
+            if (parent != nullptr)
+                return parent;
+        }
+
+        return nullptr;
     }
 
     inline bool remove_from_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
