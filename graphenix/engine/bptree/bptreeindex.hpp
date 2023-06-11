@@ -493,8 +493,8 @@ public:
             for (int j = keys_count + 1; j > i + 1; j--)
                 parent->children[j] = parent->children[j - 1];
 
-            // int64_t new_child_offset = get_and_set_next_free(ix_file);
-            // child->offset = new_child_offset;
+            parent->keys[i] = key;
+            parent->children[i + 1] = child->offset;
 
             if (child->is_leaf)
             {
@@ -506,9 +506,10 @@ public:
                 prev_node->write(ix_file);
             }
 
-            if (i <= keys_count && child->is_leaf)
+            // TODO: this could maybe be improved
+            if (i < keys_count && child->is_leaf)
             {
-                BPTreeNode<T> *next_ptr = new BPTreeNode<T>(parent->children[i + 1], key_size);
+                BPTreeNode<T> *next_ptr = new BPTreeNode<T>(parent->children[i + 2], key_size);
                 shared_ptr<BPTreeNode<T>> next_node = shared_ptr<BPTreeNode<T>>(next_ptr);
                 next_node->read(ix_file);
                 next_node->set_prev(child);
@@ -516,8 +517,6 @@ public:
                 next_node->write(ix_file);
             }
 
-            parent->keys[i] = key;
-            parent->children[i + 1] = child->offset;
             child->write(ix_file);
             parent->write(ix_file);
         }
@@ -589,7 +588,7 @@ public:
         }
     }
 
-    inline shared_ptr<BPTreeNode<T>> get_parent(shared_ptr<BPTreeNode<T>> current, shared_ptr<BPTreeNode<T>> search, fstream &ix_file)
+    inline shared_ptr<BPTreeNode<T>> get_parent(shared_ptr<BPTreeNode<T>> &current, shared_ptr<BPTreeNode<T>> &search, fstream &ix_file)
     {
         if (current->is_leaf)
             return nullptr;
@@ -615,6 +614,55 @@ public:
         }
 
         return nullptr;
+    }
+
+    inline shared_ptr<BPTreeNode<T>> inner_get_min_leaf(shared_ptr<BPTreeNode<T>> &current, fstream &ix_file)
+    {
+        if (current->is_leaf)
+            return current;
+
+        BPTreeNode<T> *first_child_ptr = new BPTreeNode<T>(current->children[0], key_size);
+        shared_ptr<BPTreeNode<T>> first_child = shared_ptr<BPTreeNode<T>>(first_child_ptr);
+        first_child->read(ix_file);
+        return inner_get_min_leaf(first_child, ix_file);
+    }
+
+    shared_ptr<BPTreeNode<T>> get_min_leaf(fstream &ix_file)
+    {
+        if (root == nullptr)
+            read(); // loads root from file
+
+        shared_ptr<BPTreeNode<T>> found = inner_get_min_leaf(root, ix_file);
+        return found;
+    }
+
+    vector<int64_t> get_first_n_values(int x)
+    {
+        fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        shared_ptr<BPTreeNode<T>> current = get_min_leaf(ix_file);
+        vector<int64_t> offsets;
+        bool ignore_count = x == -1;
+        bool limit_reached = false;
+        while (current != nullptr && (ignore_count || x > 0))
+        {
+            for (const auto &child_offset : current->data)
+            {
+                offsets.push_back(child_offset);
+                if (!ignore_count && --x == 0)
+                {
+                    limit_reached = true;
+                    break;
+                }
+            }
+
+            if (limit_reached || current->next == -1)
+                break;
+
+            current = current->get_next(ix_file);
+        }
+
+        ix_file.close();
+        return offsets;
     }
 
     inline bool remove_from_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)

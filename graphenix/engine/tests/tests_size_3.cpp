@@ -3,6 +3,7 @@
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #define FIXED_CAPACITY 3LL
+#define SHUFFLE_SEED 12
 #include <vector>
 #include "doctest.h"
 #include "benchmark.h"
@@ -165,9 +166,9 @@ TEST_CASE("Crete index, with range and find each")
     BPTreeIndex<int64_t> bpt("user", "uuid");
     bpt.delete_index();
     bpt.create();
-    // todo fix if more items are in here it fails
     vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
-                                         make_pair(4, 200), make_pair(5, 150)};
+                                         make_pair(4, 200), make_pair(5, 150), make_pair(6, 150),
+                                         make_pair(7, 150)};
 
     for (const auto &item : items)
         bpt.insert(item.first, item.second);
@@ -181,6 +182,7 @@ TEST_CASE("Crete index, with range and find each")
     }
 
     FIND_NONE(bpt);
+    VALIDATE_LEAF_ORDER(bpt, items);
     bpt.delete_index();
 }
 
@@ -206,6 +208,33 @@ TEST_CASE("Crete index, with range (reversed) and find each")
     }
 
     FIND_NONE(bpt);
+    VALIDATE_LEAF_ORDER(bpt, items);
+    bpt.delete_index();
+}
+
+TEST_CASE("Crete index, with range (shuffled) and find each")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
+                                         make_pair(4, 200), make_pair(5, 150), make_pair(6, 150),
+                                         make_pair(7, 33)};
+
+    SHUFFLE(items, SHUFFLE_SEED);
+    for (const auto &item : items)
+        bpt.insert(item.first, item.second);
+
+    for (const auto &item : items)
+    {
+        const auto &found = bpt.find(item.first);
+        const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+        CHECK(flatten.size() == 1);
+        CHECK(flatten.count(item.second) > 0);
+    }
+
+    FIND_NONE(bpt);
+    VALIDATE_LEAF_ORDER(bpt, items);
     bpt.delete_index();
 }
 

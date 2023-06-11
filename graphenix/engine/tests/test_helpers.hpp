@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <random>
+
 inline void INSERT_PAIRS_AND_VALIDATE(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t, int64_t>> &items)
 {
     for (const auto &item : items)
@@ -88,4 +91,27 @@ inline void CHECK_FOR_012(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t, int64_
     CHECK(flatten3.size() == zeros.size());
     for (const auto &item : zeros)
         CHECK(flatten3.count(item.second) > 0);
+}
+
+inline void VALIDATE_LEAF_ORDER(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t, int64_t>> &keyval_pairs)
+{
+    vector<int64_t> ordered = bpt.get_first_n_values(-1);
+    sort(keyval_pairs.begin(), keyval_pairs.end());
+    for (int i = 0; i < keyval_pairs.size(); i++)
+        CHECK(ordered[i] == keyval_pairs[i].second);
+}
+
+inline void VALIDATE_LEAF_ORDER_N(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t, int64_t>> &keyval_pairs, int n)
+{
+    vector<int64_t> ordered = bpt.get_first_n_values(n);
+    sort(keyval_pairs.begin(), keyval_pairs.end());
+    for (int i = 0; i < keyval_pairs.size() && i < n; i++)
+        CHECK(ordered[i] == keyval_pairs[i].second);
+}
+
+template <typename T>
+void SHUFFLE(vector<T> &arr, unsigned int seed)
+{
+    std::mt19937 rng(seed);
+    shuffle(arr.begin(), arr.end(), rng);
 }

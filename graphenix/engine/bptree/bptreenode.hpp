@@ -130,14 +130,16 @@ public:
 
     shared_ptr<BPTreeNode<T>> get_prev(fstream &ix_file)
     {
-        return shared_ptr<BPTreeNode<T>>(
-            get_from_offset(ix_file, prev));
+        return prev != -1
+                   ? shared_ptr<BPTreeNode<T>>(get_from_offset(ix_file, prev))
+                   : nullptr;
     }
 
     shared_ptr<BPTreeNode<T>> get_next(fstream &ix_file)
     {
-        return shared_ptr<BPTreeNode<T>>(
-            get_from_offset(ix_file, next));
+        return next != -1
+                   ? shared_ptr<BPTreeNode<T>>(get_from_offset(ix_file, next))
+                   : nullptr;
     }
 
     /**
