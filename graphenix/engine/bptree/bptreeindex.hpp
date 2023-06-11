@@ -359,23 +359,21 @@ public:
                     BPTreeNode<T> *node_ptr = new BPTreeNode<T>(current->children[i], key_size);
                     current = shared_ptr<BPTreeNode<T>>(node_ptr);
                     current->read(ix_file);
+                    keys_count = current->keys.size();
                     break;
                 }
 
-                // if (generic_equal(key, current->keys[i]))
                 if (i == keys_count - 1)
                 {
                     BPTreeNode<T> *node_ptr = new BPTreeNode<T>(current->children[i + 1], key_size);
                     current = shared_ptr<BPTreeNode<T>>(node_ptr);
                     current->read(ix_file);
+                    keys_count = current->keys.size();
                     break;
                 }
             }
         }
 
-        // cout << "Reached leaf node" << endl;
-        // reached leaf node
-        keys_count = current->keys.size();
         if (keys_count < current->get_capacity())
         {
             int i = 0;
@@ -468,6 +466,7 @@ public:
             }
             else
             {
+                current->write(ix_file);
                 new_leaf->write(ix_file);
                 shift_tree_level(new_leaf->keys[0], parent, new_leaf, ix_file);
             }
@@ -494,12 +493,12 @@ public:
             for (int j = keys_count + 1; j > i + 1; j--)
                 parent->children[j] = parent->children[j - 1];
 
-            int64_t new_child_offset = get_and_set_next_free(ix_file);
-            child->offset = new_child_offset;
+            // int64_t new_child_offset = get_and_set_next_free(ix_file);
+            // child->offset = new_child_offset;
 
             if (i > 0 && child->is_leaf)
             {
-                BPTreeNode<T> *prev_ptr = new BPTreeNode<T>(parent->keys[i - 1], key_size);
+                BPTreeNode<T> *prev_ptr = new BPTreeNode<T>(parent->children[i - 1], key_size);
                 shared_ptr<BPTreeNode<T>> prev_node = shared_ptr<BPTreeNode<T>>(prev_ptr);
                 prev_node->read(ix_file);
                 prev_node->set_next(child);
@@ -509,7 +508,7 @@ public:
 
             if (i <= keys_count && child->is_leaf)
             {
-                BPTreeNode<T> *next_ptr = new BPTreeNode<T>(parent->keys[i + 1], key_size);
+                BPTreeNode<T> *next_ptr = new BPTreeNode<T>(parent->children[i + 1], key_size);
                 shared_ptr<BPTreeNode<T>> next_node = shared_ptr<BPTreeNode<T>>(next_ptr);
                 next_node->read(ix_file);
                 next_node->set_prev(child);
