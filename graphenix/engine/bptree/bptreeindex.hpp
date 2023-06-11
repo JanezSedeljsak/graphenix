@@ -603,7 +603,7 @@ public:
         for (int i = 0; i < current->keys.size() + 1; i++)
         {
             BPTreeNode<T> *tmp_child_ptr = new BPTreeNode<T>(current->children[0], key_size);
-            shared_ptr<BPTreeNode<T>> tmp_child = shared_ptr<BPTreeNode<T>>(first_child_ptr);
+            shared_ptr<BPTreeNode<T>> tmp_child = shared_ptr<BPTreeNode<T>>(tmp_child_ptr);
             tmp_child->read(ix_file);
 
             if (tmp_child->offset == search->offset)
