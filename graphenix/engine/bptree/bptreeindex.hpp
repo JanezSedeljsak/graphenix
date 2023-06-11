@@ -496,9 +496,9 @@ public:
             // int64_t new_child_offset = get_and_set_next_free(ix_file);
             // child->offset = new_child_offset;
 
-            if (i > 0 && child->is_leaf)
+            if (child->is_leaf)
             {
-                BPTreeNode<T> *prev_ptr = new BPTreeNode<T>(parent->children[i - 1], key_size);
+                BPTreeNode<T> *prev_ptr = new BPTreeNode<T>(parent->children[i], key_size);
                 shared_ptr<BPTreeNode<T>> prev_node = shared_ptr<BPTreeNode<T>>(prev_ptr);
                 prev_node->read(ix_file);
                 prev_node->set_next(child);
