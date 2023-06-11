@@ -67,3 +67,25 @@ inline void CHECK_IF_BASIC_INSERT_WORKED(BPTreeIndex<int64_t> &bpt)
     const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
     CHECK(flatten.count(256) > 0);
 }
+
+inline void CHECK_FOR_012(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t, int64_t>> &zeros,
+                          vector<pair<int64_t, int64_t>> &ones, vector<pair<int64_t, int64_t>> &twos)
+{
+    const auto &found = bpt.find(1);
+    const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+    CHECK(flatten.size() == ones.size());
+    for (const auto &item : ones)
+        CHECK(flatten.count(item.second) > 0);
+
+    const auto &found2 = bpt.find(2);
+    const auto &flatten2 = bpt.flatten_intervals_to_ptrs(found2);
+    CHECK(flatten2.size() == twos.size());
+    for (const auto &item : twos)
+        CHECK(flatten2.count(item.second) > 0);
+
+    const auto &found3 = bpt.find(0);
+    const auto &flatten3 = bpt.flatten_intervals_to_ptrs(found3);
+    CHECK(flatten3.size() == zeros.size());
+    for (const auto &item : zeros)
+        CHECK(flatten3.count(item.second) > 0);
+}

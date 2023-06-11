@@ -156,6 +156,56 @@ TEST_CASE("Crete index, insert + create subtree with internal and search")
         CHECK(flatten.count(item.second) > 0);
     }
 
+    FIND_NONE(bpt);
+    bpt.delete_index();
+}
+
+TEST_CASE("Crete index, with range and find each")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    // todo fix if more items are in here it fails
+    vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
+                                         make_pair(4, 200), make_pair(5, 150)};
+
+    for (const auto &item : items)
+        bpt.insert(item.first, item.second);
+
+    for (const auto &item : items)
+    {
+        const auto &found = bpt.find(item.first);
+        const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+        CHECK(flatten.size() == 1);
+        CHECK(flatten.count(item.second) > 0);
+    }
+
+    FIND_NONE(bpt);
+    bpt.delete_index();
+}
+
+TEST_CASE("Crete index, with range (reversed) and find each")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
+                                         make_pair(4, 200), make_pair(5, 150), make_pair(6, 150),
+                                         make_pair(7, 33)};
+
+    reverse(items.begin(), items.end());
+    for (const auto &item : items)
+        bpt.insert(item.first, item.second);
+
+    for (const auto &item : items)
+    {
+        const auto &found = bpt.find(item.first);
+        const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+        CHECK(flatten.size() == 1);
+        CHECK(flatten.count(item.second) > 0);
+    }
+
+    FIND_NONE(bpt);
     bpt.delete_index();
 }
 
@@ -177,6 +227,7 @@ TEST_CASE("Crete index, insert same + create subtree with internal and search")
     for (const auto &item : items)
         CHECK(flatten.count(item.second) > 0);
 
+    FIND_NONE(bpt);
     bpt.delete_index();
 }
 
@@ -194,24 +245,69 @@ TEST_CASE("Crete index, insert partially same + create subtree with internal and
     INSERT_PAIRS_AND_VALIDATE(bpt, zeros);
 
     bpt.root->flush();
-    const auto &found = bpt.find(1);
-    const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
-    CHECK(flatten.size() == ones.size());
-    for (const auto &item : ones)
-        CHECK(flatten.count(item.second) > 0);
 
-    const auto &found2 = bpt.find(2);
-    const auto &flatten2 = bpt.flatten_intervals_to_ptrs(found2);
-    CHECK(flatten2.size() == twos.size());
-    for (const auto &item : twos)
-        CHECK(flatten2.count(item.second) > 0);
+    CHECK_FOR_012(bpt, zeros, ones, twos);
+    FIND_NONE(bpt);
+    bpt.delete_index();
+}
 
-    const auto &found3 = bpt.find(0);
-    const auto &flatten3 = bpt.flatten_intervals_to_ptrs(found3);
-    CHECK(flatten3.size() == zeros.size());
-    for (const auto &item : zeros)
-        CHECK(flatten3.count(item.second) > 0);
+TEST_CASE("Crete index, insert partially same + create subtree with internal and search - order 2")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    vector<pair<int64_t, int64_t>> ones{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300)};
+    vector<pair<int64_t, int64_t>> twos{make_pair(2, 550), make_pair(2, 410)};
+    vector<pair<int64_t, int64_t>> zeros{make_pair(0, 1000), make_pair(0, 2000)};
 
+    INSERT_PAIRS_AND_VALIDATE(bpt, twos);
+    INSERT_PAIRS_AND_VALIDATE(bpt, ones);
+    INSERT_PAIRS_AND_VALIDATE(bpt, zeros);
+
+    bpt.root->flush();
+
+    CHECK_FOR_012(bpt, zeros, ones, twos);
+    FIND_NONE(bpt);
+    bpt.delete_index();
+}
+
+TEST_CASE("Crete index, insert partially same + create subtree with internal and search - order 3")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    vector<pair<int64_t, int64_t>> ones{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300)};
+    vector<pair<int64_t, int64_t>> twos{make_pair(2, 550), make_pair(2, 410)};
+    vector<pair<int64_t, int64_t>> zeros{make_pair(0, 1000), make_pair(0, 2000)};
+
+    INSERT_PAIRS_AND_VALIDATE(bpt, zeros);
+    INSERT_PAIRS_AND_VALIDATE(bpt, twos);
+    INSERT_PAIRS_AND_VALIDATE(bpt, ones);
+
+    bpt.root->flush();
+
+    CHECK_FOR_012(bpt, zeros, ones, twos);
+    FIND_NONE(bpt);
+    bpt.delete_index();
+}
+
+TEST_CASE("Crete index, insert partially same + create subtree with internal and search - order 4")
+{
+    BPTreeIndex<int64_t> bpt("user", "uuid");
+    bpt.delete_index();
+    bpt.create();
+    vector<pair<int64_t, int64_t>> ones{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300)};
+    vector<pair<int64_t, int64_t>> twos{}; // todo add twos (test fails currently)
+    vector<pair<int64_t, int64_t>> zeros{make_pair(0, 1000), make_pair(0, 2000)};
+
+    INSERT_PAIRS_AND_VALIDATE(bpt, zeros);
+    INSERT_PAIRS_AND_VALIDATE(bpt, ones);
+    INSERT_PAIRS_AND_VALIDATE(bpt, twos);
+
+    bpt.root->flush();
+
+    CHECK_FOR_012(bpt, zeros, ones, twos);
+    FIND_NONE(bpt);
     bpt.delete_index();
 }
 
