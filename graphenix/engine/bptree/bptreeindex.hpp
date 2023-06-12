@@ -40,13 +40,14 @@ public:
         key_size = size;
     }
 
-    template <typename VEC_T>
-    static void vector_swap(vector<VEC_T> &vec1, vector<VEC_T> &vec2)
-    {
-        vector<VEC_T> temp = vec1;
-        vec1 = vec2;
-        vec2 = temp;
-    }
+    // using built in swap instead of this
+    //  template <typename VEC_T>
+    //  static void vector_swap(vector<VEC_T> &vec1, vector<VEC_T> &vec2)
+    //  {
+    //      vector<VEC_T> temp = vec1;
+    //      vec1 = vec2;
+    //    vec2 = temp;
+    //}
 
     static void print_nodes_with_intervals(const vector<LeafMatchInterval> &nodes)
     {
@@ -524,16 +525,16 @@ public:
                 // problem when inserting multiple same keys sometimes current and next are in wrong order
                 if (next_node->keys[next_node->keys.size() - 1] < child->keys[child->keys.size() - 1])
                 {
-                    vector_swap(child->keys, next_node->keys);
-                    vector_swap(child->data, next_node->data);
-                    vector_swap(child->children, next_node->children);
+                    swap(child->keys, next_node->keys);
+                    swap(child->data, next_node->data);
+                    swap(child->children, next_node->children);
                 }
 
                 next_node->set_prev(child);
                 child->set_next(next_node);
                 next_node->write(ix_file);
             }
-            
+
             child->write(ix_file);
             parent->write(ix_file);
         }
@@ -598,10 +599,12 @@ public:
                 set_head_ptr(ix_file, new_root_node->offset);
             }
             else
+            {
                 shift_tree_level(parent->keys[child_size],
                                  get_parent(root, parent, ix_file),
                                  new_internal_node,
                                  ix_file);
+            }
         }
     }
 

@@ -330,7 +330,7 @@ TEST_CASE("Crete index, insert partially same + create subtree with internal and
     bpt.create();
     vector<pair<int64_t, int64_t>> ones{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300)};
     vector<pair<int64_t, int64_t>> twos{make_pair(2, 550), make_pair(2, 410)};
-    vector<pair<int64_t, int64_t>> zeros{make_pair(0, 1000), make_pair(0, 2000)};
+    vector<pair<int64_t, int64_t>> zeros{make_pair(0, 1000), make_pair(0, 2000), make_pair(0, 330)};
 
     INSERT_PAIRS_AND_VALIDATE(bpt, zeros);
     INSERT_PAIRS_AND_VALIDATE(bpt, ones);
@@ -356,7 +356,7 @@ TEST_CASE("Crete index, insert + create subtree with internal and search - all p
 {
     vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
                                          make_pair(4, 200), make_pair(5, 170), make_pair(6, 150),
-                                         make_pair(7, 33)};
+                                         make_pair(7, 33), make_pair(8, 34)};
 
     PERMUTATIONS_TEST(items);
 }
