@@ -329,7 +329,7 @@ TEST_CASE("Crete index, insert partially same + create subtree with internal and
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> ones{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300)};
-    vector<pair<int64_t, int64_t>> twos{}; // todo add twos (test fails currently)
+    vector<pair<int64_t, int64_t>> twos{make_pair(2, 550), make_pair(2, 410)};
     vector<pair<int64_t, int64_t>> zeros{make_pair(0, 1000), make_pair(0, 2000)};
 
     INSERT_PAIRS_AND_VALIDATE(bpt, zeros);
@@ -341,6 +341,32 @@ TEST_CASE("Crete index, insert partially same + create subtree with internal and
     CHECK_FOR_012(bpt, zeros, ones, twos);
     FIND_NONE(bpt);
     bpt.delete_index();
+}
+
+TEST_CASE("Crete index, insert partially same + create subtree with internal and search - all permutations")
+{
+    vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(1, 500), make_pair(1, 500),
+                                         make_pair(2, 410), make_pair(2, 410),
+                                         make_pair(0, 1000), make_pair(0, 1000)};
+
+    PERMUTATIONS_TEST(items);
+}
+
+TEST_CASE("Crete index, insert + create subtree with internal and search - all permutations")
+{
+    vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
+                                         make_pair(4, 200), make_pair(5, 170), make_pair(6, 150),
+                                         make_pair(7, 33)};
+
+    PERMUTATIONS_TEST(items);
+}
+
+TEST_CASE("Crete index, insert (pairs) + create subtree with internal and search - all permutations")
+{
+    vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(1, 500), make_pair(2, 300),
+                                         make_pair(2, 300), make_pair(5, 150), make_pair(5, 150)};
+
+    PERMUTATIONS_TEST(items);
 }
 
 #endif // is testing

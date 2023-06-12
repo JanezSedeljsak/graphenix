@@ -40,6 +40,14 @@ public:
         key_size = size;
     }
 
+    template <typename VEC_T>
+    static void vector_swap(vector<VEC_T> &vec1, vector<VEC_T> &vec2)
+    {
+        vector<VEC_T> temp = vec1;
+        vec1 = vec2;
+        vec2 = temp;
+    }
+
     static void print_nodes_with_intervals(const vector<LeafMatchInterval> &nodes)
     {
         for (const auto &node : nodes)
@@ -477,7 +485,7 @@ public:
 
     inline void shift_tree_level(T key, shared_ptr<BPTreeNode<T>> parent, shared_ptr<BPTreeNode<T>> child, fstream &ix_file)
     {
-        int keys_count = parent->keys.size();
+        const int keys_count = parent->keys.size();
         if (keys_count < parent->get_capacity())
         {
             int i = 0;
@@ -506,17 +514,26 @@ public:
                 prev_node->write(ix_file);
             }
 
-            // TODO: this could maybe be improved
             if (i < keys_count && child->is_leaf)
             {
                 BPTreeNode<T> *next_ptr = new BPTreeNode<T>(parent->children[i + 2], key_size);
                 shared_ptr<BPTreeNode<T>> next_node = shared_ptr<BPTreeNode<T>>(next_ptr);
                 next_node->read(ix_file);
+
+                // hack this should be handled differently
+                // problem when inserting multiple same keys sometimes current and next are in wrong order
+                if (next_node->keys[next_node->keys.size() - 1] < child->keys[child->keys.size() - 1])
+                {
+                    vector_swap(child->keys, next_node->keys);
+                    vector_swap(child->data, next_node->data);
+                    vector_swap(child->children, next_node->children);
+                }
+
                 next_node->set_prev(child);
                 child->set_next(next_node);
                 next_node->write(ix_file);
             }
-
+            
             child->write(ix_file);
             parent->write(ix_file);
         }
@@ -704,7 +721,7 @@ public:
         bool limit_reached = false;
         while (ignore_count || amount > 0)
         {
-            for (int i = current->data.size() -  1; i >= 0; i--)
+            for (int i = current->data.size() - 1; i >= 0; i--)
             {
                 const auto &child_offset = current->data[i];
                 if (offset > 0)

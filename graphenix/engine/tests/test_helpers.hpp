@@ -118,6 +118,43 @@ inline void VALIDATE_LEAF_ORDER_N(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t
         CHECK(ordered[i] == keyval_pairs[i].second);
 }
 
+inline void PERMUTATIONS_TEST(vector<pair<int64_t, int64_t>> &vec)
+{
+    const int size = vec.size();
+    vector<int> indices(size, 0);
+
+    int i = 0;
+    while (i < size)
+    {
+        if (indices[i] < i)
+        {
+            if (i % 2 == 0)
+                swap(vec[0], vec[i]);
+            else
+                swap(vec[indices[i]], vec[i]);
+
+            BPTreeIndex<int64_t> bpt("user", "uuid");
+            bpt.delete_index();
+            bpt.create();
+            INSERT_PAIRS_AND_VALIDATE(bpt, vec);
+            bpt.root->flush();
+
+            FIND_NONE(bpt);
+            VALIDATE_LEAF_ORDER(bpt, vec);
+            VALIDATE_LEAF_ORDER_REVERSE(bpt, vec);
+            bpt.delete_index();
+
+            indices[i]++;
+            i = 0;
+        }
+        else
+        {
+            indices[i] = 0;
+            i++;
+        }
+    }
+}
+
 template <typename T>
 void SHUFFLE(vector<T> &arr, unsigned int seed)
 {
