@@ -76,7 +76,7 @@ inline vector<vector<pair<int64_t, int64_t>>> clusterify(vector<pair<int64_t, in
     vector<vector<pair<int64_t, int64_t>>> clusters;
     const size_t n = offsets.size();
     size_t i = 0;
-    
+
     while (i < n)
     {
         size_t j = i;
@@ -99,6 +99,34 @@ inline vector<vector<pair<int64_t, int64_t>>> clusterify(vector<pair<int64_t, in
     }
 
     return clusters;
+}
+
+template <typename T>
+unordered_set<T> make_set_union(const unordered_set<T> &set1, const unordered_set<T> &set2)
+{
+    unordered_set<T> union_set(set1);
+    union_set.insert(set2.begin(), set2.end());
+    return union_set;
+}
+
+template <typename T>
+unordered_set<T> make_set_intersection(const unordered_set<T> &set1, const unordered_set<T> &set2)
+{
+    unordered_set<T> intersection_set;
+    if (set1.size() > set2.size())
+    {
+        for (const auto &element : set2)
+            if (set1.count(element) != 0)
+                intersection_set.insert(element);
+    }
+    else
+    {
+        for (const auto &element : set1)
+            if (set2.count(element) != 0)
+                intersection_set.insert(element);
+    }
+
+    return intersection_set;
 }
 
 #endif

@@ -636,29 +636,96 @@ public:
         return found;
     }
 
-    vector<int64_t> get_first_n_values(int x)
+    inline shared_ptr<BPTreeNode<T>> inner_get_max_leaf(shared_ptr<BPTreeNode<T>> &current, fstream &ix_file)
+    {
+        if (current->is_leaf)
+            return current;
+
+        const size_t last_index = current->children.size() - 1;
+        BPTreeNode<T> *last_child_ptr = new BPTreeNode<T>(current->children[last_index], key_size);
+        shared_ptr<BPTreeNode<T>> last_child = shared_ptr<BPTreeNode<T>>(last_child_ptr);
+        last_child->read(ix_file);
+        return inner_get_max_leaf(last_child, ix_file);
+    }
+
+    shared_ptr<BPTreeNode<T>> get_max_leaf(fstream &ix_file)
+    {
+        if (root == nullptr)
+            read(); // loads root from file
+
+        shared_ptr<BPTreeNode<T>> found = inner_get_max_leaf(root, ix_file);
+        return found;
+    }
+
+    vector<int64_t> get_first_n_values_with_offset(int amount, int offset)
     {
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         shared_ptr<BPTreeNode<T>> current = get_min_leaf(ix_file);
+
         vector<int64_t> offsets;
-        bool ignore_count = x == -1;
+        const bool ignore_count = amount == -1;
         bool limit_reached = false;
-        while (current != nullptr && (ignore_count || x > 0))
+        while (ignore_count || amount > 0)
         {
             for (const auto &child_offset : current->data)
             {
+                if (offset > 0)
+                {
+                    offset--;
+                    continue;
+                }
+
                 offsets.push_back(child_offset);
-                if (!ignore_count && --x == 0)
+                if (!ignore_count && --amount == 0)
                 {
                     limit_reached = true;
                     break;
                 }
             }
 
-            if (limit_reached || current->next == -1)
+            bool edge_reached = current->next == -1;
+            if (limit_reached || edge_reached)
                 break;
 
             current = current->get_next(ix_file);
+        }
+
+        ix_file.close();
+        return offsets;
+    }
+
+    vector<int64_t> get_last_n_values_with_offset(int amount, int offset)
+    {
+        fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        shared_ptr<BPTreeNode<T>> current = get_max_leaf(ix_file);
+
+        vector<int64_t> offsets;
+        const bool ignore_count = amount == -1;
+        bool limit_reached = false;
+        while (ignore_count || amount > 0)
+        {
+            for (int i = current->data.size() -  1; i >= 0; i--)
+            {
+                const auto &child_offset = current->data[i];
+                if (offset > 0)
+                {
+                    offset--;
+                    continue;
+                }
+
+                offsets.push_back(child_offset);
+                if (!ignore_count && --amount == 0)
+                {
+                    limit_reached = true;
+                    break;
+                }
+            }
+
+            bool edge_reached = current->prev == -1;
+            if (limit_reached || edge_reached)
+                break;
+
+            current = current->get_prev(ix_file);
         }
 
         ix_file.close();

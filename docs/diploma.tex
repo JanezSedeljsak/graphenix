@@ -383,30 +383,44 @@ A proper abstract should contain around 100 words which makes this one way too s
 \setcounter{page}{1}
 \pagestyle{fancy}
 
+% združimo uvod in kaj so relacijske podatkovne baze
+% 1. začnemo z brez podatkovnih baz dan danes negre (gre za trajen način shranjevanja podatkov itd.)
+% 2. različni tipi podatkovnih baz
+% 2.1 relacijske
+% 2.2 nosql
+% 3. relacijske in depth
+
 \chapter{Uvod}
+    \section{Različni tipi podatkovnih baz}
+        \subsection{Relacijske podatkovne baze}
+        \subsection{Nerelacijske podatkovne baze}
+    \section{Kje uporabljamo relacijske podatkovne baze}
 
-\chapter{Kaj so relacijske podatkovne baze?}
+\chapter{Razvoj jedra podatkovnega sistema}
 \label{ch0}
-
+    \section{Osnovna hierarhična struktura shranjevanja podatkov}
+        \subsection{Tipi podatkov}
+        \subsection{Podatki in vezani kazalci}
+        \subsection{Struktura relaciji med entitetami}
+    \section{Indeksiranje z uporabo B+ dreves}
+        \subsection{B+ drevesa in njihove značilnosti}
+        \subsection{Implementacija B+ dreves za shranjevanje na disk}
+        \subsection{Uporaba B+ dreves v bazi podatkov (iskanje po indeksiranih podatkih)}
+        \subsection{Dinamično nalaganje in ohranjanje posameznih segmentov drevesa v pomnilnik}
+        \subsection{Slabosti uporabe indeksov}
+    \section{Pomembni gradniki za optimalno izvedbo poivedb}
+        \subsection{Gradnja dreves za pogojni del poizvedb}
+        \subsection{Izvedba poizvedb na večih entitetah hkrati}
+        \subsection{Optimizacija poizvedb z gručenjem in primerjava različnih pristopov}
+        \subsection{Optimizacija na nivoju urejanja podatkov ob poizvedbah}
+    \section{Struktura kode na nivoju jedra}
+   % \section{(?) Transakcije in sistem za obnovitev podatkov}
+   % section{(?) Migracije znotraj entitet}
+   
 \chapter{Razvoj knjižnice za delo s podatkovnim sistemom}
 \label{ch1}
-   \section{Povezava med prog. jezikoma C++ in Python}
-   \section{Osnovna hierarhična struktura shranjevanja podatkov}
-      \subsection{Tipi podatkov}
-      \subsection{Podatki in vezani kazalci}
-      \subsection{Struktura relaciji med entitetami}
-   \section{Indeksiranje z uporabo B+ dreves}
-      \subsection{Zakaj uporabiti B+ drevesa in njihove značilnosti}
-      \subsection{Implementacija B+ dreves v obliki datoteke}
-      \subsection{Uporaba B+ dreves v bazi podatkov (iskanje po indeksiranih podatkih)}
-      \subsection{Slabosti uporabe indeksov}
-   \section{Pomembni gradniki za optimalno izvedbo poivedb}
-      \subsection{Gradnja dreves za pogojni del poizvedb}
-      \subsection{Izvedba poizvedb na večih entitetah hkrati}
-      \subsection{Optimizacija poizvedb z gručenjem in primerjava različnih pristopov}
-      \subsection{Optimizacija na nivoju urejanja podatkov ob poizvedbah}
-   \section{(?) Transakcije in sistem za obnovitev podatkov}
-   \section{(?) Migracije znotraj entitet}
+   \section{Komunikacija med prog. jezikoma C++ in Python}
+   \section{Stukture za delo z jedrom in kodna struktura}
    \section{Abstraktna raven v prog. jeziku Python z dobro razvijalsko izkušnjo}
 
 \chapter{Analiza}
@@ -423,7 +437,7 @@ A proper abstract should contain around 100 words which makes this one way too s
 
 
 %\cleardoublepage
-%\addcontentsline{toc}{chapter}{Literatura}
+\addcontentsline{toc}{chapter}{Literatura}
 
 % če imaš težave poravnati desni rob bibliografije, potem odkomentiraj spodnjo vrstico
 \raggedright

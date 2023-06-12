@@ -142,9 +142,9 @@ TEST_CASE("Crete index, insert + create subtree with internal and search")
     BPTreeIndex<int64_t> bpt("user", "uuid");
     bpt.delete_index();
     bpt.create();
-    vector<pair<int64_t, int64_t>> items{make_pair(2, 500), make_pair(3, 400), make_pair(4, 300),
-                                         make_pair(5, 200), make_pair(6, 150), make_pair(1, 270),
-                                         make_pair(0, 370)};
+    vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
+                                         make_pair(4, 200), make_pair(5, 150), make_pair(6, 150),
+                                         make_pair(7, 33)};
 
     for (const auto &item : items)
         bpt.insert(item.first, item.second);
@@ -168,7 +168,7 @@ TEST_CASE("Crete index, with range and find each")
     bpt.create();
     vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
                                          make_pair(4, 200), make_pair(5, 150), make_pair(6, 150),
-                                         make_pair(7, 150)};
+                                         make_pair(7, 33)};
 
     for (const auto &item : items)
         bpt.insert(item.first, item.second);
@@ -183,6 +183,7 @@ TEST_CASE("Crete index, with range and find each")
 
     FIND_NONE(bpt);
     VALIDATE_LEAF_ORDER(bpt, items);
+    VALIDATE_LEAF_ORDER_REVERSE(bpt, items);
     bpt.delete_index();
 }
 
@@ -209,6 +210,7 @@ TEST_CASE("Crete index, with range (reversed) and find each")
 
     FIND_NONE(bpt);
     VALIDATE_LEAF_ORDER(bpt, items);
+    VALIDATE_LEAF_ORDER_REVERSE(bpt, items);
     bpt.delete_index();
 }
 
@@ -235,6 +237,7 @@ TEST_CASE("Crete index, with range (shuffled) and find each")
 
     FIND_NONE(bpt);
     VALIDATE_LEAF_ORDER(bpt, items);
+    VALIDATE_LEAF_ORDER_REVERSE(bpt, items);
     bpt.delete_index();
 }
 

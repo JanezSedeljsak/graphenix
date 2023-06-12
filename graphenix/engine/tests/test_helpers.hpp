@@ -95,15 +95,24 @@ inline void CHECK_FOR_012(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t, int64_
 
 inline void VALIDATE_LEAF_ORDER(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t, int64_t>> &keyval_pairs)
 {
-    vector<int64_t> ordered = bpt.get_first_n_values(-1);
+    vector<int64_t> ordered = bpt.get_first_n_values_with_offset(-1, 0);
     sort(keyval_pairs.begin(), keyval_pairs.end());
+    for (int i = 0; i < keyval_pairs.size(); i++)
+        CHECK(ordered[i] == keyval_pairs[i].second);
+}
+
+inline void VALIDATE_LEAF_ORDER_REVERSE(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t, int64_t>> &keyval_pairs)
+{
+    vector<int64_t> ordered = bpt.get_last_n_values_with_offset(-1, 0);
+    sort(keyval_pairs.begin(), keyval_pairs.end());
+    reverse(keyval_pairs.begin(), keyval_pairs.end());
     for (int i = 0; i < keyval_pairs.size(); i++)
         CHECK(ordered[i] == keyval_pairs[i].second);
 }
 
 inline void VALIDATE_LEAF_ORDER_N(BPTreeIndex<int64_t> &bpt, vector<pair<int64_t, int64_t>> &keyval_pairs, int n)
 {
-    vector<int64_t> ordered = bpt.get_first_n_values(n);
+    vector<int64_t> ordered = bpt.get_first_n_values_with_offset(n, 0);
     sort(keyval_pairs.begin(), keyval_pairs.end());
     for (int i = 0; i < keyval_pairs.size() && i < n; i++)
         CHECK(ordered[i] == keyval_pairs[i].second);
