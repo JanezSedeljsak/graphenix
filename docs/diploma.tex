@@ -50,8 +50,8 @@ sorting=nty,
 \newcommand{\tsubject}{\ttitle}
 \newcommand{\tsubjectEn}{\ttitleEn}
 \newcommand{\tauthor}{Janez Sedeljšak}
-\newcommand{\tkeywords}{računalnik, računalnik, računalnik}
-\newcommand{\tkeywordsEn}{computer, computer, computer}
+\newcommand{\tkeywords}{Podatkovne baze, C++, Python, B+ drevesa, Podatkovne strukture}
+\newcommand{\tkeywordsEn}{Databases, C++, Python, B+ trees, Data structures}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	HYPERREF SETUP
@@ -288,19 +288,19 @@ opis diplome v angleščini
 \clearemptydoublepage
 
 % zahvala
-\thispagestyle{empty}\mbox{}\vfill\null\it%
-\noindent
-Na tem mestu zapišite, komu se zahvaljujete za pomoč pri izdelavi diplomske naloge oziroma pri vašem študiju nasploh. Pazite, da ne boste koga pozabili. Utegnil vam bo zameriti. Temu se da izogniti tako, da celotno zahvalo izpustite.
-\rm\normalfont
+%\thispagestyle{empty}\mbox{}\vfill\null\it%
+%\noindent
+%Na tem mestu zapišite, komu se zahvaljujete za pomoč pri izdelavi diplomske naloge oziroma pri vašem študiju %nasploh. Pazite, da ne boste koga pozabili. Utegnil vam bo zameriti. Temu se da izogniti tako, da celotno %zahvalo izpustite.
+%$\rm\normalfont
 
 % prazna stran
 \clearemptydoublepage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % posvetilo, če sama zahvala ne zadošča :-)
-\thispagestyle{empty}\mbox{}{\vskip0.20\textheight}\mbox{}\hfill\begin{minipage}{0.55\textwidth}%
-Svoji dragi Alenčici.
-\normalfont\end{minipage}
+%\thispagestyle{empty}\mbox{}{\vskip0.20\textheight}\mbox{}\hfill\begin{minipage}{0.55\textwidth}%
+%Svoji dragi Alenčici.
+%\normalfont\end{minipage}
 
 % prazna stran
 \clearemptydoublepage
@@ -308,6 +308,7 @@ Svoji dragi Alenčici.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % kazalo
+\setcounter{tocdepth}{3}
 \pagestyle{empty}
 \def\thepage{}% preprečimo težave s številkami strani v kazalu
 \tableofcontents{}
@@ -323,9 +324,11 @@ Svoji dragi Alenčici.
 
 \noindent\begin{tabular}{p{0.11\textwidth}|p{.39\textwidth}|p{.39\textwidth}}    % po potrebi razširi prvo kolono tabele na račun drugih dveh!
   {\bf kratica} & {\bf angleško}                              & {\bf slovensko} \\ \hline
-  {\bf CA}      & classification accuracy               & klasifikacijska točnost \\
   {\bf DBMS} & database management system & sistem za upravljanje podatkovnih baz \\
-  {\bf SVM}   & support vector machine              & metoda podpornih vektorjev \\
+  {\bf API} & application programming interface & aplikacijski programski vmesnik \\
+  {\bf SQL} & structured query language & strukturiran jezik poizvedb \\
+  {\bf NoSQL} & ne relacijske podatkovne baze & non relational databases \\
+  {\bf I/O} & input/output operations & vhodno/izhodne operacije \\
 %  \dots & \dots & \dots \\
 \end{tabular}
 
@@ -346,9 +349,11 @@ Svoji dragi Alenčici.
 \bigskip
 
 %\noindent\textbf{Povzetek:} 
-\noindent V vzorcu je predstavljen postopek priprave diplomskega dela z uporabo okolja \LaTeX. Vaš povzetek mora sicer vsebovati približno 100 besed, ta tukaj je odločno prekratek.
-Dober povzetek vključuje: (1) kratek opis obravnavanega problema, (2) kratek opis vašega pristopa za reševanje tega problema in (3) (najbolj uspešen) rezultat ali prispevek diplomske naloge.
+\noindent V diplomskem delu je predstavljenih trenutno nekaj najbolj uporabljenih sistemov za uporabljanje z podatkov (DMBS). V veliki meri so standard podatkovnih baz še vedno relacijske podatkovne baze. V ta namen je tekom dela predstavljen razvoj vgrajenega relacijskega sistema za programski jezik Python.
 
+Sam razvoj namenske knjižnice je pripravljen v programskem jeziku C++, saj gre za nizko nivosjki jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilniku. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba dobrih podatkovnih struktur in algoritmov, ki dobro izkoristijo I/O operacije, ki jih ponuja operacijski sistem in posledično pripeljejo do dobro pripravljenega podatkovnega sistema.
+
+V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije podatkovnega sistema na različnih scenarijih in ob različnih konfiguracijah. Poleg tega je pripravljena tudi analiza z že obstoječimi DMBS - SQLite in MySQL) ob enakovrednih scenarijih testiranja novo pripravljene knjižnice.
 \bigskip
 
 \noindent\textbf{Ključne besede:} \tkeywords.
@@ -369,8 +374,11 @@ Dober povzetek vključuje: (1) kratek opis obravnavanega problema, (2) kratek op
 \bigskip
 
 %\noindent\textbf{Abstract:} 
-\noindent This sample document presents an approach to typesetting your BSc thesis using \LaTeX. 
-A proper abstract should contain around 100 words which makes this one way too short.
+\noindent The thesis presents several currently used systems for working with data (DBMS). Relational databases are still widely used as the standard data storage systems. In this context, the development of an embedded relational database system for the Python programming language is presented.
+
+The development of the dedicated library is implemented in the C++ programming language, which is a low-level language providing high flexibility in memory management. The development of all necessary components for a well-functioning relational database is described. During the development process, a key focus was on utilizing efficient data structures and algorithms that make effective use of I/O operations offered by the operating system, resulting in a well-prepared data system.
+
+In the final part of the thesis, a performance analysis of the implemented data system is conducted under different scenarios and configurations. Additionally, an analysis is performed comparing the newly developed library with existing DBMS (SQLite and MySQL) using equivalent testing scenarios.
 \bigskip
 
 \noindent\textbf{Keywords:} \tkeywordsEn.
@@ -391,13 +399,36 @@ A proper abstract should contain around 100 words which makes this one way too s
 % 3. relacijske in depth
 
 \chapter{Uvod}
+    Živimo v obdobju, kjer velepodatkov. Gre za ogromne količine podatkov, ki so shranjeni na različnih strežniških storitvah. Kadar gre za trajno shranjevanje podatkov govorimo o podatkovnih bazah. Trenutno se omenjeno področje deli na dve večji skupini - relacijske in neralcijske podatkovne baze.
     \section{Različni tipi podatkovnih baz}
         \subsection{Relacijske podatkovne baze}
+        Trenutno so standard na trgu še vedno relacijske podatkovne baze. Gre za striktno strukturo entitet, ki vsebujejo smiselne povezave - realcije s pomočjo tako imenovanih tujih ključev. Gre za standard, ki se je prvič pojavil leta 1970, ko ga je razvil IBM \cite{IBM_DMBS_1970}. Razvita je bila prva družina relacijskih podatkovnih baz DB2, katero je razvil Edgar F. Codd - matematik izobražen na univerzi Oxford.
         \subsection{Nerelacijske podatkovne baze}
-    \section{Kje uporabljamo relacijske podatkovne baze}
+        Gre za novo skupino podatkovnih baz, ki temeljijo na čist drugačni osnovi kot realcijske podatkovne baze. Pojavile so se kot odgovor na težave, s katerimi se srečujemo pri relacijskih podatkovnih bazah. Kot je zapisal viš. pred. Aljaž Zrnec "Podatkovne baze NoSQL niso bile razvite z namenom popolne zamenjave relacijskih baz" \cite{zrnec2011podatkovne}. Glavna težava pri realcijskih podatkovnih bazah je striktna struktura, ki se je moramo držati. V novi skupini podatkovnih baz (NoSQL) je prioriteta fleksibilnost. Sama struktura podatkov je bistveno drugačne, saj entitete in relacije med zapisi zamenjajo objekti in dedovanje. Vse skupaj prinese še eno veliko prednost, ki jo imajo nerelacijske podatkovne baze - zaradi enkapsulacije posameznih zapisov lahko celotno bazo porazdelimo na več računalnikov (tako imenovana horizontalna skalibilnost, ki je relacijske podatkovne baze ne podpirajo).
+    
+    \section{Kje uporabljamo relacijske podatkovne baze in kako delujejo?}
+
+    Relacijske podatkovne baze se uporabljajo povsod, kjer imamo velike količine strukturiranih podatkov, ki jih želimo obdržati za trajno shranjevanje. Preprost primer relacijske podatkovne baze:
+    
+    \begin{figure}[h]
+        \centerline{\includegraphics[height=0.5\textwidth, angle=0]{what-is-a-relational-database.jpg}}
+        \caption{Preprost primer realcijske podatkovne baze.}
+        \label{sl:mindmap}
+    \end{figure}
+
+    Na primeru je prikazana struktura, kjer shranjujemo zapise študentov in predmetov, ki se jih udeležujejo. Vsak zapis v relacijski podatkovni bazi ima svoj primarni ključ, preko katerega potekajo vse relacije znotraj podatkovne baze. Entiteti "Students" in "Courses" sta starševski entiteti. "StudentCourses", pa predstavlja povezovalno entiteto med prej omenjenima. Namreč vsak študent je lahko v več predmetih in enako velja za predmete (lahko vključujejo več študentov).
+
+    \section{Motivacija za razvoj lastnega relacijskega sistema}
+    Koncept shranjevanja podatkov je v osnovi dokaj preprost. Različni sistemi za shranjevanje podatkov bodisi relacijski ali nerelacijski sistemi za shranjevanje podatkov s seboj prinesejo ogromno abstrakcije.
+
+    Uporabniki podatkovnih baz se zares začnejo zavedati težav, ko sistem za shranjevanje podatkov ni več odziven kot bi si želeli. Tekom razvoja lastnih aplikaciji in preprostih API-jev, se le redko posvetimo optimalnemu delovanju naše podatkovne baze. Težave se začnejo pojavljati, kadar v posamezni entiteti pride do velike količine podatkov in poizvedbe nad podatki in samo iskanje posameznih zapisov postane zakasnjeno.
+
+    Na tej točki so potrebne optimizacije same strukture naše podatkovne baze. Eden najpomembnejših konceptov za hitro iskanje po posameznih atributov je postavitev indeksov. Indeksiranje podatkov je koncept, ki se pojavlja povsod v računalništvu in ne le v relacijskih podatkovnih bazah. Gre za pripravo iskalne strukture, ki nam omogoča bistveno hitrejše iskanje podatkov s pomočjo dobre podatkovne strukture. V praksi se izkaže, da sta nekako najbolj pogosta pristopa indeksiranje z zgoščevalnimi strukturami in drevesnimi strukturami. V smislu relacijskih podatkovnih baz so najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B drevesa). Gre za skupino dreves, kjer ima vsako vozlišče lahko `M` zapisov in `M+1` kazalcev na nova vozlišča. S pomočjo postavitve indeksov lahko linearno iskanje skozi zapise spremenimo v binarno iskanje (oz. iz aproksimacijske notacije O(N) v O(log(N)).
 
 \chapter{Razvoj jedra podatkovnega sistema}
 \label{ch0}
+    V poglavju predstavimo razvoj jedra za relacijski podatkovni sistem. V prvi fazi je predstavljena celotna strukturiranje podatkov in način shranjevanja na disk. Za tem predstavimo razvoj B+ drevesne strukture za optimalno indeksiranje podatkov. Nato, pa je predsatvljena še optimizacija posameznih segmentov in sama strukture kode na nivoju jedra podatkovnega sistema.
+    
     \section{Osnovna hierarhična struktura shranjevanja podatkov}
         \subsection{Tipi podatkov}
         \subsection{Podatki in vezani kazalci}
@@ -432,21 +463,18 @@ A proper abstract should contain around 100 words which makes this one way too s
 
 \chapter{Scenariji oz. primeri uporabe}
 \label{ch3}
+    \section{Strežniško logiranje podatkov}
+    \section{Manjši strežniški API}
+    \section{Preprosta mobilna aplikacija}
 
 \chapter{Sklepne ugotovitve}
 
 
 %\cleardoublepage
-\addcontentsline{toc}{chapter}{Literatura}
+% \addcontentsline{toc}{chapter}{Literatura}
 
 % če imaš težave poravnati desni rob bibliografije, potem odkomentiraj spodnjo vrstico
 \raggedright
-
-\printbibliography[heading=bibintoc,type=article,title={Članki v revijah}]
-
-\printbibliography[heading=bibintoc,type=inproceedings,title={Članki v zbornikih}]
-
-\printbibliography[heading=bibintoc,type=incollection,title={Poglavja v knjigah}]
 
 % v zadnji verziji diplomskega dela običajno združiš vse tri vrste referenc v en sam seznam in
 % izpustiš delne sezname
