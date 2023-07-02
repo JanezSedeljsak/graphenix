@@ -13,6 +13,13 @@
 %
 
 \documentclass[a4paper,12pt,openright]{book}
+%\usepackage{listings}
+%\usepackage{xcolor}
+%\lstset { %
+%    language=C++,
+%    backgroundcolor=\color{black!5}, % set backgroundcolor
+%    basicstyle=\footnotesize,% basic font setting
+%}
 %\documentclass[a4paper, 12pt, openright, draft]{book}  Nalogo preverite tudi z opcijo draft, ki pokaže, katere vrstice so predolge! Pozor, v draft opciji, se slike ne pokažejo!
  
 \usepackage[utf8]{inputenc}   % omogoča uporabo slovenskih črk kodiranih v formatu UTF-8
@@ -31,7 +38,8 @@
 
 \usepackage{color}
 \usepackage{soul}
-
+\usepackage[dvipsnames]{xcolor}
+\usepackage{dirtree}
 \usepackage[
 backend=biber,
 style=numeric,
@@ -322,13 +330,16 @@ opis diplome v angleščini
 
 \chapter*{Seznam uporabljenih kratic}
 
-\noindent\begin{tabular}{p{0.11\textwidth}|p{.39\textwidth}|p{.39\textwidth}}    % po potrebi razširi prvo kolono tabele na račun drugih dveh!
+\noindent\begin{tabular}{p{0.2\textwidth}|p{.35\textwidth}|p{.35\textwidth}}    % po potrebi razširi prvo kolono tabele na račun drugih dveh!
   {\bf kratica} & {\bf angleško}                              & {\bf slovensko} \\ \hline
   {\bf DBMS} & database management system & sistem za upravljanje podatkovnih baz \\
   {\bf API} & application programming interface & aplikacijski programski vmesnik \\
   {\bf SQL} & structured query language & strukturiran jezik poizvedb \\
-  {\bf NoSQL} & ne relacijske podatkovne baze & non relational databases \\
+  {\bf NoSQL} & nerelacijske podatkovne baze & nonrelational databases \\
   {\bf I/O} & input/output operations & vhodno/izhodne operacije \\
+  {\bf SSD} & solid-state drive & negiljivi diski \\
+  {\bf USB} & universal serial bus & univerzalno serijsko vodilo \\
+  {\bf ER diagram} & entitiy relationship diagram & diagram entitet in relaciji \\
 %  \dots & \dots & \dots \\
 \end{tabular}
 
@@ -423,52 +434,190 @@ In the final part of the thesis, a performance analysis of the implemented data 
 
     Uporabniki podatkovnih baz se zares začnejo zavedati težav, ko sistem za shranjevanje podatkov ni več odziven kot bi si želeli. Tekom razvoja lastnih aplikaciji in preprostih API-jev, se le redko posvetimo optimalnemu delovanju naše podatkovne baze. Težave se začnejo pojavljati, kadar v posamezni entiteti pride do velike količine podatkov in poizvedbe nad podatki in samo iskanje posameznih zapisov postane zakasnjeno.
 
-    Na tej točki so potrebne optimizacije same strukture naše podatkovne baze. Eden najpomembnejših konceptov za hitro iskanje po posameznih atributov je postavitev indeksov. Indeksiranje podatkov je koncept, ki se pojavlja povsod v računalništvu in ne le v relacijskih podatkovnih bazah. Gre za pripravo iskalne strukture, ki nam omogoča bistveno hitrejše iskanje podatkov s pomočjo dobre podatkovne strukture. V praksi se izkaže, da sta nekako najbolj pogosta pristopa indeksiranje z zgoščevalnimi strukturami in drevesnimi strukturami. V smislu relacijskih podatkovnih baz so najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B drevesa). Gre za skupino dreves, kjer ima vsako vozlišče lahko `M` zapisov in `M+1` kazalcev na nova vozlišča. S pomočjo postavitve indeksov lahko linearno iskanje skozi zapise spremenimo v binarno iskanje (oz. iz aproksimacijske notacije O(N) v O(log(N)).
+    Na tej točki so potrebne optimizacije same strukture naše podatkovne baze. Eden najpomembnejših konceptov za hitro iskanje po posameznih atributov je postavitev indeksov. Indeksiranje podatkov je koncept, ki se pojavlja povsod v računalništvu in ne le v relacijskih podatkovnih bazah. Gre za pripravo iskalne strukture, ki nam omogoča bistveno hitrejše iskanje podatkov s pomočjo dobre podatkovne strukture. V praksi se izkaže, da sta nekako najbolj pogosta pristopa indeksiranje z zgoščevalnimi strukturami in drevesnimi strukturami. V smislu relacijskih podatkovnih baz so najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B drevesa). Gre za skupino dreves, kjer ima vsako vozlišče lahko `M` zapisov in `M+1` kazalcev na nova vozlišča. S pomočjo postavitve indeksov lahko linearno iskanje skozi zapise spremenimo v binarno iskanje (oz. iz aproksimacijske notacije $O(N)$ v $O(log(N))$).
 
 \chapter{Razvoj jedra podatkovnega sistema}
 \label{ch0}
     V poglavju predstavimo razvoj jedra za relacijski podatkovni sistem. V prvi fazi je predstavljena celotna strukturiranje podatkov in način shranjevanja na disk. Za tem predstavimo razvoj B+ drevesne strukture za optimalno indeksiranje podatkov. Nato, pa je predsatvljena še optimizacija posameznih segmentov in sama strukture kode na nivoju jedra podatkovnega sistema.
+
+    Vsa izvorna koda je dostopna na GitHub repozitoriju \cite{GRAPHENIX_GITHUB}.
     
-    \section{Osnovna hierarhična struktura shranjevanja podatkov}
+    \section{Struktura shranjevanja podatkov}
+        \subsection{Datotečna struktura za shranjevanje podatkov znotraj entitet}
+        Za vsako posamezno entiteto se privzeto kreirata 2 datoteki $ix\_<naziv\_entitete>.bin$ in $<naziv\_entitete>.bin$.
+        \begin{enumerate}
+            \item $<naziv\_entitete>.bin$ (matrika podatkov) - je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v entiteti. Posamezen stolpec matrike pa predstavlja atributv vsakega zaporednega zapisa.
+            \item $ix\_<naziv\_entitete>.bin$ (glava entiteti s kazalci) - gre za vektorsko strukturo, kjer vsaka zaporedna vrstica vsebuje kazalec na na dejanski zapis v matriki podatkov - ta kazalec je realiziran, kot celoštevilski odmik zapisa v matriki. Poleg kazalcev struktura vsebuje tudi kazalec na prvo prosto vrstico v matriki:
+            \begin{itemize}
+                \item Matrika je polna - kazalec na konec datoteke
+                \item V matriki podatkov obstaja fragmentacija - kazalec na prvo prosto vrstico v matriki 
+            \end{itemize}
+        \end{enumerate}
+
+        \begin{figure}[h]
+            \centerline{\includegraphics[width=0.7\textwidth, angle=0]{struktura_entitet.png}}
+            \caption{Struktura podatkovne matrike in glave entitete s kazalci}
+            \label{sl:mindmap}
+        \end{figure}
+        
         \subsection{Tipi podatkov}
-        \subsection{Podatki in vezani kazalci}
-        \subsection{Struktura relaciji med entitetami}
+        Znotraj našega vrgrajenega podatkovnega sistema podpiramo 5 podatkovnih tipov:
+        \begin{enumerate}
+            \item Cela števila (angl. Int) - v tem primeru gre za vrednost, ki je na nivoju C++ jezika shranjena kot int64\_t oziroma predznačeno celo število. Velikost za posamezno vrednost je 8B. Sam razpon vrednosti, ki jih lahko shranimo v posamezen zapis je $[-2^{63}, 2^{63} - 1]$.
+            \item Nizi (angl. String) - Gre za zaporedje znakov, kjer na nivoju posamezne entitete določimo maksimalno dovoljeno dolžino posameznega zapisa. Torej velikost posameznega zapisa je $N * 1B$, kjer je $N$ maksimalna dolžina podatka. 
+            \item Logične vrednosti (angl. Bool) - je najmanjši podatkovni tip, ki ga vsebuje naš podatkovni sistem in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot to definira Python programski jezik.
+            \item Datumi (angl. Datetime) - gre za podatkovni tip, ki ponovno shranjen, kot vrednost int64\_t in je predsatvljen v EPOCH formatu - gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970 \cite{EPOCH_FORMAT}. 
+            \item Povezava (angl. Link) - gre za vgrejen tip relacije, kjer je podatek kazalec na drug zapis v določeni entiteti. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
+        \end{enumerate}
+        
+        \subsection{Realizacija relaciji med entitetami}
+
+        Sama implementacija relaciji je dokaj preprosta, saj se povezave kreirajo avtomatsko direktno preko primarnega ključa posameznega zapisa. Razvijalcu je tako prepuščena le definicija entitete in atributov, kjer določimo povezave (oz. relacije) na drugo entiteto. Sama relacija, pa je realizirana s preprostim kazalcem, ki kaže na zapis v glavo entitete, ki jo želimo povezati.
+
+    \newpage
     \section{Indeksiranje z uporabo B+ dreves}
         \subsection{B+ drevesa in njihove značilnosti}
+
+        B+ drevesa so podatkovna struktura, uporabljena za unčinkoviti inkesiranje in iskanje podatkov.
+        Vsako vozišče ima lahko največ $M$ podatkov in $M+1$ kazalcev na nova vozlišča.
+
+        V B+ drevesih so vsi nivoji razen listov drevesa, vmesna vozlišča, ki vsebujejo kazalce na nadaljna vozlišča znotraj drevesa - služijo le kot povezave ter omogočajo učinkovitejše iskanje in navigacijo po strukturi. Medtem so podatki shranjeni v listih drevesa.
+
+        Definicija strukture zahtevna tudi striktno uravnoteženost drevesa, torej da so vsi listi drevesa na istem nivoju.
+
+        Kot dodatna optimizacija za iskanje intervalov znotraj drevesa je v moji implementaciji dodana še struktura dvojno povezanega seznama na nivoju listov drevesa. Tako ima vsak list kazalec na predhoden in naslednji list v drevesu. Na primeru podatkovne baze, je to zelo uporabno, ko iščemo npr. prvih petdeset uporabnikov razvrščenih po priimku. V prvi fazi je seveda potrebno imeti kreirano indeksno strukturo za iskan atribut. Zatem pa je iskanje zapisov dokaj trivialno, namreč sprehodimo se le do najbolj levega lista v drevesu, nato pa se sprehodimo po povezanem seznamu od leve proti desni in shranimo kazalce na željene zapise, jih nato le preberemo iz matrike podatkov, ter razvrstimo po željenem atributu.
+
+        Na spodnji sliki je prikazan preprost primer B+ drevesa realiziran s stopnjo $M=2$:
+
+        \begin{figure}[h]
+            \centerline{\includegraphics[width=1\textwidth, angle=0]{bp_drevo.png}}
+            \caption{Struktura podatkovne matrike in glave entitete s kazalci}
+            \label{sl:mindmap}
+        \end{figure}
+
+        \newpage
+        \subsection{Pravila, ki jih zahteva B+ drevesna struktura}
+        \begin{enumerate}
+            \item Vsako vozlišče ima največ $M$ podatkov in $M+1$ kazalcev.
+            \item Listi drevesa so vsi na enakem nivoju.
+            \item Urejenost - vse vrednosti, ki se nahajajo levo morajo biti manjše ali enake trenutni; vse vrednosti desno, pa morjo biti večje ali enake.
+            \item Vmesna vozlišča morajo vsebovati $X+1$ kazalcev, kjer je $X$ število podatkov v vozlišču.
+            \item Vozlišče je veljavno, kadar ima vsaj $C/2$ zapisov, kjer je $C$ kapaciteta oz. maksimalno število podatkov, ki jih lahko ima vozlišče.
+        \end{enumerate}
+
         \subsection{Implementacija B+ dreves za shranjevanje na disk}
+        Zakaj se na področju podatkovnih baz uporabljajo B drevesa. Ozadje je dokaj preprosto, saj klasične iskalne strukture s pomočjo dreves, ki so realizirane s pomočjo binarnih dreves vsebujejo izrazito ozko grlo. Ozko grlo je pride do izraza, ko je drevo shranjeno na disku in potrebujemo za vsako vozlišče izvesti eno branje iz diska.
+
+        Ko beremo vozlišča pomeni eno branje vozlišča en dostop do diska in v primeru binarnega drevesa to pomeni, da je število dostopov do datoteke enako številu podatkov, ki smo jih prebrali - branje vsekakor predstavlja počasno operacijo in število teh branj želimo čim bolj minimizirati.
+
+        B drevesa ta problem rešujejo s samo količino podatkov, ki je shranjena na nivoju enega vozlišča. V klasičnih trdih diskih je velikost enega vozlišča drevesa bila določena, kot velikost sektorja na trdem disku. To je pomenilo, da je branje vsakega vozlišča predstavljalo točno eno branje iz diska.
+
+        Klasičen način določanja velikosti posameznih vozlišč se je dokaj spremenil odkar so standard za shranjevanje podatkov postali hitrejši tipi diskov kot so SSD.
+        
         \subsection{Uporaba B+ dreves v bazi podatkov (iskanje po indeksiranih podatkih)}
+        Na nivoju podatkovne baze se B+ drevesa uporabljajo za indeksiranje podatkov oz. zapisov glede na določen atribut npr. datum rojstva, ime, hišno številko itd. Gre za pristop, ki nam omogoča filtriranje posameznih zapisov s pomočjo binarnega iskanja v logaritmičnem času namesto linearnega iskanja skozi celotno matriko.
+        
+        Določanje indeksov, pa je v klasičnih podatkovnih bazah lahko tudi malo bolj kompleksno, saj poleg iskanja po določenem atributu lahko iščemu tudi po izpleljanih vrednostih npr. po kombinaciji prve črke priimka in imena. V primeru našega podatkovnega sistema to ni realizirano, lahko pa si sami kreiramo dodaten atribut na nivoju entitete in vanj shranjujemo željeno vrednost, ter nato direktno nad atributom kreiramo indeksno strukturo.
+        
         \subsection{Dinamično nalaganje in ohranjanje posameznih segmentov drevesa v pomnilnik}
+        Za dodatno optimizacijo delovanja internih indeksov je dodana tudi implementacija predpomnilnika, kamor lahko shranjujemo posameze segmente drevesa. Deluje, kot preprost zgoščevalni slovar, kjer je ključ odmik posameznega vozlišča v fizični datoteki vrednost, pa je dejansko vozlišče.
+
+        Omenjena implementacija nam omogoča preprosto upravljanje z vozlišči, saj je dostop do vsakega vozlišča omogočen preko skupnega vmesnika, ki sicer pomeni dodatno rabo pomnilnika vendar, pa bistveno dvigne varnost, ko želimo opravljati s posameznim zapisom.
+        
         \subsection{Slabosti uporabe indeksov}
+
+        Sama raba indeksov je koristna saj bistveno pohitri postopek iskanja posameznih zapisov glede na določen atribut. Ko govorimo v časovni zahtevnosti to pomeni pohitritev iz $O(N)$ na $O(log(N))$.
+
+        Na drugi strani pa se skriva kar nekaj lastnosti B+ dreves, ki jih moramo imeti v mislih ob dodajanju nepotrebnih indeksov v našo podatkovno bazo.
+        \begin{itemize}
+            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezno entiteto se poveča iz $O(1)$ na $O(log(N) * X)$, kjer je $X$ število postavljenih indeksov.
+            \item Za vsak postavljen indeks se bistveno poveča poraba prostora na disku, saj shranjevanje drevesne strukture s seboj prinese podvojanje atributa, kot tudi dodatek kazalca na glavo entitete.
+        \end{itemize}
+        
     \section{Pomembni gradniki za optimalno izvedbo poivedb}
         \subsection{Gradnja dreves za pogojni del poizvedb}
+        \colorbox{BurntOrange}{Iskanje zapisov glede na strukturo pogoja in kako sestavimo drevsno strukturo}
+        
         \subsection{Izvedba poizvedb na večih entitetah hkrati}
+        \colorbox{BurntOrange}{Predstavitev združevanja tabel pri poizvedbah glede na določene relacije}
+        
         \subsection{Optimizacija poizvedb z gručenjem in primerjava različnih pristopov}
+        \colorbox{BurntOrange}{Predstavitev gručanja zapisov in zmanjšanje števila branji iz diska za hitrejšo izvedbo}
+        
         \subsection{Optimizacija na nivoju urejanja podatkov ob poizvedbah}
+        \colorbox{BurntOrange}{Dobra raba karakteristik vektorjev v C++ kljub neurejenosti}
+        
     \section{Struktura kode na nivoju jedra}
+    \dirtree{%
+        .1 engine\dotfill Vrhno vozlišče kode jedra. 
+        .2 bptree\dotfill Direktorij z implementacijo B+ drevesa.
+        .3 bptreeindex.hpp\dotfill Struktura celotnega drevesa.
+        .3 bptreenode.hpp\dotfill Logika za delo z vozliščem.
+        .2 managers\dotfill Direktorij z razredi za delo z entitetami.
+        .3 managers.h\dotfill Definicije razredov v direktoriju.
+        .3 query\_manager.cpp\dotfill Metode za delo s poizvedbami.
+        .3 record\_mangaer.cpp\dotfill Metode za delo z posameznimi zapisi.
+        .3 schema\_manager.cpp\dotfill Delo z celotnim ER diagramom.
+        .2 tests\dotfill Direktorij s vso potrebno vsebino za teste jedra.
+        .3 benchmark.h\dotfill Metode za izvedbo časovnih meritev.
+        .3 doctest.h\dotfill Knjižnica za izvedbo testov v C++ \cite{DOCTEST_GITHUB}.
+        .3 run\_tests.sh\dotfill Skripta za izvedbo testov jedra.
+        .3 test\_helpers.hpp\dotfill Metode za pomoč pri izvedbi testov.
+        .3 tests\_size\_3.cpp\dotfill Testi za B+ dreveso (red drevesa = 3).
+        .3 tests.cpp\dotfill Splošni testi za B+ drevesa.
+        .2 main.cpp\dotfill Vhodna datoteka za celotno knjižnico.
+        .2 parser.hpp\dotfill Metode namenjene preslikavi podatkovnih tipov (Python v C++ in obratno).
+        .2 util.cpp\dotfill Generalne metode za celotno jedro.
+    }
    % \section{(?) Transakcije in sistem za obnovitev podatkov}
    % section{(?) Migracije znotraj entitet}
    
 \chapter{Razvoj knjižnice za delo s podatkovnim sistemom}
 \label{ch1}
    \section{Komunikacija med prog. jezikoma C++ in Python}
+   \colorbox{BurntOrange}{Opis Pybind11 knjižnice, ki omogoča direktne klice C++ iz Python kode}
+   
    \section{Stukture za delo z jedrom in kodna struktura}
+   \colorbox{BurntOrange}{Predstavitev uporabljenih vzorcev za vključitev funkciji jedra v Python}
+   
    \section{Abstraktna raven v prog. jeziku Python z dobro razvijalsko izkušnjo}
-
+    \colorbox{BurntOrange}{Vključitev nekaterih novih vzorcev, ki so prišli z novo verzijo Python jezika}
+    
 \chapter{Analiza}
 \label{ch2}
+   \section{Karakteristike testnega okolja}
+   \colorbox{BurntOrange}{Opis okolja na katerem bodo izvedeni testi za vse različne konfiguracije}
+   
    \section{Razvoj z uporabo testno usmerjenega pristopa}
+   \colorbox{BurntOrange}{Predstavitev razvojnega vzorca, ki temlji na pisanju testov za vse}
+   \newline
+   \colorbox{BurntOrange}{pomembne segmente oz. funkcije znotraj programa}
+   
    \section{Meritve na različnih napravah za shranjevanje in konfiguracijah}
+   \colorbox{BurntOrange}{Performančne razlike glede na napravo za shranjevanje}
+   \newline
+   \colorbox{BurntOrange}{SSD, Disk, USB, Zunanji SSD}
+   
    \section{Primerjava z ostalimi relacijskimi sistemi}
-   \section{Uporaba ORM-jev v Pythonu}
-
+   \colorbox{BurntOrange}{Performančna analiza na vnaprej pripravljenih scenarijih}
+   \newline
+   \colorbox{BurntOrange}{moja knjižnica in nekaj pogosteje uporabljenih DMBS}
+    
 \chapter{Scenariji oz. primeri uporabe}
 \label{ch3}
     \section{Strežniško logiranje podatkov}
+    \colorbox{BurntOrange}{Predstavitev rabe podatkov za strukturirano logiranje podatkov iz strežnike aplikacije}
+    
     \section{Manjši strežniški API}
+    \colorbox{BurntOrange}{Preprost API, ki za trajno shranjevanje uporablja izdelano knjižnico}
+    
     \section{Preprosta mobilna aplikacija}
+    \colorbox{BurntOrange}{Preprosta mobilna aplikacije za izdelavo nakupovalnega seznama}
 
 \chapter{Sklepne ugotovitve}
-
+    \colorbox{BurntOrange}{Splošne ugotovitve tekom izdelave vgrajenega podatkovnega sistema}
+    \newline
+    \colorbox{BurntOrange}{in strnjene ugotovitve glede na analizo}
 
 %\cleardoublepage
 % \addcontentsline{toc}{chapter}{Literatura}
