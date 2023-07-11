@@ -71,44 +71,31 @@ void set_record_inactive(const int64_t record_id, fstream &ix_file)
     ix_file.write(reinterpret_cast<const char *>(&inactive_status), IX_SIZE);
 }
 
-inline std::vector<std::vector<std::pair<int64_t, int64_t>>> clusterify(std::vector<std::pair<int64_t, int64_t>> &offsets)
+inline vector<vector<pair<int64_t, int64_t>>> clusterify(vector<pair<int64_t, int64_t>> &offsets)
 {
-    std::vector<std::vector<std::pair<int64_t, int64_t>>> clusters;
-    std::vector<std::pair<int64_t, int64_t>> current_cluster;
-    current_cluster.emplace_back(-1, -1); // Dummy point for initialization
-
+    vector<vector<pair<int64_t, int64_t>>> clusters;
     const size_t n = offsets.size();
-    for (size_t i = 0; i < n; ++i)
-    {
-        const auto &offset = offsets[i];
-        const int64_t diff = offset.first - current_cluster.back().first;
+    size_t i = 0;
 
-        if (diff <= MAX_CLUSTER_SIZE)
-            current_cluster.push_back(offset);
+    while (i < n)
+    {
+        size_t j = i;
+        while (j < n - 1 && offsets[j + 1].first - offsets[i].first <= MAX_CLUSTER_SIZE && j - i + 2 < MAX_CLUSTER_SIZE)
+        {
+            j++;
+        }
+        if (j - i + 1 >= MIN_CLUSTER_SIZE)
+        {
+            clusters.emplace_back(make_move_iterator(offsets.begin() + i), make_move_iterator(offsets.begin() + j + 1));
+        }
         else
         {
-            if (current_cluster.size() >= MIN_CLUSTER_SIZE)
-                clusters.emplace_back(std::move(current_cluster));
-            else
+            for (size_t k = i; k <= j; k++)
             {
-                for (const auto &record : current_cluster)
-                {
-                    clusters.emplace_back(std::vector<std::pair<int64_t, int64_t>>{record});
-                }
+                clusters.emplace_back(vector<pair<int64_t, int64_t>>{move(offsets[k])});
             }
-            current_cluster.clear();
-            current_cluster.push_back(offset);
         }
-    }
-
-    if (current_cluster.size() >= MIN_CLUSTER_SIZE)
-        clusters.emplace_back(std::move(current_cluster));
-    else
-    {
-        for (const auto &record : current_cluster)
-        {
-            clusters.emplace_back(std::vector<std::pair<int64_t, int64_t>>{record});
-        }
+        i = j + 1;
     }
 
     return clusters;
