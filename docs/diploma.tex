@@ -40,6 +40,9 @@
 \usepackage{soul}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{dirtree}
+\usepackage{minted}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
 \usepackage[
 backend=biber,
 style=numeric,
@@ -164,7 +167,7 @@ sorting=nty,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 \pdfinfo{%
     /Title    (\ttitle)
-    /Author   (\tauthor, damjan@cvetan.si)
+    /Author   (\tauthor, js0578@student.uni-lj.si)
     /Subject  (\ttitleEn)
     /Keywords (\tkeywordsEn)
     /ModDate  (\pdfcreationdate)
@@ -316,7 +319,7 @@ opis diplome v angleščini
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % kazalo
-\setcounter{tocdepth}{3}
+\setcounter{tocdepth}{4}
 \pagestyle{empty}
 \def\thepage{}% preprečimo težave s številkami strani v kazalu
 \tableofcontents{}
@@ -338,8 +341,9 @@ opis diplome v angleščini
   {\bf NoSQL} & nerelacijske podatkovne baze & nonrelational databases \\
   {\bf I/O} & input/output operations & vhodno/izhodne operacije \\
   {\bf SSD} & solid-state drive & negiljivi diski \\
-  {\bf USB} & universal serial bus & univerzalno serijsko vodilo \\
   {\bf ER diagram} & entitiy relationship diagram & diagram entitet in relaciji \\
+  {\bf ORM} & object-relational mapping & objektno relacijska preslikava \\
+  {\bf HTTP} & hypertext transfer protocol & protokol za prenos hiperteksta \\
 %  \dots & \dots & \dots \\
 \end{tabular}
 
@@ -362,9 +366,9 @@ opis diplome v angleščini
 %\noindent\textbf{Povzetek:} 
 \noindent V diplomskem delu je predstavljenih trenutno nekaj najbolj uporabljenih sistemov za uporabljanje z podatkov (DMBS). V veliki meri so standard podatkovnih baz še vedno relacijske podatkovne baze. V ta namen je tekom dela predstavljen razvoj vgrajenega relacijskega sistema za programski jezik Python.
 
-Sam razvoj namenske knjižnice je pripravljen v programskem jeziku C++, saj gre za nizko nivosjki jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilniku. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba dobrih podatkovnih struktur in algoritmov, ki dobro izkoristijo I/O operacije, ki jih ponuja operacijski sistem in posledično pripeljejo do dobro pripravljenega podatkovnega sistema.
+Sam razvoj namenske knjižnice je pripravljen v programskem jeziku C++, saj gre za nizko nivojski jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilniku. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba dobrih podatkovnih struktur in algoritmov, ki dobro izkoristijo I/O operacije, ki jih ponuja operacijski sistem in posledično pripeljejo do dobro pripravljenega podatkovnega sistema.
 
-V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije podatkovnega sistema na različnih scenarijih in ob različnih konfiguracijah. Poleg tega je pripravljena tudi analiza z že obstoječimi DMBS - SQLite in MySQL) ob enakovrednih scenarijih testiranja novo pripravljene knjižnice.
+V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije podatkovnega sistema na različnih scenarijih in ob različnih konfiguracijah. Poleg tega je pripravljena tudi analiza z že obstoječimi DMBS – SQLite in MySQL) ob enakodvrednih scenarijih testiranja novo pripravljene knjižnice.
 \bigskip
 
 \noindent\textbf{Ključne besede:} \tkeywords.
@@ -410,12 +414,12 @@ In the final part of the thesis, a performance analysis of the implemented data 
 % 3. relacijske in depth
 
 \chapter{Uvod}
-    Živimo v obdobju, kjer velepodatkov. Gre za ogromne količine podatkov, ki so shranjeni na različnih strežniških storitvah. Kadar gre za trajno shranjevanje podatkov govorimo o podatkovnih bazah. Trenutno se omenjeno področje deli na dve večji skupini - relacijske in neralcijske podatkovne baze.
+    Živimo v obdobju, kjer velepodatkov. Gre za ogromne količine podatkov, ki so shranjeni na različnih strežniških storitvah. Kadar gre za trajno shranjevanje podatkov govorimo o podatkovnih bazah. Trenutno se omenjeno področje deli na dve večji skupini – relacijske in neralcijske podatkovne baze.
     \section{Različni tipi podatkovnih baz}
         \subsection{Relacijske podatkovne baze}
-        Trenutno so standard na trgu še vedno relacijske podatkovne baze. Gre za striktno strukturo entitet, ki vsebujejo smiselne povezave - realcije s pomočjo tako imenovanih tujih ključev. Gre za standard, ki se je prvič pojavil leta 1970, ko ga je razvil IBM \cite{IBM_DMBS_1970}. Razvita je bila prva družina relacijskih podatkovnih baz DB2, katero je razvil Edgar F. Codd - matematik izobražen na univerzi Oxford.
+        Trenutno so standard na trgu še vedno relacijske podatkovne baze. Gre za striktno strukturo entitet, ki vsebujejo smiselne povezave – relacije z implementacijo tujih ključev. Gre za standard, ki se je prvič pojavil leta 1970, ko ga je razvil IBM \cite{IBM_DMBS_1970}. Razvita je bila prva družina relacijskih podatkovnih baz DB2, katero je razvil Edgar F. Codd – matematik izobražen na univerzi Oxford.
         \subsection{Nerelacijske podatkovne baze}
-        Gre za novo skupino podatkovnih baz, ki temeljijo na čist drugačni osnovi kot realcijske podatkovne baze. Pojavile so se kot odgovor na težave, s katerimi se srečujemo pri relacijskih podatkovnih bazah. Kot je zapisal viš. pred. Aljaž Zrnec "Podatkovne baze NoSQL niso bile razvite z namenom popolne zamenjave relacijskih baz" \cite{zrnec2011podatkovne}. Glavna težava pri realcijskih podatkovnih bazah je striktna struktura, ki se je moramo držati. V novi skupini podatkovnih baz (NoSQL) je prioriteta fleksibilnost. Sama struktura podatkov je bistveno drugačne, saj entitete in relacije med zapisi zamenjajo objekti in dedovanje. Vse skupaj prinese še eno veliko prednost, ki jo imajo nerelacijske podatkovne baze - zaradi enkapsulacije posameznih zapisov lahko celotno bazo porazdelimo na več računalnikov (tako imenovana horizontalna skalibilnost, ki je relacijske podatkovne baze ne podpirajo).
+        Gre za novo skupino podatkovnih baz, ki temeljijo na čist drugačni osnovi kot relacijske podatkovne baze. Pojavile so se kot odgovor na težave, s katerimi se srečujemo pri relacijskih podatkovnih bazah. Kot je zapisal viš. pred. Aljaž Zrnec "Podatkovne baze NoSQL niso bile razvite z namenom popolne zamenjave relacijskih baz" \cite{zrnec2011podatkovne}. Glavna težava pri relacijskih podatkovnih bazah je striktna struktura, ki se je moramo držati. V novi skupini podatkovnih baz (NoSQL) je prioriteta fleksibilnost. Sama struktura podatkov je bistveno drugačne, saj entitete in relacije med zapisi zamenjajo objekti in dedovanje. Vse skupaj prinese še eno veliko prednost, ki jo imajo nerelacijske podatkovne baze – zaradi enkapsulacije posameznih zapisov lahko celotno bazo porazdelimo na več računalnikov (tako imenovana horizontalna skalibilnost, ki je relacijske podatkovne baze ne podpirajo).
     
     \section{Kje uporabljamo relacijske podatkovne baze in kako delujejo?}
 
@@ -423,7 +427,7 @@ In the final part of the thesis, a performance analysis of the implemented data 
     
     \begin{figure}[h]
         \centerline{\includegraphics[height=0.5\textwidth, angle=0]{what-is-a-relational-database.jpg}}
-        \caption{Preprost primer realcijske podatkovne baze.}
+        \caption{Preprost primer relacijske podatkovne baze.}
         \label{sl:mindmap}
     \end{figure}
 
@@ -436,21 +440,111 @@ In the final part of the thesis, a performance analysis of the implemented data 
 
     Na tej točki so potrebne optimizacije same strukture naše podatkovne baze. Eden najpomembnejših konceptov za hitro iskanje po posameznih atributov je postavitev indeksov. Indeksiranje podatkov je koncept, ki se pojavlja povsod v računalništvu in ne le v relacijskih podatkovnih bazah. Gre za pripravo iskalne strukture, ki nam omogoča bistveno hitrejše iskanje podatkov s pomočjo dobre podatkovne strukture. V praksi se izkaže, da sta nekako najbolj pogosta pristopa indeksiranje z zgoščevalnimi strukturami in drevesnimi strukturami. V smislu relacijskih podatkovnih baz so najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B drevesa). Gre za skupino dreves, kjer ima vsako vozlišče lahko `M` zapisov in `M+1` kazalcev na nova vozlišča. S pomočjo postavitve indeksov lahko linearno iskanje skozi zapise spremenimo v binarno iskanje (oz. iz aproksimacijske notacije $O(N)$ v $O(log(N))$).
 
+    \subsection{Težava s katero se srečujemo pri uporabi modernih ORM knjižnic}
+    \colorbox{BurntOrange}{Dodaten nivo abstrakcije, ki je dodan med programski jezik in podatkovni sistem}
+
+\chapter{Sodoben pristop razvoja knjižnice za programski jezik Python}
+\label{ch1}
+
+    \section{Kako pohitriti izvajanje v programskem jeziku Python}
+   Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike, strežniških aplikaciji in preprostih aplikaciji. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede direktno v strojni jezik. Python ima za zagon kode, še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku.
+
+   Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od pravih prevedenih jezikov. Poleg tega jezik tudi nima striktnih tipov, kar pomeni, da je za vsako spremenljivko v jeziku najprej potrebno preveriti za kateri tip gre, kar ponovno prinese časovne zakasnitve.
+
+    Področji umetne inteligence in podatkovne analitike, pa temeljita na obdelavi masovnih podatkov. Kar pa posledično pomeni, da Python ni najbolj optimalen jezik za izvedbo teh nalog. Zaradi teh omejitev so nastale knjižnice, ki so v osnovi napisane v jezikih, ki so bistveno hitrejši. Tako se funkcije in strukture, ki jih potem lahko uporabljamo na nivoju programskega jezika Python prevedejo že v strojno kodo in jih potem lahko kličemo direktno iz programskega jezika Python. Med temi knjižnicami so pogosteje uporabljene:
+    \begin{itemize}
+        \item Numpy \cite{NUMPY_GITHUB} – odprto kodna knjižnica, ki v Python prinese podatkovni tip polja (ang. array), in veliko vgrajenih funkciji, ki bistveno pospešijo operacije delo s polji, kot tudi matrikami, ki v področju podatkovne analitike in umetne inteligence predstavljajo enega izmed glavnih temeljev. Veliko je tudi knjižnic, ki za delovanje uporabljajo ravno Numpy. Tak primer je npr. Pandas \cite{PANDAS_GITHUB} – gre za eno izmed najpogosteje uporabljenih knjižnic za podatkovno analitiko, ki s seboj prinese še nekaj dodatnih abstrakciji za lažje delo s podatkovnimi okviri (ang. data frame).
+        \item Tensorflow \cite{TENSORFLOW_GITHUB} –  odprto kodna knjižnica za strojno učenje, v osnovi je celoten produkt Tensorflow namenjen širšemu spektru programskih jezikov in ni implementiran le za Python. Gre za splošno namensko knjižnico z že pripravljenimi metodami za kreiranje modelov za strojno učenje, kar bistveno olajša delo programerju, saj je velikosti postopkov avtomatiziranih.
+        \item UltraJSON \cite{UJSON_GITHUB} – gre za manj poznano knjižnico, ki dela z JSON strukturami. Glavni funkcionalnosti knjižnice sta pretvorba Python strukture v JSON in obratno. JSON je v zadnjih letih postal glavni standard za prenos podatkov preko HTTP zahtevkov, posledično je vsaka optimizacija na nivoju obdelave JSON strukture zelo dobrodošla. 
+    \end{itemize}
+
+    \noindent
+    Vse te knjižnice so v osnovi napisane s pomočjo Python.h API vmesnika. Gre za vmesnik med programskima jezikoma Python in C. Na nivoju jezika C lahko vsak tip predstavimo z vgrajeno PyObject strukturo, katerega lahko neposredno uporabljamo na nivoju programskega jezika C. 
+
+    \subsection{Primer uporabe Python.h API vmesnika}
+    Primer preproste funkcije na nivoju programskega jezika C, ki vrne seštevek dveh celih števil:
+\begin{minted}{c}
+#include <Python.h>
+
+static PyObject* add_nums(PyObject* self, PyObject* args) {
+    int64_t a, b;
+    if (!PyArg_ParseTuple(args, "ii", &a, &b)) {
+        return NULL;
+    }
+
+    int64_t sum = a + b;
+    return PyLong_FromLong(sum);
+}
+\end{minted}
+
+    \noindent
+    Funkcija je sestavljena tako, da v prvi fazi argumente shrani na naslove spremenljivk, ki so deklarirane na nivoju programskega jezika C (to sta v zgornjem primeru $int64_t a, b;$). Argumenti so poslani kot terka, za katero moramo najprej povedati strukturo, v zgornjem primeru je to $ii$, kar pomeni dve celi števili. Seveda, lahko kot argumente beremo tudi ostale strukture vendar branje postane bistveno bolj kompleksno, ko želimo brati sestavljene tipe. V tem primeru je v večini primerov lažje preprosto pretvoriti vse v primitivne tipe in na nivoju programskega jezika C operirati direktno s temi.
+
+    \section{Naprednejša knjižnica z dodatnimi strukturami za lažji prehod med jezikoma}
+
+    Izdelava knjižnic s pomočjo Python.h API vmesnika pomeni uporabo programskega jezika C, kar pomeni, da je velik del implementaciji prepuščen razvijalcu, da si tukaj delo malo olajšamo smo se odločili za razvoj knjižnice s pomočjo C++ jezika in knjižnice, ki dela nivo višje, kot Python.h API - PyBind11 \cite{PYBIND11_GITHUB}. Gre za knjižnico, ki bistveno olajša pretvorbe podatkovnih struktur med jezikoma npr. kadar želimo, kot parameter poslati strukturo seznama v C++ lahko to preprosto definiramo, kot tip vector in pretvorba iz seznama v vektor bo avtomatska. Knjižnica deluje s pomočjo C++ verzije 11, ki je izšla septembra 2011.
+
+    Poleg avtomatskih pretvorb, pa imamo že vseeno možnost uporabe vseh tipov, ki so vključeni v Python.h API vmesnik.
+
+    \subsection{Primer uporabe PyBind11 knjižnice}
+    Spodaj imamo še preprost primer vse potrebne kode na nivoju C++ za izdelavo preproste knjižnice, ki vsebuje funkcijo za seštevek dveh celih števil (main.cpp):
+\begin{minted}{c++}
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+int64_t add_nums(int64_t a, int64_t b)
+{
+    return a + b;
+}
+
+PYBIND11_MODULE(my_math_module, m)
+{
+    m.def("custom_sum", &add_nums, "Add 2 ints");
+}
+\end{minted}
+
+    Pod pogojem, da je knjižnica pravilno vključena v projekt, lahko iz programskega jezika Python uporabimo funkcijo "custom\_sum", kot:
+\begin{minted}{python}
+import my_math_module
+total = my_math_module.custom_sum(5, 10)
+print(total) # prints 15
+\end{minted}
+
+    \section{Kako izboljšati razvijalsko izkušnjo uporabnikom knjižnice?}
+
 \chapter{Razvoj jedra podatkovnega sistema}
 \label{ch0}
-    V poglavju predstavimo razvoj jedra za relacijski podatkovni sistem. V prvi fazi je predstavljena celotna strukturiranje podatkov in način shranjevanja na disk. Za tem predstavimo razvoj B+ drevesne strukture za optimalno indeksiranje podatkov. Nato, pa je predsatvljena še optimizacija posameznih segmentov in sama strukture kode na nivoju jedra podatkovnega sistema.
+    V poglavju predstavimo razvoj jedra za relacijski podatkovni sistem. V prvi fazi je predstavljena celotna strukturiranje podatkov in način shranjevanja na disk. Za tem predstavimo razvoj B+ drevesne strukture za optimalno indeksiranje podatkov. Nato, pa je predstavljena še optimizacija posameznih segmentov in sama strukture kode na nivoju jedra podatkovnega sistema. Vsa izvorna koda je dostopna na GitHub repozitoriju \cite{GRAPHENIX_GITHUB}.
 
-    Vsa izvorna koda je dostopna na GitHub repozitoriju \cite{GRAPHENIX_GITHUB}.
+    \newpage
+    Skozi poglavje bodo vsi primeri dela s podatkovnim sistemom na nivoju programskega jezika Python uporabljali preprost ER model z uporabniki, nalogami in sporočili. Uporabnik lahko ima več nalog in sporočil – pri sporočilih, pa imamo še dodatno vlogo, saj je lahko uporabnik pošiljatelj/prejemnik.
+\begin{minted}{python}
+class User(Model):
+    name = Field.String()
+    tasks = Field.VirtualLink("user")
+    sent_msgs = Field.VirtualLink("sender")
+    recieved_msgs = Field.VirtualLink("reciever")
+
+class Task(Model):
+    content = Field.String(size=100)
+    user = Field.Link("User").as_index()
+
+class Message(Model):
+    content = Field.String(size=50)
+    date = Field.DateTime().as_index()
+    sender = Field.Link("User").as_index()
+    reciever = Field.Link("User").as_index()
+\end{minted}
     
     \section{Struktura shranjevanja podatkov}
         \subsection{Datotečna struktura za shranjevanje podatkov znotraj entitet}
         Za vsako posamezno entiteto se privzeto kreirata 2 datoteki $ix\_<naziv\_entitete>.bin$ in $<naziv\_entitete>.bin$.
         \begin{enumerate}
-            \item $<naziv\_entitete>.bin$ (matrika podatkov) - je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v entiteti. Posamezen stolpec matrike pa predstavlja atributv vsakega zaporednega zapisa.
-            \item $ix\_<naziv\_entitete>.bin$ (glava entiteti s kazalci) - gre za vektorsko strukturo, kjer vsaka zaporedna vrstica vsebuje kazalec na na dejanski zapis v matriki podatkov - ta kazalec je realiziran, kot celoštevilski odmik zapisa v matriki. Poleg kazalcev struktura vsebuje tudi kazalec na prvo prosto vrstico v matriki:
+            \item $<naziv\_entitete>.bin$ (matrika podatkov) – je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v entiteti. Posamezen stolpec matrike pa predstavlja atributov vsakega zaporednega zapisa.
+            \item $ix\_<naziv\_entitete>.bin$ (glava entitete s kazalci) – gre za vektorsko strukturo, kjer vsaka zaporedna vrstica vsebuje kazalec na dejanski zapis v matriki podatkov - ta kazalec je realiziran, kot celoštevilski odmik zapisa v matriki. Poleg kazalcev struktura vsebuje tudi kazalec na prvo prosto vrstico v matriki:
             \begin{itemize}
-                \item Matrika je polna - kazalec na konec datoteke
-                \item V matriki podatkov obstaja fragmentacija - kazalec na prvo prosto vrstico v matriki 
+                \item Matrika je polna – kazalec na konec datoteke
+                \item V matriki podatkov obstaja fragmentacija – kazalec na prvo prosto vrstico v matriki 
             \end{itemize}
         \end{enumerate}
 
@@ -461,13 +555,14 @@ In the final part of the thesis, a performance analysis of the implemented data 
         \end{figure}
         
         \subsection{Tipi podatkov}
-        Znotraj našega vrgrajenega podatkovnega sistema podpiramo 5 podatkovnih tipov:
+        Znotraj našega vgrajenega podatkovnega sistema podpiramo 5 podatkovnih tipov:
         \begin{enumerate}
-            \item Cela števila (angl. Int) - v tem primeru gre za vrednost, ki je na nivoju C++ jezika shranjena kot int64\_t oziroma predznačeno celo število. Velikost za posamezno vrednost je 8B. Sam razpon vrednosti, ki jih lahko shranimo v posamezen zapis je $[-2^{63}, 2^{63} - 1]$.
-            \item Nizi (angl. String) - Gre za zaporedje znakov, kjer na nivoju posamezne entitete določimo maksimalno dovoljeno dolžino posameznega zapisa. Torej velikost posameznega zapisa je $N * 1B$, kjer je $N$ maksimalna dolžina podatka. 
-            \item Logične vrednosti (angl. Bool) - je najmanjši podatkovni tip, ki ga vsebuje naš podatkovni sistem in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot to definira Python programski jezik.
-            \item Datumi (angl. Datetime) - gre za podatkovni tip, ki ponovno shranjen, kot vrednost int64\_t in je predsatvljen v EPOCH formatu - gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970 \cite{EPOCH_FORMAT}. 
-            \item Povezava (angl. Link) - gre za vgrejen tip relacije, kjer je podatek kazalec na drug zapis v določeni entiteti. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
+            \item Cela števila (ang. Int) – v tem primeru gre za vrednost, ki je na nivoju C++ jezika shranjena kot int64\_t oziroma predznačeno celo število. Velikost za posamezno vrednost je 8B. Sam razpon vrednosti, ki jih lahko shranimo v posamezen zapis je $[-2^{63}, 2^{63} - 1]$.
+            \item Realna števila (ang. Float) – zaradi lažje implementacije je velikost realnih števil enaka, kot velikost celih števil – torej 64 bitov. Vrednost je na nivoju podatkov realizirana, kot dvojni "float" oz. "double". Gre za zaporedje bitov, ki so po standardu IEEE 754 \cite{kahan1996ieee} ločeni v predznak, eksponent in mantiso.
+            \item Nizi (ang. String) – Gre za zaporedje znakov, kjer na nivoju posamezne entitete določimo maksimalno dovoljeno dolžino posameznega zapisa. Torej velikost posameznega zapisa je $N * 1B$, kjer je $N$ maksimalna dolžina podatka. 
+            \item Logične vrednosti (ang. Bool) – je najmanjši podatkovni tip, ki ga vsebuje naš podatkovni sistem in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot to definira Python programski jezik.
+            \item Datumi (ang. Datetime) – gre za podatkovni tip, ki ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970 \cite{EPOCH_FORMAT}. 
+            \item Povezava (ang. Link) – gre za vgrajen tip relacije, kjer je podatek kazalec na drug zapis v določeni entiteti. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
         \end{enumerate}
         
         \subsection{Realizacija relaciji med entitetami}
@@ -478,14 +573,14 @@ In the final part of the thesis, a performance analysis of the implemented data 
     \section{Indeksiranje z uporabo B+ dreves}
         \subsection{B+ drevesa in njihove značilnosti}
 
-        B+ drevesa so podatkovna struktura, uporabljena za unčinkoviti inkesiranje in iskanje podatkov.
+        B+ drevesa so podatkovna struktura, uporabljena za učinkovito indeksiranje in iskanje podatkov.
         Vsako vozišče ima lahko največ $M$ podatkov in $M+1$ kazalcev na nova vozlišča.
 
-        V B+ drevesih so vsi nivoji razen listov drevesa, vmesna vozlišča, ki vsebujejo kazalce na nadaljna vozlišča znotraj drevesa - služijo le kot povezave ter omogočajo učinkovitejše iskanje in navigacijo po strukturi. Medtem so podatki shranjeni v listih drevesa.
+        V B+ drevesih so vsi nivoji razen listov drevesa, vmesna vozlišča, ki vsebujejo kazalce na nadaljnja vozlišča znotraj drevesa - služijo le kot povezave ter omogočajo učinkovitejše iskanje in navigacijo po strukturi. Medtem so podatki shranjeni v listih drevesa.
 
         Definicija strukture zahtevna tudi striktno uravnoteženost drevesa, torej da so vsi listi drevesa na istem nivoju.
 
-        Kot dodatna optimizacija za iskanje intervalov znotraj drevesa je v moji implementaciji dodana še struktura dvojno povezanega seznama na nivoju listov drevesa. Tako ima vsak list kazalec na predhoden in naslednji list v drevesu. Na primeru podatkovne baze, je to zelo uporabno, ko iščemo npr. prvih petdeset uporabnikov razvrščenih po priimku. V prvi fazi je seveda potrebno imeti kreirano indeksno strukturo za iskan atribut. Zatem pa je iskanje zapisov dokaj trivialno, namreč sprehodimo se le do najbolj levega lista v drevesu, nato pa se sprehodimo po povezanem seznamu od leve proti desni in shranimo kazalce na željene zapise, jih nato le preberemo iz matrike podatkov, ter razvrstimo po željenem atributu.
+        Kot dodatna optimizacija za iskanje intervalov znotraj drevesa je v moji implementaciji dodana še struktura dvojno povezanega seznama na nivoju listov drevesa. Tako ima vsak list kazalec na predhoden in naslednji list v drevesu. Na primeru podatkovne baze, je to zelo uporabno, ko iščemo npr. prvih petdeset uporabnikov razvrščenih po priimku. V prvi fazi je seveda potrebno imeti kreirano indeksno strukturo za iskan atribut. Zatem pa je iskanje zapisov dokaj trivialno, namreč sprehodimo se le do najbolj levega lista v drevesu, nato pa se sprehodimo po povezanem seznamu od leve proti desni in shranimo kazalce na želene zapise, jih nato le preberemo iz matrike podatkov, ter razvrstimo po ciljnem atributu.
 
         Na spodnji sliki je prikazan preprost primer B+ drevesa realiziran s stopnjo $M=2$:
 
@@ -500,7 +595,7 @@ In the final part of the thesis, a performance analysis of the implemented data 
         \begin{enumerate}
             \item Vsako vozlišče ima največ $M$ podatkov in $M+1$ kazalcev.
             \item Listi drevesa so vsi na enakem nivoju.
-            \item Urejenost - vse vrednosti, ki se nahajajo levo morajo biti manjše ali enake trenutni; vse vrednosti desno, pa morjo biti večje ali enake.
+            \item Urejenost - vse vrednosti, ki se nahajajo levo morajo biti manjše ali enake trenutni; vse vrednosti desno, pa marajo biti večje ali enake.
             \item Vmesna vozlišča morajo vsebovati $X+1$ kazalcev, kjer je $X$ število podatkov v vozlišču.
             \item Vozlišče je veljavno, kadar ima vsaj $C/2$ zapisov, kjer je $C$ kapaciteta oz. maksimalno število podatkov, ki jih lahko ima vozlišče.
         \end{enumerate}
@@ -517,35 +612,146 @@ In the final part of the thesis, a performance analysis of the implemented data 
         \subsection{Uporaba B+ dreves v bazi podatkov (iskanje po indeksiranih podatkih)}
         Na nivoju podatkovne baze se B+ drevesa uporabljajo za indeksiranje podatkov oz. zapisov glede na določen atribut npr. datum rojstva, ime, hišno številko itd. Gre za pristop, ki nam omogoča filtriranje posameznih zapisov s pomočjo binarnega iskanja v logaritmičnem času namesto linearnega iskanja skozi celotno matriko.
         
-        Določanje indeksov, pa je v klasičnih podatkovnih bazah lahko tudi malo bolj kompleksno, saj poleg iskanja po določenem atributu lahko iščemu tudi po izpleljanih vrednostih npr. po kombinaciji prve črke priimka in imena. V primeru našega podatkovnega sistema to ni realizirano, lahko pa si sami kreiramo dodaten atribut na nivoju entitete in vanj shranjujemo željeno vrednost, ter nato direktno nad atributom kreiramo indeksno strukturo.
+        Določanje indeksov, pa je v klasičnih podatkovnih bazah lahko tudi malo bolj kompleksno, saj poleg iskanja po določenem atributu lahko iščemo tudi po izpeljanih vrednostih npr. po kombinaciji prve črke priimka in imena. V primeru našega podatkovnega sistema to ni realizirano, lahko pa si sami kreiramo dodaten atribut na nivoju entitete in vanj shranjujemo želeno vrednost, ter nato direktno nad atributom kreiramo indeksno strukturo.
         
         \subsection{Dinamično nalaganje in ohranjanje posameznih segmentov drevesa v pomnilnik}
-        Za dodatno optimizacijo delovanja internih indeksov je dodana tudi implementacija predpomnilnika, kamor lahko shranjujemo posameze segmente drevesa. Deluje, kot preprost zgoščevalni slovar, kjer je ključ odmik posameznega vozlišča v fizični datoteki vrednost, pa je dejansko vozlišče.
+        Za dodatno optimizacijo delovanja internih indeksov je dodana tudi implementacija predpomnilnika, kamor lahko shranjujemo posamezne segmente drevesa. Deluje, kot preprost zgoščevalni slovar, kjer je ključ odmik posameznega vozlišča v fizični datoteki vrednost, pa je dejansko vozlišče.
 
         Omenjena implementacija nam omogoča preprosto upravljanje z vozlišči, saj je dostop do vsakega vozlišča omogočen preko skupnega vmesnika, ki sicer pomeni dodatno rabo pomnilnika vendar, pa bistveno dvigne varnost, ko želimo opravljati s posameznim zapisom.
         
         \subsection{Slabosti uporabe indeksov}
 
-        Sama raba indeksov je koristna saj bistveno pohitri postopek iskanja posameznih zapisov glede na določen atribut. Ko govorimo v časovni zahtevnosti to pomeni pohitritev iz $O(N)$ na $O(log(N))$.
+        Sama raba indeksov je koristna, saj bistveno pohitri postopek iskanja posameznih zapisov glede na določen atribut. Ko govorimo v časovni zahtevnosti to pomeni pohitritev iz $O(N)$ na $O(log(N))$.
 
         Na drugi strani pa se skriva kar nekaj lastnosti B+ dreves, ki jih moramo imeti v mislih ob dodajanju nepotrebnih indeksov v našo podatkovno bazo.
         \begin{itemize}
             \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezno entiteto se poveča iz $O(1)$ na $O(log(N) * X)$, kjer je $X$ število postavljenih indeksov.
-            \item Za vsak postavljen indeks se bistveno poveča poraba prostora na disku, saj shranjevanje drevesne strukture s seboj prinese podvojanje atributa, kot tudi dodatek kazalca na glavo entitete.
+            \item Za vsak postavljen indeks se bistveno poveča poraba prostora na disku, saj shranjevanje drevesne strukture s seboj prinese podvajanje atributa, kot tudi dodatek kazalca na glavo entitete.
         \end{itemize}
         
-    \section{Pomembni gradniki za optimalno izvedbo poivedb}
+    \section{Pomembni gradniki za optimalno izvedbo poizvedb}
         \subsection{Gradnja dreves za pogojni del poizvedb}
         \colorbox{BurntOrange}{Iskanje zapisov glede na strukturo pogoja in kako sestavimo drevsno strukturo}
         
-        \subsection{Izvedba poizvedb na večih entitetah hkrati}
-        \colorbox{BurntOrange}{Predstavitev združevanja tabel pri poizvedbah glede na določene relacije}
+        \subsection{Izvedba poizvedb na več entitetah hkrati}
+            Podatkovni sistem nima klasičnega načina združevanja entitet, kot nam je to poznano iz ostalih relacijskih podatkovnih sistemov, kjer je to realizirano s pomočjo kartezičnega produkta nad entitetami in potem dodatna povezava s pomočjo tujih ključev.
+            
+\begin{minted}{python}
+query = User.link(
+    tasks=Task,
+    recieved_msgs=Message.filter(
+        Message.date >= datetime(2020, 1, 1, 0, 0, 0)
+    )
+)
+count, rows = query.all()
+\end{minted}
+                    
         
-        \subsection{Optimizacija poizvedb z gručenjem in primerjava različnih pristopov}
-        \colorbox{BurntOrange}{Predstavitev gručanja zapisov in zmanjšanje števila branji iz diska za hitrejšo izvedbo}
+            \begin{center}
+                \begin{tikzpicture}
+                \tikzstyle{bplus}=[rectangle split, rectangle split horizontal,rectangle split ignore empty parts,draw]
+                \tikzstyle{every node}=[bplus]
+                \tikzstyle{level 1}=[sibling distance=60mm]
+                \tikzstyle{level 2}=[sibling distance=15mm]
+                \node {Uporabniki} [->]
+                  child {node {Naloge }} 
+                  child {node {Sprejeta sporočila }
+                    child {node {Novejši zapisi od ``2020-01-01`` }}
+                  }
+                ;\end{tikzpicture}
+            \end{center}
+        
+        \subsection{Optimizacija poizvedb z gručenjem (ang. clustering)}
+        \subsubsection{Razlaga postopka gručenja}
+        
+        Kot je bilo že omenjeno v prejšnjih poglavjih je največje ozko grlo, s katerim se srečujemo I/O operacije (torej pisanje in branje iz/na disk). V ta namen je tudi v segmentu prenosa podatkov iz datoteke v pomnilnik realizirano s čim manj dostopi do diska. V ta namen je ob prvi fazi nabora dodan algoritem za gručenje podatkov.
+
+        Sam problem je zelo preprost imamo urejen vektor celih števil, kjer želimo vrednosti grupirati glede na posamezne odmike in najti skupine oz. gruče in te združiti v eno branje matrične datoteke s podatki. Za primer lahko vzamemo naslednji vektor odmikov v matrični datoteki:
+
+\hfill \break
+\begin{tikzpicture}[->, >=stealth, auto]
+  % Define the vector elements
+  \def\vectorElements{{0, 64, 72, 256, 512, 528, 542, 1024}}
+  
+  % Set the node style
+  \tikzset{listnode/.style={circle, draw, minimum size=1.3cm}}
+  
+  % Draw the linked list nodes
+  \foreach \i/\element in {0/0,1/64,2/72,3/256,4/512,5/528,6/534,7/1024}{
+    \node[listnode] (\i) at (\i*1.5,0) {\element};
+  }
+  
+  % Connect the linked list nodes
+  \foreach \i [evaluate=\i as \j using {int(\i+1)}] in {0,...,6}{
+    \draw (\i) -- (\j);
+  }
+\end{tikzpicture}
+
+\noindent Iz odmikov lahko hitro razberemo dve gruči, kateri bi želeli, da naš algoritem odkrije in branje nad odmikoma izvede v enem branju - to sta gruči $[64, 62]$, ter $[512, 528, 540]$. Optimalen pristop branja bi lahko barvno označili po naslednji konfiguraciji:
+
+\hfill \break
+\begin{tikzpicture}[->, >=stealth, auto]
+  \def\vectorElements{{0, 64, 72, 256, 512, 528, 542, 1024}}
+  
+  \node[circle, draw, minimum size=1.3cm] (0) at (0,0) {0};
+  \node[circle, draw, fill=orange!30, minimum size=1.3cm] (1) at (1.5,0) {64};
+  \node[circle, draw, fill=orange!30, minimum size=1.3cm] (2) at (3,0) {72};
+  \node[circle, draw, fill=gray!30, minimum size=1.3cm] (3) at (4.5,0) {256};
+  \node[circle, draw, minimum size=1.3cm, fill=red!30] (4) at (6,0) {512};
+  \node[circle, draw, minimum size=1.3cm, fill=red!30] (5) at (7.5,0) {528};
+  \node[circle, draw, minimum size=1.3cm, fill=red!30] (6) at (9,0) {534};
+  \node[circle, draw, minimum size=1.3cm, fill=black!30] (7) at (10.5,0) {1024};
+
+  \draw (0) -- (1);
+  \draw (1) -- (2);
+  \draw (2) -- (3);
+  \draw (3) -- (4);
+  \draw (4) -- (5);
+  \draw (5) -- (6);
+  \draw (6) -- (7);
+\end{tikzpicture}
+
+        \subsubsection{Linearna izvedba gručenja urejenga seznama}
+        Za izvedbo gručenja obstaja veliko algoritmov, ki nalogo opravijo zelo dobro vendar s seboj prinesejo visoko časovno zahtevnost. V naši izvedbi gručenja smo želeli poiskati algoritem, kjer gručenje opravi v linearnem času, saj ob testiranju ostalih algoritmov v večini primerov samo gručenje traja dlje, kot pa branje posameznih elementov v matriki. V ta namen smo pripravili preprost algoritem, ki se sprehodi skozi seznam in spremlja odmike, ter združuje elemente v kolikor ne presežemo zgornje meje velikosti ene gruče in poleg tega zadovoljimo minimalno velikost za gručo.
+
+        Psevdokoda za pripravljen algoritem gručanja elementov v urejenem seznamu:
+        
+\begin{minted}[breaklines]{text}
+fn clusterify(offsets: vector) -> vector of vectors
+    clusters := empty vector 
+    n := size of offsets
+    i := 0
+
+    while i < n do
+        j := i
+        while (not end and not reached cluster threshold) do
+            j := j + 1
+        end while
+        
+        if (reached min cluster size) then
+            clusters.add(subvector from index i to j + 1)
+        else
+            for k := i to j do
+                clusters.add(vector containing offsets[k])
+            end for
+        end if
+        
+        i := j + 1
+    end while
+
+    return clusters
+end function
+\end{minted}
         
         \subsection{Optimizacija na nivoju urejanja podatkov ob poizvedbah}
+        \colorbox{BurntOrange}{Python je izredno počasen pri kreiranju instanc,}
+        \newline
+        \colorbox{BurntOrange}{zato se pri velikih poizvedbah tega izognemo z kreiranjem generatorja.}
+
+        \subsection{Problem množičnega kreiranja instanc modelov v programskem  jeziku Python}
         \colorbox{BurntOrange}{Dobra raba karakteristik vektorjev v C++ kljub neurejenosti}
+
+    \section{Podprte funkcionalnosti na nivoju vgrajenega ORM sistema}
         
     \section{Struktura kode na nivoju jedra}
     \dirtree{%
@@ -571,24 +777,13 @@ In the final part of the thesis, a performance analysis of the implemented data 
     }
    % \section{(?) Transakcije in sistem za obnovitev podatkov}
    % section{(?) Migracije znotraj entitet}
-   
-\chapter{Razvoj knjižnice za delo s podatkovnim sistemom}
-\label{ch1}
-   \section{Komunikacija med prog. jezikoma C++ in Python}
-   \colorbox{BurntOrange}{Opis Pybind11 knjižnice, ki omogoča direktne klice C++ iz Python kode}
-   
-   \section{Stukture za delo z jedrom in kodna struktura}
-   \colorbox{BurntOrange}{Predstavitev uporabljenih vzorcev za vključitev funkciji jedra v Python}
-   
-   \section{Abstraktna raven v prog. jeziku Python z dobro razvijalsko izkušnjo}
-    \colorbox{BurntOrange}{Vključitev nekaterih novih vzorcev, ki so prišli z novo verzijo Python jezika}
     
 \chapter{Analiza}
 \label{ch2}
    \section{Karakteristike testnega okolja}
    \colorbox{BurntOrange}{Opis okolja na katerem bodo izvedeni testi za vse različne konfiguracije}
    
-   \section{Razvoj z uporabo testno usmerjenega pristopa}
+   \section{Testno usmerjen razvoj}
    \colorbox{BurntOrange}{Predstavitev razvojnega vzorca, ki temlji na pisanju testov za vse}
    \newline
    \colorbox{BurntOrange}{pomembne segmente oz. funkcije znotraj programa}
@@ -605,9 +800,99 @@ In the final part of the thesis, a performance analysis of the implemented data 
     
 \chapter{Scenariji oz. primeri uporabe}
 \label{ch3}
-    \section{Strežniško logiranje podatkov}
-    \colorbox{BurntOrange}{Predstavitev rabe podatkov za strukturirano logiranje podatkov iz strežnike aplikacije}
+    \section{Strežniško beleženje podatkov}
+
+    Pogosta uporaba programskega jezika Python je na strani strežniških aplikaciji. Tukaj je beleženje vseh zapisov zelo pomembno torej vsakega zahtevka, časovne točke in odgovora na zahtevek. Z uporabo pripravljene knjižnice je prilagojeno beleženje podatkov lahko zelo preprosto.
+
+    V prvi fazi si lahko pripravimo preprosto strežniško aplikacijo, ki ima vsega eno točko za pridobivanje podatkov in sicer ``get-range``, kjer lahko sami definiramo 3 argumente, to so ``start``, ``end`` in ``step``, kjer ima vsak od teh argumentov tudi privzete vrednosti.
+
+    \subsection{Implementacija strežniškega aplikacije brez beleženja}
+\begin{minted}{python}
+app = Flask(__name__)
+@app.route('/get-range')
+def get_range(request):
+    start = int(request.args.get('start', 0))
+    end = int(request.args.get('end', 10))
+    step = int(request.args.get('step', 1))
+    return jsonify({'Range': list(range(start, end, step))})
+app.run()
+\end{minted}
+
+    \noindent
+    Zelo preprost pristop dodajanja beleženja je z uporabo vzorca dekoratorjev, ki omogočajo dodajanje funkcionalnosti na izbrane vhodne točke naše strežniše aplikacije. V zgornjem primeru že imamo primer dekoratorja in sicer $@app.route(...)$, ki funkcijo označi, kot vhodno točko za našo strežniško aplikacijo. Za naš primer bomo na vsako vhodno točko strežniške aplikacije dodali dekorator, kjer se za vsakim odgovorom zapiše HTTP pot, trenutni čas, parametri v zahtevku, odgovor in status le-tega. V prvi fazi rabimo najprej kreirati shemo za shranjevanje podatkov, ter potrebno entiteto, kjer bomo držali podatke o zahtevkih.
+
+    \subsection{Kreiranje sheme za beleženje podatkov}
+\begin{minted}{python}
+class ReqInfo(Model):
+    route = Field.String(size=255)
+    timestamp = Field.DateTime().as_index()
+    route_req = Field.String(size=1024)
+    route_res = Field.String(size=1024)
+    resp_code = Field.Int()
+
+logging = Schema('logging', models=[ReqInfo])
+if not logging.exists():
+    logging.create()
+\end{minted}
+
+    \noindent
+    V zgornjem segmentu pripravimo razred, ki predstavlja entiteto s posameznimi atributi, ki predstavljajo podatke, katere bomo tekom delovanja naše aplikacije beležili. V drugi fazi, pa moramo kreirati celotno shemo, kjer definiramo naziv celotne sheme in pa vse razrede oz. entitete, ki bodo uporabljene znotraj naše sheme.
+
+    \newpage
+    \subsection{Dekorator za beleženje podatkov}
+
+\begin{minted}{python}
+def route_with_log(route):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            response = f(request, *args, **kwargs)
+            ReqInfo(
+                route=route,
+                timestamp=datetime.now(),
+                route_req=json.dumps(dict(request.args)),
+                route_res=response.get_data(as_text=True),
+                resp_code=response.status_code
+            ).make()
+
+            return response
+        
+        app.add_url_rule(route, view_func=wrapper)
+        return wrapper
+    return decorator
+\end{minted}
+
+    \noindent
+    Dekorator je v vzorec, kjer funkcija vrača drugo funkcijo in predstavlja nek ovoj funkcije. Tekom izvedbe ovite funkcije lahko argumente in različne segmente izvajanja prestrežemo in jih prilagodimo glede na naše zahteve. Pogosta uporaba vzorca, je tudi ko želimo na različne akcije dodati različne zahteve npr. strežniški vhodni točki želimo dodati preverjanje, če je uporabnik prijavljen z uporabo žetona in v primeru, ko uporabnik ni prijavljen v funkcijo urinemo funkcionalnost, ki zavrne zahtevo uporabnika in vrne status 401 (ne prijavljen uporabnik). V primeru našega dekoratorja, pa lahko dekorator $@app.route(...)$ preprsto zamenjamo z $route\_with\_log(...)$ in funkcija bo ohranila tip vhodne točke, poleg tega pa dobi tudi funkcionalnost beleženja podatkov.
+
+    \subsection{Branje zabeleženih podatkov}
+
+    V končni fazi je glavna prednost uporabe pripravljene knjižnice za beleženje podatkov struktura shranjenih podatkov. Namreč z uporabo relacijskega podatkovnega sistema dosežemo fiksno strukturo, ki je v primeru klasičnih datotek za beleženje nimamo. Omogočeno nam je tudi bistveno več načinov pridobivanja statistik na nivoju naše strežniške aplikacije, saj lahko podatke filtriramo in po potrebi dodamo še indeksiranje na stolpce, po katerih pogosteje iščemo in urejamo podatke npr. čas zahtevka (timestamp). Na nivoju administratorske aplikacije lahko nato prožimo različne poizvedbe nad $ReqInfo$ entiteto.
+\begin{minted}{python}
+
+# izpis zadnjih treh zahtevkov
+_, reqs = ReqInfo.order(ReqInfo.timestamp.desc()).limit(3).all()
+
+# izpis vseh zahtevkov, ki so uporabljali "get-route" vhodno točko
+_, reqs = ReqInfo.filter(ReqInfo.route == '/get-info').all()
+\end{minted}
+
+    \subsubsection{Primer izpisa zadnjih treh zahtevkov}
+
+\begin{minted}{python}
+ReqInfo(id=3, route=/get-range, timestamp=2023-07-16 03:02:15, 
+    route_req={}, route_res={"Range":[0,1,2,3,4,5,6,7,8,9]},
+    resp_code=200)
     
+ReqInfo(id=2, route=/get-range, timestamp=2023-07-16 03:02:13, 
+    route_req={"start": "3"}, route_res={"Range":[3,4,5,6,7,8,9]},
+    resp_code=200)
+    
+ReqInfo(id=1, route=/get-range, timestamp=2023-07-16 03:02:05,
+    route_req={"start": "15", "end": "10", "step": "-3"},
+    route_res={"Range":[15,12]}, resp_code=200)
+\end{minted}
+
     \section{Manjši strežniški API}
     \colorbox{BurntOrange}{Preprost API, ki za trajno shranjevanje uporablja izdelano knjižnico}
     
