@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <queue>
 #include <string>
 #include <numeric>
 #include <filesystem>
@@ -69,11 +70,12 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
 
     // check limit is implemented this way so that if limit is >= 1000 it sorts at the end
     const bool check_limit = 0 < qobject.limit;
-    const bool dynamic_check_limit = check_limit && qobject.limit < 1000;
+    // todo change limit if K < 1000 || N > 1000 * qobject.limit
     const bool is_sorting = qobject.field_indexes.size() > 0;
     std::vector<char *> raw_rows;
-    raw_rows.reserve(!dynamic_check_limit ? ix_amount : qobject.limit);
+    raw_rows.reserve(!check_limit ? ix_amount : qobject.limit);
     std::vector<py::bytes> rows(!check_limit ? ix_amount : qobject.limit);
+    std::priority_queue<char *, std::vector<char *>, query_object> pq(qobject);
 
     char *buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
     bool break_cluster_loop = false;
@@ -91,27 +93,22 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
             memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset.second), IX_SIZE);
             // TODO: filtering for non indexed fields should be here
             // if (conditions_not_meet) delete[] current_record; continue;
-            if (is_sorting && dynamic_check_limit)
+            if (is_sorting && check_limit)
             {
-                if (raw_rows.size() >= qobject.limit && qobject(raw_rows.back(), current_record))
+                if (pq.size() < qobject.limit)
+                    pq.push(current_record);
+                else if (qobject(current_record, pq.top()))
                 {
+                    pq.pop();
+                    pq.push(current_record);
+                }
+                else
                     delete[] current_record;
-                    continue;
-                }
-
-                auto it = std::lower_bound(raw_rows.begin(), raw_rows.end(), current_record, [&](char *a, char *b)
-                                           { return qobject(a, b); });
-                raw_rows.insert(it, current_record);
-                if (raw_rows.size() > qobject.limit)
-                {
-                    delete[] raw_rows[qobject.limit];
-                    raw_rows.resize(qobject.limit);
-                }
             }
             else
             {
                 raw_rows.push_back(current_record);
-                if (!is_sorting && dynamic_check_limit && raw_rows.size() > qobject.limit)
+                if (!is_sorting && check_limit && raw_rows.size() > qobject.limit)
                 {
                     delete[] raw_rows[qobject.limit];
                     raw_rows.resize(qobject.limit);
@@ -130,9 +127,21 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
     delete[] buffer;
     file.close();
 
-    if (is_sorting && !dynamic_check_limit)
+    if (is_sorting && check_limit)
+    {
+        while (!pq.empty())
+        {
+            raw_rows.push_back(pq.top());
+            pq.pop();
+        }
+
+        std::reverse(raw_rows.begin(), raw_rows.end());
+    }
+    else if (is_sorting)
+    {
         std::sort(raw_rows.begin(), raw_rows.end(), [&](char *a, char *b)
                   { return qobject(a, b); });
+    }
 
     for (size_t i = 0, n = check_limit ? qobject.limit : raw_rows.size(); i < n; i++)
         rows[i] = py::bytes(raw_rows[i], mdef.record_size + IX_SIZE);

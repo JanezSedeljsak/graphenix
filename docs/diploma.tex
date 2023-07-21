@@ -905,10 +905,32 @@ end function
         Struktura vektorja izstopa tudi v lastnosti, da je edina podatkovna struktura, ki privzeto ni urejena. Vendar, ima dobro lastnost, da lahko že takoj alociramo potreben pomnilnik in s tem prihranimo ogromno časa, saj med pisanjem le spreminjamo strukturo znotraj segmenta v pomnilniku. Za problem ne urejenosti strukture, pa poskrbimo sami z uporabo vgrajenega vnašanja z binarnim iskanjem, kar pomeni, da mesto kamor moramo vstaviti nov element najdemo s časovno zahtevnostjo $O(log(N))$, vendar pa je zaradi zamika preostalega dela vektorja časovna zahtevnost celotne operacije vseeno $O(N)$. Torej zakaj je potem vnašanje v vektor hitrejše, kot pa v strukturi, ki sta že urejeni. Razlog se skriva v prej omenjeni optimizaciji, saj kljub premikanju nekega fiksnega dela vektorja nikoli ne izvajamo re-alokacije celotnega vektorja, kar pomeni, da lahko ta fiksen preostali del vektorja prestavimo v navidezno konstantnem času. 
 
         \subsubsection{Iskanje časovne prelomnice za sprotno urejanje zapisov}
-        
-        \colorbox{BurntOrange}{Kadar je postavljen LIMIT podatke urejamo sproti in držimo le potrebno število zapisov}
-        \colorbox{BurntOrange}{Kje je meja, da je bolje podatke urediti na koncu in vrniti prvih X zapisov}
-        \colorbox{BurntOrange}{Grafična analiza, kjer na različnih pristopih najdemo, kje je stičišče različnih pristopov}
+
+        Algoritem je v osnovi poznano, kot iskanje prvih $K$ elementov v neurejenem seznamu \cite{G4G_KSMALLEST}. Najpogosteje predlagana rešitev je uporaba prioritetne vrste (v našem primeru zaradi optimizaciji prevajalnika uporabljamo vektor), kjer držimo največ $K$ elementov oz. maksimalno število elementov, ki jih želimo vrniti kot rezultat. Težava pa nastopi, ko vrednost $K$ prestopi časovno prelomnico in postane bolj optimalna rešitev preprosto vstavljati elemente v vektor in urejanje izvesti ob koncu.
+
+        Na spodnjem grafu je prikazan naiven primer, kjer primerjamo oba pristopa:
+        \begin{figure}[H]
+            \centerline{\includegraphics[height=0.4\textwidth, angle=0]{prvih_k_elementov.png}}
+            \caption{Časovna analiza obeh pristopov za nabor $K$ najmanjših elementov v seznamu na fiksnem številu vrstic}
+            \label{sl:prvih_k_elementov}
+        \end{figure}
+
+        \noindent
+        $N$ oz. število vrstic, ki smo jih imeli v naši matrični datoteki je bilo 1 milijon. Vrednost $K$, pa se je skozi $X$ os spreminjala na intervalu od $[100, 10000]$.
+
+        V primeru, da uporabljamo pristop sprotnega urejanja s prioritetno vrsto je časovna zahtevnost algoritma $O(N \cdot log(K))$ . Prostorska zahtevnost, pa je $O(K)$, saj potrebujemo $K$ dodatnih mest za naš vektor, ki predstavlja prioritetno vrsto.
+
+        Če pa namesto prioritetne vrste urejanje izvedemo le enkrat, ampak uporabimo urejanje celotnega seznama, pa je časovna zahtevnost algoritma $O(N \cdot log(N))$, kar je tudi časovna zahtevnost urejanja seznama (vstavljanje v vektor je v tem primeru konstanta operacija). Prostorska zahtevnost algoritma, pa je tukaj $O(N)$, saj v pomnilniku držimo vse potencialne vrstice, ki so lahko vključene v rezultat.
+
+        Glede na zgornji graf [\ref{sl:prvih_k_elementov}] vidimo, da po pričakovanjih vrednost $K$ ne vpliva na čas izvajanja algoritma, kjer seznam uredimo ob koncu. Na grafu je meja, kjer drugi algoritem postane bolj optimalen definirana, kot $K \approx 5500$. Ta vrednost ne predstavlja realistične meje za vse vrednosti spremenljivk, ki vplivajo na časovno zahtevnost pri branju.
+
+        V ta namen je pripravljena še dodatna grafična analiza, kjer prikazujemo časovno razmerje med pristopoma. Čas izvajanja, ki je do sedaj bil na $y$ osi, pa zamenjamo s številom vrstic $N$.
+
+        \begin{figure}[H]
+            \centerline{\includegraphics[height=0.4\textwidth, angle=0]{prvih_k_elementov.png}}
+            \caption{Časovna analiza obeh pristopov za nabor $K$ najmanjših elementov v seznamu na fiksnem številu vrstic}
+            \label{sl:prvih_k_elementov}
+        \end{figure}
 
         \subsection{Problem množičnega kreiranja instanc modelov v programskem  jeziku Python}
 
@@ -989,7 +1011,7 @@ query = User.with(
    
    \subsection{Integracija avtomatskega testiranja z GitHub}
 
-   \colorbox{BurntOrange}{Kako je pripravljena izvedba avtomatskega testiranja znotraj GitHub actions + config}
+   Platforma GitHub omogoča izvajanje različnih akciji ob različnih dogodkih najpogosteje v praksi to počnemo, kadar izvajamo združenje vej ali pa kar ob vsaki posodobitvi kode. V praksi se poleg avtomatskega testiranja na tem področju lahko izvajajo tudi avtomatske posodobitve strežniške aplikacije ali različne periodične naloge, kot npr. kreiranje rezervnih verziji podatkovne baze iz produkcijskega strežnika.
    
    \section{Meritve na različnih napravah za shranjevanje in konfiguracijah}
    \colorbox{BurntOrange}{Performančne razlike glede na napravo za shranjevanje}
