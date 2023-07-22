@@ -70,11 +70,12 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
 
     // check limit is implemented this way so that if limit is >= 1000 it sorts at the end
     const bool check_limit = 0 < qobject.limit;
-    // todo change limit if K < 1000 || N > 1000 * qobject.limit
     const bool is_sorting = qobject.field_indexes.size() > 0;
+    const size_t K = qobject.limit + qobject.offset;
+
     std::vector<char *> raw_rows;
-    raw_rows.reserve(!check_limit ? ix_amount : qobject.limit);
-    std::vector<py::bytes> rows(!check_limit ? ix_amount : qobject.limit);
+    raw_rows.reserve(!check_limit ? ix_amount : K);
+    std::vector<py::bytes> rows(!check_limit ? (ix_amount - qobject.offset) : qobject.limit);
     std::priority_queue<char *, std::vector<char *>, query_object> pq(qobject);
 
     char *buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
@@ -95,7 +96,7 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
             // if (conditions_not_meet) delete[] current_record; continue;
             if (is_sorting && check_limit)
             {
-                if (pq.size() < qobject.limit)
+                if (pq.size() < K)
                     pq.push(current_record);
                 else if (qobject(current_record, pq.top()))
                 {
@@ -108,10 +109,10 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
             else
             {
                 raw_rows.push_back(current_record);
-                if (!is_sorting && check_limit && raw_rows.size() > qobject.limit)
+                if (!is_sorting && check_limit && raw_rows.size() > K)
                 {
-                    delete[] raw_rows[qobject.limit];
-                    raw_rows.resize(qobject.limit);
+                    delete[] raw_rows[K];
+                    raw_rows.resize(K);
                     break_cluster_loop = true;
                     break;
                 }
@@ -143,10 +144,13 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
                   { return qobject(a, b); });
     }
 
-    for (size_t i = 0, n = check_limit ? qobject.limit : raw_rows.size(); i < n; i++)
-        rows[i] = py::bytes(raw_rows[i], mdef.record_size + IX_SIZE);
+    // the end index is set to K if we have limiting
+    // we need to take into account the offset which is subtracted for correct index matching when setting the result
+    size_t end = (check_limit ? K : raw_rows.size()) - qobject.offset;
+    for (size_t i = 0; i < end; i++)
+        rows[i] = py::bytes(raw_rows[i + qobject.offset], mdef.record_size + IX_SIZE);
 
-    for (size_t i = 0, n = raw_rows.size(); i < n; i++)
+    for (size_t i = 0; i < raw_rows.size(); i++)
         delete[] raw_rows[i];
 
     return rows;

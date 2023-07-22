@@ -72,6 +72,7 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def(py::init<>())
         .def_readwrite("mdef", &query_object::mdef)
         .def_readwrite("limit", &query_object::limit)
+        .def_readwrite("offset", &query_object::offset)
         .def_readwrite("field_indexes", &query_object::field_indexes)
         .def_readwrite("order_asc", &query_object::order_asc);
 

@@ -162,6 +162,93 @@ class GraphenixUnitTests(CommonTestBase):
         if isinstance(task_with_user.owner, User):
             self.assertEqual(user.first_name, task_with_user.owner.first_name)
 
+    @CommonTestBase().prepare_and_destroy
+    def test_offset_without_limit(self):
+        """ Tests offset without limit functionality """
+        users = self._get_users()
+
+        for user in users:
+            user.save()
+            self.assertFalse(user.is_new)
+
+        count, rows = User.offset(0).all()
+        self.assertEqual(len(users), count)
+        for i, row in enumerate(rows):
+            self.assertEqual(i, row.id)
+
+        count, rows = User.offset(3).all()
+        self.assertEqual(len(users) - 3, count)
+        for i, row in enumerate(rows):
+            self.assertEqual(i + 3, row.id)
+
+        
+
+        
+    @CommonTestBase().prepare_and_destroy
+    def test_offset_plus_limit(self):
+        """ Tests offset + limit functionality """
+        users = self._get_users()
+
+        for user in users:
+            user.save()
+            self.assertFalse(user.is_new)
+
+        count, _ = User.offset(0).all()
+        self.assertEqual(len(users), count)
+
+        count, rows = User.limit(2).offset(4).all()
+        self.assertEqual(2, count)
+        for i, row in enumerate(rows):
+            self.assertEqual(i + 4, row.id)
+
+        count, rows = User.limit(3).offset(0).all()
+        self.assertEqual(3, count)
+        for i, row in enumerate(rows):
+            self.assertEqual(i, row.id)
+
+        count, rows = User.limit(4).offset(5).all()
+        self.assertEqual(4, count)
+        for i, row in enumerate(rows):
+            self.assertEqual(i + 5, row.id)
+
+
+    @CommonTestBase().prepare_and_destroy
+    def test_query_empty_table(self):
+        """ TODO: test if querying empty table """
+
+    @CommonTestBase().prepare_and_destroy
+    def test_limit_empty_table(self):
+        """ TODO: test if limit set on empty table """
+
+    @CommonTestBase().prepare_and_destroy
+    def test_offset_empty_table(self):
+        """ TODO: test if offset set on empty table """
+
+    @CommonTestBase().prepare_and_destroy
+    def test_offset_limit_empty_table(self):
+        """ TODO: test if offset + limit set on empty table """
+
+    @CommonTestBase().prepare_and_destroy
+    def test_large_limit_small_table(self):
+        """ TODO: test if limit is bigger than row count """
+
+    @CommonTestBase().prepare_and_destroy
+    def test_order_by_one(self):
+        """ TODO: test if simple order by works """
+
+    @CommonTestBase().prepare_and_destroy
+    def test_order_by_two(self):
+        """ TODO: test if order by two columns works """
+
+    @CommonTestBase().prepare_and_destroy
+    def test_order_by_desc(self):
+        """ TODO: test if order by desc works """
+
+    @CommonTestBase().prepare_and_destroy
+    def test_order_by_multiple(self):
+        """ TODO: test if order by with diff directions works """
+        
+
     
 
 if __name__ == '__main__':

@@ -15,12 +15,17 @@ class Query:
         self.query_object.field_indexes = []
         self.query_object.order_asc = []
         self.query_object.limit = 0
+        self.query_object.offset = 0
 
     def filter(self, *conditions) -> "Query":
         ...
 
     def limit(self, amount: int) -> "Query":
         self.query_object.limit = amount
+        return self
+    
+    def offset(self, amount: int) -> "Query":
+        self.query_object.offset = amount
         return self
 
     def order(self, *fields) -> "Query":
@@ -98,6 +103,10 @@ class ModelQueryMixin:
     @classmethod
     def limit(cls, amount: int) -> Query:
         return Query(cls).limit(amount)
+    
+    @classmethod
+    def offset(cls, amount: int) -> Query:
+        return Query(cls).offset(amount)
 
     @classmethod
     def order(cls, *fields) -> Query:
