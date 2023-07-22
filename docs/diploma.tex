@@ -346,6 +346,7 @@ opis diplome v angleščini
   {\bf ORM} & object-relational mapping & objektno relacijska preslikava \\
   {\bf HTTP} & hypertext transfer protocol & protokol za prenos hiperteksta \\
   {\bf CLI} & command line interface & vmesnik za ukazno vrstico \\
+  {\bf CI/CD} & continuous integration, continuous delivery & neprekinjena integracija in postavitev \\
 %  \dots & \dots & \dots \\
 \end{tabular}
 
@@ -741,7 +742,7 @@ child {node (E){29\nodepart{two}31}}
 
         Na drugi strani pa se skriva kar nekaj lastnosti B+ dreves, ki jih moramo imeti v mislih ob dodajanju nepotrebnih indeksov v našo podatkovno bazo.
         \begin{itemize}
-            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezno entiteto se poveča iz $O(1)$ na $O(log(N) * X)$, kjer je $X$ število postavljenih indeksov.
+            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezno entiteto se poveča iz $O(1)$ na $O(log(N) * X)$, kjer je $X$ število postavljenih indeksov. $N$ pa predstavlja število že obstoječih zapisov v posamezni entiteti.
             \item Za vsak postavljen indeks se bistveno poveča poraba prostora na disku, saj shranjevanje drevesne strukture s seboj prinese podvajanje atributa, kot tudi dodatek kazalca na glavo entitete.
         \end{itemize}
 
@@ -889,52 +890,29 @@ end function
 
         Ob implementaciji omejevanja število rezultatov s pomočjo ukazov `limit` in `offset` moramo poskrbeti za časovno optimalno izvedbo poizvedbe, saj iz vidika uporabnika relacijskega sistema pričakujemo, da z dodatkom ukaza `limit` podatkovnemu sistemu povemo, da želimo omejeno število podatkov in posledično pričakujemo hitrejšo poizvedbo.
 
-        Tekom razvoja smo testirali nekaj različnih podatkovnih struktur, ki so po naravi urejene in omogočajo hitro vnašanje in iskanje. Naš problem pa lahko preprosto definiramo, kot vnašanje v urejeno podatkovno strukturo, kjer bomo imeli največ $L - O$ elementov, kjer je $L$ limita, ki jo določimo za število elementov in $O$ odmik oz število zapisov, ki jih naj poizvedba preskoči.
+        Tekom razvoja smo testirali nekaj različnih pristopov in podatkovnih struktur. Naš problem lahko definiramo, kot iskanje $K$ najmanjših elementov, kjer je $K$ sestavljen iz dveh komponent $L$ in $O$, kjer je $L$ maksimalno število elementov oz. limita, $O$ pa predstavlja odmik oz. število zapisov, ki jih želimo preskočiti.
+
+        Tekom razvoja smo preizkusili 3 različne pristope za iskanje $K$ najmanjših elementov v seznamu.
 
         \begin{enumerate}
-            \item std::map \cite{CPP_MAP}
-            \item std::queue \cite{CPP_QUEUE}
-            \item std::vector \cite{CPP_VECTOR}
+            \item Klasično vstavljanje v seznam in ureditev elementov ob koncu vnašanja, ter rezanje elementov od indeksa $O$, do vključno $O+L$. Časovna zahtevnost tega pristopa je $O(N \cdot log(N))$, prostorska zahtevnost, pa je tukaj $O(N)$, saj moramo v pomnilniku držati vse potencialne elemente.
+            \item Postopno vstavljanje v urejen seznam, v tem primeru uporabimo vgrajeno std::vector \cite{CPP_VECTOR} strukturo, kjer vstavljanje izvajamo s pomočjo binarnega iskanja. Težava pristopa se skriva v vstavljanju v začetni del seznama, saj moramo potem vse elemente zamikati za eno mesto v desno. Posledično, čeprav je časovna zahtevnost binarnega iskanja $O(log(N))$ zaradi premikanja elementov časovna zahtevnost postane $O(N)$. Tako je časovna zahtevnost celotnega postopka vstavljanja $O(N^2)$ v najboljšem primeru pa $O(N \cdot log(K))$. Glavna prednost algoritma pred pristopom urejanja na koncu se nahaja v prostorski zahtevnosti. Ta je namreč le $O(K)$, saj v pomnilniku ohranjamo maksimalno $K$ vrstic in jih po potrebi zamenjujemo ob iteraciji skozi vrstice matrike.
+            \item Za daleč najboljši pristop se je izkazalo vstavljanje v prioritetno vrsto, ki je realizirana, kot kopica. Za podatkovno strukturo uporabimo vgrajeno C++ std::priority\_queue \cite{CPP_PQUEUE}. V tem primeru je časovna zahtevnost posameznega vstavljanja $O(log(K))$, kar pomeni za $N$ vstavljanj $O(N \cdot log(K))$. Prostorska zahtevnost, pa je enako kot v zgornjem primeru $O(K)$. Problem je zastavljen, tako da $K$ ne more nikoli biti večji od $N$ in je posledično časovna zahtevnost tega pristopa najbolj optimalna. Pomemben segment pri uporabi vgrajene prioritetne vrste je tudi izbor podatkovne strukture, ki jo vrsta uporablja za shranjevanje podatkov. Za najbolj optimalen pristop se je izkazal vgrajeni std::vector \cite{CPP_VECTOR}, ki je na nivoju pomnilnika shranjen v enem kosu, kar omogoči prevajalniku in procesorju, da izrabita še optimizacijo z lokalnostjo.
         \end{enumerate}
 
         \noindent
-        Vsak pristop je temeljil na enaki ideji in sicer, da skozi branje zapisov v pomnilniku ohranjamo največ toliko elementov kot jih potrebujemo za poizvedbo z določenim $L$ parametrom.
+        Za zgornje tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja samega algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti, vse imajo namreč časovno zahtevnost vsaj $O(N)$. Bistveno bolj zanimiv, pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $\num{10000000}$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[500, 15000]$.
 
-        Do razlik je prihajalo zaradi samega načina shranjevanja med samimi strukturami. Izkaže se, da v primeru, ko imamo nizko omejitev števila vrstic, ki jih želimo vrniti uporabniku je najboljša struktura ``std::vector``. Narava vektorja je, da so vsi podatki shranjeni na enem mestu v pomnilniku, kar pomeni, da lahko C++ prevajalnik izvede veliko optimizaciji nad branjem in pisanjem, ki jih v primeru vrste in drevesnega slovarja ne more izvesti, saj podatki niso shranjeni na enem mestu oz. potrebujemo dodatne korake za dostop do le-teh.
-
-        Struktura vektorja izstopa tudi v lastnosti, da je edina podatkovna struktura, ki privzeto ni urejena. Vendar, ima dobro lastnost, da lahko že takoj alociramo potreben pomnilnik in s tem prihranimo ogromno časa, saj med pisanjem le spreminjamo strukturo znotraj segmenta v pomnilniku. Za problem ne urejenosti strukture, pa poskrbimo sami z uporabo vgrajenega vnašanja z binarnim iskanjem, kar pomeni, da mesto kamor moramo vstaviti nov element najdemo s časovno zahtevnostjo $O(log(N))$, vendar pa je zaradi zamika preostalega dela vektorja časovna zahtevnost celotne operacije vseeno $O(N)$. Torej zakaj je potem vnašanje v vektor hitrejše, kot pa v strukturi, ki sta že urejeni. Razlog se skriva v prej omenjeni optimizaciji, saj kljub premikanju nekega fiksnega dela vektorja nikoli ne izvajamo re-alokacije celotnega vektorja, kar pomeni, da lahko ta fiksen preostali del vektorja prestavimo v navidezno konstantnem času. 
-
-        \subsubsection{Iskanje časovne prelomnice za sprotno urejanje zapisov}
-
-        Algoritem je v osnovi poznano, kot iskanje prvih $K$ elementov v neurejenem seznamu \cite{G4G_KSMALLEST}. Najpogosteje predlagana rešitev je uporaba prioritetne vrste (v našem primeru zaradi optimizaciji prevajalnika uporabljamo vektor), kjer držimo največ $K$ elementov oz. maksimalno število elementov, ki jih želimo vrniti kot rezultat. Težava pa nastopi, ko vrednost $K$ prestopi časovno prelomnico in postane bolj optimalna rešitev preprosto vstavljati elemente v vektor in urejanje izvesti ob koncu.
-
-        Na spodnjem grafu je prikazan naiven primer, kjer primerjamo oba pristopa:
         \begin{figure}[H]
-            \centerline{\includegraphics[height=0.4\textwidth, angle=0]{prvih_k_elementov.png}}
-            \caption{Časovna analiza obeh pristopov za nabor $K$ najmanjših elementov v seznamu na fiksnem številu vrstic}
-            \label{sl:prvih_k_elementov}
+            \centerline{\includegraphics[height=0.44\textwidth, angle=0]{prvih_k_elementov.png}}
+            \caption{Časovna primerjava pristopov za iskanje $K$ najmanjših elementov v seznamu}
+            \label{sl:k_smallest}
         \end{figure}
 
         \noindent
-        $N$ oz. število vrstic, ki smo jih imeli v naši matrični datoteki je bilo 1 milijon. Vrednost $K$, pa se je skozi $X$ os spreminjala na intervalu od $[100, 10000]$.
+        Iz zgornjega grafa lahko razberemo, da vrednost $K$ nima bistvenega vpliva na prvi in tretji algoritem. Izjema je drugi algoritem, kateri ima sicer časovno zahtevnost $O(N^2)$, vendar je $K$ zelo pomemben faktor, saj večji kot je $K$ večkrat moramo izvesti vstavljanje v vektor, kar pa postaja sorazmerno počasneje glede na večanje vrednosti $K$.
 
-        V primeru, da uporabljamo pristop sprotnega urejanja s prioritetno vrsto je časovna zahtevnost algoritma $O(N \cdot log(K))$ . Prostorska zahtevnost, pa je $O(K)$, saj potrebujemo $K$ dodatnih mest za naš vektor, ki predstavlja prioritetno vrsto.
-
-        Če pa namesto prioritetne vrste urejanje izvedemo le enkrat, ampak uporabimo urejanje celotnega seznama, pa je časovna zahtevnost algoritma $O(N \cdot log(N))$, kar je tudi časovna zahtevnost urejanja seznama (vstavljanje v vektor je v tem primeru konstanta operacija). Prostorska zahtevnost algoritma, pa je tukaj $O(N)$, saj v pomnilniku držimo vse potencialne vrstice, ki so lahko vključene v rezultat.
-
-        Glede na zgornji graf [\ref{sl:prvih_k_elementov}] vidimo, da po pričakovanjih vrednost $K$ ne vpliva na čas izvajanja algoritma, kjer seznam uredimo ob koncu. Na grafu je meja, kjer drugi algoritem postane bolj optimalen definirana, kot $K \approx 5500$. Ta vrednost ne predstavlja realistične meje za vse vrednosti spremenljivk, ki vplivajo na časovno zahtevnost pri branju.
-
-        V ta namen je pripravljena še dodatna grafična analiza, kjer prikazujemo časovno razmerje med pristopoma. Čas izvajanja, ki je do sedaj bil na $y$ osi, pa zamenjamo s številom vrstic $N$.
-
-        \begin{figure}[H]
-            \centerline{\includegraphics[height=0.4\textwidth, angle=0]{prvih_k_elementov.png}}
-            \caption{Časovna analiza obeh pristopov za nabor $K$ najmanjših elementov v seznamu na fiksnem številu vrstic}
-            \label{sl:prvih_k_elementov}
-        \end{figure}
-
-        \subsection{Problem množičnega kreiranja instanc modelov v programskem  jeziku Python}
-
-        Ob testiranju poizvedb s postopkom profiliranja (gre za obliko dinamične programske analize, ki temelji na merjenju časovne in prostorske analize posameznih segmentov našega programa). Po podrobnejši analizi smo opazili, da je večji del poizvedb porabljen za kreiranje instanc objektov na nivoju programskega jezika Python.
+        Izkaže se, da je algoritem z uporabo prioritetne vrste najbolj optimalen pristop, kar pokažejo tudi perfomančni testi, ki se izvajajo na platformi GitHub, saj z uporabo omenjenega pristopa dobili do 4x pohitritev izvedbe nabora podatkov iz ene entitete.
 
     \section{Podprte funkcionalnosti na nivoju vgrajenega ORM sistema}
     \begin{itemize}
@@ -1012,6 +990,25 @@ query = User.with(
    \subsection{Integracija avtomatskega testiranja z GitHub}
 
    Platforma GitHub omogoča izvajanje različnih akciji ob različnih dogodkih najpogosteje v praksi to počnemo, kadar izvajamo združenje vej ali pa kar ob vsaki posodobitvi kode. V praksi se poleg avtomatskega testiranja na tem področju lahko izvajajo tudi avtomatske posodobitve strežniške aplikacije ali različne periodične naloge, kot npr. kreiranje rezervnih verziji podatkovne baze iz produkcijskega strežnika.
+
+   V našem primeru se ob vsaki posodobitvi kode izvede akcija za preverjanje pravilnega delovanja aplikacije. Akcije se izvedejo za dve verziji programskega jezika Python (v3.10 in v3.11), postavitev pa se izvede na virtualnem Linux Ubuntu okolju.
+
+   Ko je okolje pravilno postavljeno se akcije izvedejo v naslednjem zaporedju:
+   \begin{enumerate}
+       \item Zagon virtualnega okolja za Python programskega okolja (venv \cite{PY_VENV_DOCS}).
+       \item Postavitev potrebnih knjižnic za delovanje jedra (PyBind11 \cite{PYBIND11_GITHUB}).
+       \item Namestitev jedra podatkovnega sistema in knjižnice na nivoju programskega jezika Python.
+       \item Poskus uvoza jedra podatkovnega sistema v CLI, ki je vgrajen v programski jezik Python.
+       \item Poskus uvoza celotne knjižnice
+       \item Izvedba nizko nivojskih testov oz. testov enot v programskem jeziku C++
+       \item Izvedba integracijskih testov na nivoju programskega jezika Python
+       \item Izvedba performančnih testov
+   \end{enumerate}
+
+    \noindent
+   Takoj, ko se katera izmed akciji ne izvede pravilno se ustavi celoten cevovod izvajanja in se javi napaka, ki je vidna na zavihku GitHub akciji ali direktno na spremembi kode, ki je povzročila težavo.
+
+   Pristop avtomatskega testiranja in posodabljanja imenujemo tudi CI/CD, ki temelji na hitrem in varnem razvoju, ki razvijalce hitro obvesti o morebitnih napakah, ki se pojavljajo znotraj aplikacije in omogoča, tako avtomatsko testiranje kot tudi avtomatsko posodobitev produkcijskih verziji aplikacije ali v našem primeru posodobitev stabilne verzije knjižnice.
    
    \section{Meritve na različnih napravah za shranjevanje in konfiguracijah}
    \colorbox{BurntOrange}{Performančne razlike glede na napravo za shranjevanje}
