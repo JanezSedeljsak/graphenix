@@ -87,6 +87,8 @@ class Model(ModelBaseMixin, ModelQueryMixin):
                         raw_type_index = FieldTypeEnum.DATETIME
                     case Field.Link:
                         raw_type_index = FieldTypeEnum.LINK
+                    case Field.Double:
+                        raw_type_index = FieldTypeEnum.DOUBLE
                     case _:
                         raise AttributeError("Field type is not valid!")
 

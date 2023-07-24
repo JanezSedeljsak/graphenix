@@ -8,6 +8,7 @@ class FieldTypeEnum:
     BOOL = 2
     DATETIME = 3
     LINK = 4
+    DOUBLE = 5
 
 class Field:
 
@@ -116,3 +117,17 @@ class Field:
             
             linked : T = getattr(instance, '_' + self.name, None)
             return linked
+
+    class Double(BaseType):
+        def __init__(self, default: float = 0.0):
+            self.default = default
+            self.size = 8
+
+        def __get__(self, instance, owner) -> float:
+            if not instance:
+                return self
+            
+            return getattr(instance, '_' + self.name, self.default)
+
+        def __set__(self, instance, value: float):
+            setattr(instance, '_' + self.name, value)

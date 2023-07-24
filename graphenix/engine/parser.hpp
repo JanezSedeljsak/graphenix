@@ -27,7 +27,8 @@ enum FIELD_TYPE
     STRING = 1,
     BOOL = 2,
     DATETIME = 3,
-    LINK = 4
+    LINK = 4,
+    DOUBLE = 5
 };
 
 struct model_def
@@ -88,6 +89,13 @@ struct query_object
                 cmp_res = bool_a - bool_b;
                 break;
             }
+            case DOUBLE:
+            {
+                double double_a = *reinterpret_cast<double *>(val_a);
+                double double_b = *reinterpret_cast<double *>(val_b);
+                cmp_res = double_a - double_b;
+                break;
+            }
             default:
                 throw std::runtime_error("Invalid comperator type!");
                 break;
@@ -131,6 +139,7 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def &mdef, const std
         int64_t int_val;
         bool bool_val;
         std::string str_val;
+        double double_val;
 
         switch (field_types[i])
         {
@@ -152,6 +161,11 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def &mdef, const std
             memcpy(&bool_val, bin_values[i], sizeof(bool));
             record[i] = py::cast(bool_val);
             // std::cout << "bool value " << bool_val << std::endl;
+            break;
+        
+        case DOUBLE:
+            memcpy(&double_val, bin_values[i], sizeof(double));
+            record[i] = py::cast(double_val);
             break;
 
         default:
@@ -175,6 +189,7 @@ inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &p
         int64_t int_val;
         bool bool_val;
         std::string str_val;
+        double double_val;
         parsed_values[i] = new char[field_sizes[i]];
 
         switch (field_types[i])
@@ -200,6 +215,11 @@ inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &p
             int_val = py::cast<int64_t>(py_values[i]);
             bool_val = int_val != 0;
             memcpy(parsed_values[i], &bool_val, sizeof(bool));
+            break;
+        
+        case DOUBLE:
+            double_val = py::cast<double>(py_values[i]);
+            memcpy(parsed_values[i], &double_val, sizeof(double));
             break;
 
         default:
