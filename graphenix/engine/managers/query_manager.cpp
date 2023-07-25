@@ -75,7 +75,6 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
 
     std::vector<char *> raw_rows;
     raw_rows.reserve(!check_limit ? ix_amount : K);
-    std::vector<py::bytes> rows(!check_limit ? (ix_amount - qobject.offset) : qobject.limit);
     std::priority_queue<char *, std::vector<char *>, query_object> pq(qobject);
 
     char *buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
@@ -92,8 +91,13 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
             char *current_record = new char[mdef.record_size + IX_SIZE];
             memcpy(current_record, buffer + offset.first - first_offset, mdef.record_size);
             memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset.second), IX_SIZE);
-            // TODO: filtering for non indexed fields should be here
-            // if (conditions_not_meet) delete[] current_record; continue;
+            const bool valid = const_cast<query_object&>(qobject).validate_conditions(current_record);
+            if (!valid)
+            {
+                delete[] current_record;
+                continue;
+            }
+
             if (is_sorting && check_limit)
             {
                 if (pq.size() < K)
@@ -146,7 +150,8 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
 
     // the end index is set to K if we have limiting
     // we need to take into account the offset which is subtracted for correct index matching when setting the result
-    size_t end = (check_limit ? K : raw_rows.size()) - qobject.offset;
+    size_t end = (check_limit ? std::min(K, raw_rows.size()) : raw_rows.size()) - qobject.offset;
+    std::vector<py::bytes> rows(end);
     for (size_t i = 0; i < end; i++)
         rows[i] = py::bytes(raw_rows[i + qobject.offset], mdef.record_size + IX_SIZE);
 

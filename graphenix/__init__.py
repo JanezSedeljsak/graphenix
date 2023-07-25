@@ -1,5 +1,5 @@
 from .model import Model, Field
 from .schema import Schema
-from .query import Query
+from .query import Query, every, some
 
-__all__ = ['Schema', 'Model', 'Field', 'Query']
+__all__ = ['Schema', 'Model', 'Field', 'Query', 'every', 'some']

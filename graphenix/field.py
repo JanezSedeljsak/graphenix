@@ -2,6 +2,8 @@ from datetime import datetime
 from .mixins.mixin_model_base import T
 from .mixins.mixin_field_order import FO, FieldOrderMixin
 
+import graphenix_engine2 as ge2
+
 class FieldTypeEnum:
     INT = 0
     STRING = 1
@@ -9,6 +11,15 @@ class FieldTypeEnum:
     DATETIME = 3
     LINK = 4
     DOUBLE = 5
+
+class FilterOperationEnum:
+    EQUAL = 0
+    NOTEQUAL = 1
+    GREATER = 2
+    GREATER_OR_EQUAL = 3
+    LESS = 4
+    LESS_OR_EQUAL = 5
+    REGEX = 6
 
 class Field:
 
@@ -27,6 +38,36 @@ class Field:
         
         def desc(self: FO) -> str:
             return self.name
+        
+        @staticmethod
+        def make_cond_object(field_name, operation, cmp_value):
+            cond_obj = ge2.cond_object()
+            cond_obj.field_name = field_name
+            cond_obj.operation_index = operation
+            cond_obj.value = cmp_value
+            return cond_obj
+        
+        def __eq__(self, val):
+            return self.make_cond_object(self.name, FilterOperationEnum.EQUAL, val)
+
+        def __ne__(self, val):
+            return self.make_cond_object(self.name, FilterOperationEnum.NOTEQUAL, val)
+
+        def __gt__(self, val):
+            return self.make_cond_object(self.name, FilterOperationEnum.GREATER, val)
+
+        def __ge__(self, val):
+            return self.make_cond_object(self.name, FilterOperationEnum.GREATER_OR_EQUAL, val)
+
+        def __lt__(self, val):
+            return self.make_cond_object(self.name, FilterOperationEnum.LESS, val)
+
+        def __le__(self, val):
+            return self.make_cond_object(self.name, FilterOperationEnum.LESS_OR_EQUAL, val)
+        
+        def regex(self, val):
+            raise Exception("Regex is only allowed on type String")
+
 
     class Int(BaseType):
         def __init__(self, default: int = 0):
@@ -55,6 +96,9 @@ class Field:
         
         def __set__(self, instance, value: str) -> None:
             setattr(instance, '_' + self.name, value)
+        
+        def regex(self, val):
+            return BaseType.make_cond_object(self.index, FilterOperationEnum.REGEX, val)
 
     class Bool(BaseType):
         def __init__(self, default: bool = False):
@@ -91,6 +135,30 @@ class Field:
 
             diff = int(value.timestamp())
             setattr(instance, '_' + self.name, diff)
+
+        def __eq__(self, val):
+            posix = int(val.timestamp())
+            return self.make_cond_object(self.name, FilterOperationEnum.EQUAL, posix)
+
+        def __ne__(self, val):
+            posix = int(val.timestamp())
+            return self.make_cond_object(self.name, FilterOperationEnum.NOTEQUAL, posix)
+
+        def __gt__(self, val):
+            posix = int(val.timestamp())
+            return self.make_cond_object(self.name, FilterOperationEnum.GREATER, posix)
+
+        def __ge__(self, val):
+            posix = int(val.timestamp())
+            return self.make_cond_object(self.name, FilterOperationEnum.GREATER_OR_EQUAL, posix)
+
+        def __lt__(self, val):
+            posix = int(val.timestamp())
+            return self.make_cond_object(self.name, FilterOperationEnum.LESS, posix)
+
+        def __le__(self, val):
+            posix = int(val.timestamp())
+            return self.make_cond_object(self.name, FilterOperationEnum.LESS_OR_EQUAL, posix)
     
     class Link(BaseType):
         def __init__(self, default = -1):

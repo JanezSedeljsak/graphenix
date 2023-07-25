@@ -3,6 +3,34 @@ from .mixins.mixin_field_order import FieldOrderMixin
 from typing import Type, Generator
 import graphenix_engine2 as ge2
 
+def every(*conditions):
+    condition_node = ge2.cond_node()
+    f_children, f_conditions = [], []
+    for cond in conditions:
+        if isinstance(cond, ge2.cond_node):
+            f_children.append(cond)
+        else:
+            f_conditions.append(cond)
+
+    condition_node.conditions = f_conditions
+    condition_node.children = f_children
+    condition_node.is_and = False
+    return condition_node
+
+def some(*conditions):
+    condition_node = ge2.cond_node()
+    f_children, f_conditions = [], []
+    for cond in conditions:
+        if isinstance(cond, ge2.cond_node):
+            f_children.append(cond)
+        else:
+            f_conditions.append(cond)
+
+    condition_node.conditions = f_conditions
+    condition_node.children = f_children
+    condition_node.is_and = False
+    return condition_node
+
 class Query:
     base_model: Type[T]
     query_object: object
@@ -17,8 +45,23 @@ class Query:
         self.query_object.limit = 0
         self.query_object.offset = 0
 
+        self.filter_root = ge2.cond_node()
+        self.filter_root.conditions = []
+        self.filter_root.children = []
+        self.filter_root.is_and = True
+        self.query_object.filter_root = self.filter_root
+
     def filter(self, *conditions) -> "Query":
-        ...
+        f_children, f_conditions = [], []
+        for cond in conditions:
+            if isinstance(cond, ge2.cond_node):
+                f_children.append(cond)
+            else:
+                f_conditions.append(cond)
+
+        self.query_object.filter_root.conditions = f_conditions
+        self.query_object.filter_root.children = f_children
+        return self
 
     def limit(self, amount: int) -> "Query":
         self.query_object.limit = amount

@@ -74,7 +74,20 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def_readwrite("limit", &query_object::limit)
         .def_readwrite("offset", &query_object::offset)
         .def_readwrite("field_indexes", &query_object::field_indexes)
-        .def_readwrite("order_asc", &query_object::order_asc);
+        .def_readwrite("order_asc", &query_object::order_asc)
+        .def_readwrite("filter_root", &query_object::filter_root);
+
+    py::class_<cond_object>(m, "cond_object")
+        .def(py::init<>())
+        .def_readwrite("field_name", &cond_object::field_name)
+        .def_readwrite("operation_index", &cond_object::operation_index)
+        .def_readwrite("value", &cond_object::value);
+
+    py::class_<cond_node>(m, "cond_node")
+        .def(py::init<>())
+        .def_readwrite("conditions", &cond_node::conditions)
+        .def_readwrite("children", &cond_node::children)
+        .def_readwrite("is_and", &cond_node::is_and);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
