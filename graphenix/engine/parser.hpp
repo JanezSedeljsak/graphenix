@@ -109,8 +109,7 @@ struct cond_object
                 return true;
             }
 
-            size_t cmp_size = std::min(std::strlen(cmp_field), val_b.size());
-            cmp_res = std::memcmp(cmp_field, val_b.c_str(), cmp_size);
+            cmp_res = std::memcmp(cmp_field, val_b.c_str(), std::strlen(cmp_field));
             break;
         }
         case BOOL:
