@@ -58,6 +58,10 @@ inline py::tuple build_record(const model_def &mdef, const py::bytes raw_record)
 
     for (int64_t i = 0; i < fields_count; i++)
     {
+        // skip virtual links can only be created through queries
+        if (mdef.field_types[i] == VIRTUAL_LINK)
+            continue;
+            
         char *field_buffer = new char[mdef.field_sizes[i]];
         memcpy(field_buffer, buffer + offset, mdef.field_sizes[i]);
         offset += mdef.field_sizes[i];

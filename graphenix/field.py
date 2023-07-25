@@ -11,6 +11,7 @@ class FieldTypeEnum:
     DATETIME = 3
     LINK = 4
     DOUBLE = 5
+    VIRTUAL_LINK = 6
 
 class FilterOperationEnum:
     EQUAL = 0
@@ -198,4 +199,25 @@ class Field:
             return getattr(instance, '_' + self.name, self.default)
 
         def __set__(self, instance, value: float):
+            setattr(instance, '_' + self.name, value)
+
+    class VirtualLink(BaseType):
+        size: int = 0
+        default = []
+        name: str
+        link_field: str
+
+        def __init__(self, link_field: str):
+            self.link_field = link_field
+
+        def __get__(self, instance, owner) -> list:
+            if not instance:
+                return self
+            
+            return getattr(instance, '_' + self.name, self.default)
+
+        def __set__(self, instance, value: list) -> None:
+            """
+            This should only be assigned when creating a class instance from view
+            """
             setattr(instance, '_' + self.name, value)

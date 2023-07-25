@@ -69,6 +69,10 @@ int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> 
 
     for (int i = 0; i < num_values; i++)
     {
+        // skip virtual links can only be created through queries
+        if (mdef.field_types[i] == VIRTUAL_LINK)
+            continue;
+            
         int field_size = mdef.field_sizes[i];
         memcpy(record + field_offset, values[i], field_size);
         field_offset += field_size;
@@ -116,6 +120,10 @@ RecordManager::update_record(const model_def& mdef, const vector<char*> &values,
     int field_offset = 0;
     for (int i = 0; i < num_values; i++)
     {
+        // skip virtual links can only be created through queries
+        if (mdef.field_types[i] == VIRTUAL_LINK)
+            continue;
+
         int field_size = mdef.field_sizes[i];
         memcpy(record + field_offset, values[i], field_size);
         field_offset += field_size;
@@ -201,6 +209,10 @@ vector<char*> RecordManager::get_record(const model_def& mdef, const int64_t rec
     size_t offset = 0;
     for (size_t i = 0; i < fields_count; i++)
     {
+        // skip virtual links can only be created through queries
+        if (mdef.field_types[i] == VIRTUAL_LINK)
+            continue;
+
         char *field_buffer = new char[mdef.field_sizes[i]];
         memcpy(field_buffer, buffer + offset, mdef.field_sizes[i]);
         offset += mdef.field_sizes[i];

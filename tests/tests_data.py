@@ -7,6 +7,7 @@ class User(Model):
     age = Field.Int()
     is_admin = Field.Bool()
     created_at = Field.DateTime()
+    tasks = Field.VirtualLink("owner")
 
 class Task(Model):
     name = Field.String(size=20)

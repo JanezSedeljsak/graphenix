@@ -76,7 +76,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
 
         for field_name, field in cls.__dict__.items():
             if isinstance(field, Field.BaseType):
-                if not field.size:
+                if not field.size and not isinstance(field, Field.VirtualLink):
                     raise AttributeError(f'Size for field {field_name} is not defined or is not a positive integer!')
 
                 field_sizes_dict[field_name] = field.size
@@ -100,6 +100,8 @@ class Model(ModelBaseMixin, ModelQueryMixin):
                         raw_type_index = FieldTypeEnum.LINK
                     case Field.Double:
                         raw_type_index = FieldTypeEnum.DOUBLE
+                    case Field.VirtualLink:
+                        raw_type_index = FieldTypeEnum.VIRTUAL_LINK
                     case _:
                         raise AttributeError("Field type is not valid!")
 

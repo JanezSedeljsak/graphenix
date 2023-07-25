@@ -48,6 +48,6 @@ if __name__ == '__main__':
     count, data = ReqInfo.order(ReqInfo.timestamp.desc()).limit(3).all()
     print(f'Count: {count}')
     for row in data:
-        print(row)
+        print(ReqInfo.from_view(row))
 
     app.run()

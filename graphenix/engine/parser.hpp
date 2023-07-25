@@ -31,7 +31,8 @@ enum FIELD_TYPE
     BOOL = 2,
     DATETIME = 3,
     LINK = 4,
-    DOUBLE = 5
+    DOUBLE = 5,
+    VIRTUAL_LINK = 6
 };
 
 enum FILTER_OPERATION_TYPE
@@ -126,6 +127,10 @@ struct cond_object
             cmp_res = double_a - double_b;
             break;
         }
+        case VIRTUAL_LINK:
+            throw std::runtime_error("Cannot use VirtualLink for filtering!");
+            break;
+
         default:
             throw std::runtime_error("Invalid comperator type!");
             break;
@@ -276,6 +281,10 @@ struct query_object
                 cmp_res = double_a - double_b;
                 break;
             }
+            case VIRTUAL_LINK:
+                throw std::runtime_error("Cannot use VirtualLink as comperator!");
+                break;
+                
             default:
                 throw std::runtime_error("Invalid comperator type!");
                 break;
@@ -346,6 +355,11 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def &mdef, const std
             record[i] = py::cast(double_val);
             break;
 
+        case VIRTUAL_LINK:
+            // virtual link initializes to an empty list
+            record[i] = py::list();
+            break;
+
         default:
             std::string msg = message("Unknwon type was passed at index ", i, " type: ", field_types[i]);
             throw std::runtime_error(msg);
@@ -398,6 +412,10 @@ inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &p
         case DOUBLE:
             double_val = py::cast<double>(py_values[i]);
             memcpy(parsed_values[i], &double_val, sizeof(double));
+            break;
+
+        case VIRTUAL_LINK:
+            // skip virtual_links when storing records
             break;
 
         default:
