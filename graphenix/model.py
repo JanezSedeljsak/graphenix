@@ -1,12 +1,14 @@
 import graphenix_engine2 as ge2
 
-from typing import Type
+from typing import Type, NamedTuple
+from collections import namedtuple
 from .mixins.mixin_model_base import ModelBaseMixin, T
 from .query import ModelQueryMixin
 from .field import Field, FieldTypeEnum
 
 class Model(ModelBaseMixin, ModelQueryMixin):
     _db = None
+    view_tuple = None
 
     def __init__(self, **fields):
         self._id = -1
@@ -40,6 +42,14 @@ class Model(ModelBaseMixin, ModelQueryMixin):
     @classmethod
     def desc(cls: Type[T]) -> str:
         return 'id'
+    
+    @classmethod
+    def from_view(cls: Type[T], view_record: NamedTuple) -> T:
+        view_dict = view_record._asdict()
+        record_id = view_dict.pop('id')
+        rec = cls(**view_dict)
+        rec._id = record_id
+        return rec
 
     @classmethod
     def make_cache(cls: Type[T]) -> None:
@@ -55,6 +65,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
 
         cls._model_fields = [attr for attr, val in cls.__dict__.items() if isinstance(val, Field.BaseType)]
         mdef.field_names = cls._model_fields
+        cls.view_tuple = namedtuple(f"{cls.__name__}_View", ["id", *cls._model_fields])
 
         field_sizes_dict = {}
         field_types_raw_dict = {}

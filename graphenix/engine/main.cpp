@@ -55,7 +55,7 @@ PYBIND11_MODULE(graphenix_engine2, m)
     m.def("model_delete_record", &RecordManager::delete_record, "Delete a record from a given table");
 
     m.def("execute_query", &QueryManager::execute_query, "Executes query and retrieves the desired rows");
-    m.def("build_record", &QueryManager::build_record, "Builds a record from raw bytes");
+    // m.def("build_record", &QueryManager::build_record, "Builds a record from raw bytes");
 
     py::class_<model_def>(m, "model_def")
         .def(py::init<>())

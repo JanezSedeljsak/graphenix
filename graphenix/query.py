@@ -102,15 +102,14 @@ class Query:
     
     def all(self) -> tuple[int, Generator[T, None, None]]:
         self.base_model.make_cache()
-        data = ge2.execute_query(self.query_object)
-
+        tuple_records = ge2.execute_query(self.query_object)
+    
         def generator_func():
-            for row in data:
-                record_dict = ge2.build_record(self.base_model._mdef, row)
-                record : T = self.base_model(**record_dict)
-                yield record
+            for trec in tuple_records:
+                ntuple_res = self.base_model.view_tuple._make(trec)
+                yield ntuple_res
 
-        return len(data), generator_func()
+        return len(tuple_records), generator_func()
 
     def first(self) -> T | None:
         self.query_object.limit = 1

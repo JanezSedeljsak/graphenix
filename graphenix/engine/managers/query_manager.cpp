@@ -44,7 +44,40 @@ inline void ix_read_all(std::fstream &ix_file, std::vector<std::pair<int64_t, in
     }
 }
 
-std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
+inline py::tuple build_record(const model_def &mdef, const py::bytes raw_record)
+{
+    char *buffer = new char[mdef.record_size + IX_SIZE];
+    char *raw_record_data;
+    Py_ssize_t raw_rec_size;
+    PyBytes_AsStringAndSize(raw_record.ptr(), &raw_record_data, &raw_rec_size);
+    memcpy(buffer, raw_record_data, mdef.record_size + IX_SIZE);
+
+    const int64_t fields_count = mdef.field_sizes.size();
+    vector<char *> bin_values(fields_count);
+    int64_t offset = 0;
+
+    for (int64_t i = 0; i < fields_count; i++)
+    {
+        char *field_buffer = new char[mdef.field_sizes[i]];
+        memcpy(field_buffer, buffer + offset, mdef.field_sizes[i]);
+        offset += mdef.field_sizes[i];
+        bin_values[i] = field_buffer;
+    }
+
+    std::vector<py::object> record_vector = PYTHNOIZE_RECORD(mdef, bin_values);
+    py::tuple record(fields_count + 1); // +1 for ID
+    for (int64_t i = 1; i <= fields_count; i++)
+        record[i] = record_vector[i - 1];
+
+    int64_t ix;
+    memcpy(&ix, buffer + mdef.record_size, IX_SIZE);
+    record[0] = py::cast(ix);
+
+    delete[] buffer;
+    return record;
+}
+
+std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
 {
     const auto &mdef = qobject.mdef;
     std::string file_name = get_file_name(mdef.db_name, mdef.model_name);
@@ -151,47 +184,15 @@ std::vector<py::bytes> QueryManager::execute_query(const query_object &qobject)
     // the end index is set to K if we have limiting
     // we need to take into account the offset which is subtracted for correct index matching when setting the result
     size_t end = (check_limit ? std::min(K, raw_rows.size()) : raw_rows.size()) - qobject.offset;
-    std::vector<py::bytes> rows(end);
+    std::vector<py::tuple> rows(end);
     for (size_t i = 0; i < end; i++)
-        rows[i] = py::bytes(raw_rows[i + qobject.offset], mdef.record_size + IX_SIZE);
+    {
+        py::bytes raw_record = py::bytes(raw_rows[i + qobject.offset], mdef.record_size + IX_SIZE);
+        rows[i] = build_record(mdef, raw_record);
+    }
 
     for (size_t i = 0; i < raw_rows.size(); i++)
         delete[] raw_rows[i];
 
     return rows;
-}
-
-py::dict QueryManager::build_record(const model_def &mdef, const py::bytes raw_record)
-{
-    char *buffer = new char[mdef.record_size + IX_SIZE];
-    char *raw_record_data;
-    Py_ssize_t raw_rec_size;
-    PyBytes_AsStringAndSize(raw_record.ptr(), &raw_record_data, &raw_rec_size);
-    memcpy(buffer, raw_record_data, mdef.record_size + IX_SIZE);
-
-    const int64_t fields_count = mdef.field_sizes.size();
-    vector<char *> bin_values(fields_count);
-    int64_t offset = 0;
-
-    for (int64_t i = 0; i < fields_count; i++)
-    {
-        char *field_buffer = new char[mdef.field_sizes[i]];
-        memcpy(field_buffer, buffer + offset, mdef.field_sizes[i]);
-        offset += mdef.field_sizes[i];
-        bin_values[i] = field_buffer;
-    }
-
-    std::vector<py::object> record_vector = PYTHNOIZE_RECORD(mdef, bin_values);
-    std::unordered_map<std::string, py::object> record;
-    for (int64_t i = 0; i < fields_count; i++)
-    {
-        record[mdef.field_names[i]] = record_vector[i];
-    }
-
-    int64_t ix;
-    memcpy(&ix, buffer + mdef.record_size, IX_SIZE);
-    record[ID_KEY] = py::cast(ix);
-
-    delete[] buffer;
-    return py::cast(record);
 }

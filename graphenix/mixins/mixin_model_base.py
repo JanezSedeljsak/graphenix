@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, NamedTuple
 import abc
 
 T = TypeVar('T', bound='ModelBaseMixin')
@@ -12,6 +12,7 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
     _mdef: object
     _cache_init: bool = False
     _model_fields: list = []
+    view_tuple: type
     #_total_size: int = 0
     #_field_sizes: dict[str, int] = {}
     #_field_types_raw: dict[str, int] = {} # for parsing in c++
@@ -36,6 +37,10 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
 
     @abc.abstractclassmethod
     def make_cache(cls):
+        raise NotImplementedError
+    
+    @abc.abstractclassmethod
+    def from_view(cls, view_record):
         raise NotImplementedError
     
     @abc.abstractclassmethod

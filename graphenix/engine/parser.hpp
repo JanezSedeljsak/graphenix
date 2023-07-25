@@ -131,8 +131,8 @@ struct cond_object
             break;
         }
 
-        std::cout << "Idx " << idx << " offset " << offset << " rec " << cmp_field << " " << value << std::endl;
-        std::cout << "res " << cmp_res << std::endl;
+        // std::cout << "Idx " << idx << " offset " << offset << " rec " << cmp_field << " " << value << std::endl;
+        // std::cout << "res " << cmp_res << std::endl;
         switch (operation_index)
         {
         case EQUAL:
@@ -327,7 +327,7 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def &mdef, const std
             memcpy(&int_val, bin_values[i], sizeof(int64_t));
             record[i] = py::cast(int_val);
             // std::cout << "int value  " << int_val << std::endl;
-            break;
+            break;        
 
         case STRING:
             str_val = bin_values[i];

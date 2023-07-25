@@ -58,7 +58,7 @@ class GraphenixPerfTests(CommonTestBase):
         count, rows = City.all()
         self.assertEqual(AMOUNT, count)
         first = next(rows)
-        self.assertIsInstance(first, City)
+        self.assertIsInstance(first, City.view_tuple)
         self.assertEqual(0, first.id)
         self.assertEqual('SLO0', first.country)
 
@@ -70,7 +70,7 @@ class GraphenixPerfTests(CommonTestBase):
         count, rows = City.limit(LIMIT).all()
         self.assertEqual(LIMIT, count)
         first = next(rows)
-        self.assertIsInstance(first, City)
+        self.assertIsInstance(first, City.view_tuple)
         self.assertEqual(0, first.id)
         self.assertEqual('SLO0', first.country)
 
@@ -83,7 +83,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(AMOUNT, count)
         first = next(rows)
         last_id = AMOUNT - 1
-        self.assertIsInstance(first, City)
+        self.assertIsInstance(first, City.view_tuple)
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
@@ -97,7 +97,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(LIMIT, count)
         first = next(rows)
         last_id = AMOUNT - 1
-        self.assertIsInstance(first, City)
+        self.assertIsInstance(first, City.view_tuple)
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
@@ -111,7 +111,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(LIMIT, count)
         first = next(rows)
         last_id = AMOUNT - 1
-        self.assertIsInstance(first, City)
+        self.assertIsInstance(first, City.view_tuple)
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
