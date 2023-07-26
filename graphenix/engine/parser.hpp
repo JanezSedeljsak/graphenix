@@ -178,7 +178,6 @@ struct cond_object
             {
                 try
                 {
-                    const std::string other = py_str;
                     const std::regex regex_obj(val_b);
                     const std::string trimed_value = std::string(cmp_field, size);
                     return std::regex_match(trimed_value, regex_obj);
