@@ -107,7 +107,7 @@ class Field:
             setattr(instance, '_' + self.name, value)
         
         def regex(self, val):
-            return BaseType.make_cond_object(self.index, FilterOperationEnum.REGEX, val)
+            return self.make_cond_object(self.name, FilterOperationEnum.REGEX, val)
 
     class Bool(BaseType):
         def __init__(self, default: bool = False):
