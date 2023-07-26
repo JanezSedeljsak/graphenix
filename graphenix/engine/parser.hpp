@@ -256,10 +256,7 @@ struct query_object
         size_t len = agg_vector.size();
         for (size_t i = 0; i < len; i++)
         {
-            std::cout << "test test\n";
             const AGGREGATE_OPERATION agg_func = static_cast<AGGREGATE_OPERATION>(agg_vector[i].option);
-            std::cout << "test test t\n";
-
             if (agg_func == COUNT)
             {
                 int64_t current_value = py::cast<int64_t>(current[i]);
@@ -270,13 +267,13 @@ struct query_object
             const int idx = agg_vector[i].field_index;
             const int offset = mdef.field_offsets[idx];
             const FIELD_TYPE type = static_cast<FIELD_TYPE>(mdef.field_types[idx]);
-            std::cout << "test test test\n";
 
             char *field_ptr = record + offset;
             switch (type)
             {
             case INT:
             case DATETIME:
+            case LINK:
             {
                 const int64_t int_value = *reinterpret_cast<int64_t *>(field_ptr);
                 const int64_t current_value = py::cast<int64_t>(current[i]);
@@ -317,7 +314,6 @@ struct query_object
                 case SUM:
                 {
                     double new_sum = double_value + current_value;
-                    std::cout << "current value " << current_value << " new sum " << new_sum << std::endl;
                     current[i] = py::cast(new_sum);
                     break;
                 }
@@ -339,27 +335,33 @@ struct query_object
         std::vector<py::object> agg_tuple(agg_vector.size());
         for (size_t i = 0; i < agg_vector.size(); i++)
         {
-            const FIELD_TYPE type = static_cast<FIELD_TYPE>(agg_vector[i].field_index);
+            const int idx = agg_vector[i].field_index;
+            const FIELD_TYPE type = idx != -1 ? static_cast<FIELD_TYPE>(mdef.field_types[idx]) : INT;
+            std::cout << "type " << type << std::endl;
             switch (agg_vector[i].option)
             {
             case SUM:
             case COUNT:
-                agg_tuple[i] = py::cast(0);
+                if (type == DOUBLE)
+                    agg_tuple[i] = py::cast(0.0);
+                else
+                    agg_tuple[i] = py::cast(0);
+
                 break;
 
             case MIN:
-                if (type == INT)
-                    agg_tuple[i] = py::cast(std::numeric_limits<int64_t>::max());
-                else
+                if (type == DOUBLE)
                     agg_tuple[i] = py::cast(std::numeric_limits<double>::max());
+                else
+                    agg_tuple[i] = py::cast(std::numeric_limits<int64_t>::max());
 
                 break;
 
             case MAX:
-                if (type == INT)
-                    agg_tuple[i] = py::cast(std::numeric_limits<int64_t>::min());
-                else
+                if (type == DOUBLE)
                     agg_tuple[i] = py::cast(std::numeric_limits<double>::min());
+                else
+                    agg_tuple[i] = py::cast(std::numeric_limits<int64_t>::min());
 
                 break;
 

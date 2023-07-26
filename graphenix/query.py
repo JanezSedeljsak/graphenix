@@ -142,7 +142,11 @@ class Query:
         for [field_name, func] in aggregations.values():
             agg_obj = ge2.aggregate_object()
             agg_obj.option = func
-            agg_obj.field_index = self.base_model._model_fields.index(field_name)
+            if func != AGG._Options.COUNT:
+                agg_obj.field_index = self.base_model._model_fields.index(field_name)
+            else:
+                agg_obj.field_index = -1
+                
             aggs.append(agg_obj)
 
         self.query_object.agg_vector = aggs
@@ -173,8 +177,8 @@ class AGG:
         return [field, AGG._Options.SUM]
     
     @staticmethod
-    def count(field):
-        return [field, AGG._Options.COUNT]
+    def count():
+        return [None, AGG._Options.COUNT]
 
 
 class ModelQueryMixin:
