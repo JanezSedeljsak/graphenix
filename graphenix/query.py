@@ -110,14 +110,50 @@ class Query:
         self.query_object.order_asc = order_asc
         return self
         
+    def get_virtual_link_field(self, key):
+        if not hasattr(self.base_model, key):
+            raise AttributeError(f"Invalid key for linking {key}")
+
+        field = getattr(self.base_model, key)
+        return field.link_field
+
 
     def link(self, **link_map) -> "Query":
-        links = []
+        links, link_vector = [], []
         for link_key, link in link_map.items():
             link_obj = ge2.link_object()
+            link_obj.link_field_index = self.base_model._model_fields.index(link_key)
+            vlink_field = self.get_virtual_link_field(link_key)
+            if vlink_field is None:
+                # direct link
+                link_obj.child_link_field_index = -1
+                link_obj.is_direct_link = True
+
+                subquery = Query(link)
+                subquery.query_object.is_subquery = True
+                link_vector.append(subquery)
+            else:
+                # virtual link
+                subquery = link
+                if issubclass(link, ModelBaseMixin):
+                    subquery = Query(link)
+                
+                if not isinstance(subquery, Query):
+                    raise ValueError("Virtual link can't be resolved to query type!")
+
+                # reset limit and offset on subqueries (they are not allowed)
+                subquery.query_object.limit = 0
+                subquery.query_object.offset = 0
+                subquery.query_object.is_subquery = True
+                
+                link_obj.child_link_field_index = subquery.base_model._model_fields.index(vlink_field) 
+                link_obj.is_direct_link = False
+                link_vector.append(subquery)
+
             links.append(link_obj)
 
         self.query_object.links = links
+        self.query_object.link_vector = link_vector
 
     
     def all(self) -> tuple[int, Generator[T, None, None]]:

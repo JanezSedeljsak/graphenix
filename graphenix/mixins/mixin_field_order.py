@@ -8,6 +8,7 @@ class FieldOrderMixin(metaclass=abc.ABCMeta):
     index: bool
     name: str
     asc: bool = True
+    link_field: str | None = None
         
     @abc.abstractmethod
     def __set_name__(self, owner, name) -> None:

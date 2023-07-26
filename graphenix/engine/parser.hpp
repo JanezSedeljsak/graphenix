@@ -276,7 +276,7 @@ struct query_object
 
     // linking
     std::vector<link_object> links;
-    std::vector<link_object> link_vector;
+    std::vector<query_object> link_vector;
     bool is_subquery;
     std::unordered_set<int64_t> ix_constraints;
     // if links are not empty we have to create a tree query
