@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <regex>
+#include <unordered_set>
 
 #include <pybind11/pybind11.h>
 
@@ -247,6 +248,13 @@ struct cond_node
     bool is_and;
 };
 
+struct link_object
+{
+    bool is_direct_link; // VirtualLink -> false, Link -> true
+    int link_field_index; // the index of the field in the parent table
+    int child_link_field_index; // the index of the field in the child table (Link -> -1 - PK)
+};
+
 struct query_object
 {
     // entity data
@@ -265,6 +273,19 @@ struct query_object
     // aggregation
     int agg_field_index;
     std::vector<aggregate_object> agg_vector;
+
+    // linking
+    std::vector<link_object> links;
+    std::vector<link_object> link_vector;
+    bool is_subquery;
+    std::unordered_set<int64_t> ix_constraints;
+    // if links are not empty we have to create a tree query
+    // first we execute query on the current table
+    // we need to store the ix results into queried set
+    // we loop through the child queries but we need to only include the ixs from queried set
+    // for each query we return a normal vector<py::tuple>
+    // we convert the vector into a unordered_map<key, vector<py::tuple>> mapped_children
+    // we loop through the main query result and for each link (use links field) we add mapped_children[current_key] as a vector<py::tuple>
 
     bool validate_conditions(char *record)
     {

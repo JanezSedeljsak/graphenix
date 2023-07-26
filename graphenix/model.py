@@ -8,7 +8,7 @@ from .field import Field, FieldTypeEnum
 
 class Model(ModelBaseMixin, ModelQueryMixin):
     _db = None
-    view_tuple = None
+    _view_tuple = None
 
     def __init__(self, **fields):
         self._id = -1
@@ -21,7 +21,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
     def __str__(self):
         self.make_cache()
         fields = ['id', *self._model_fields]
-        attrs = ', '.join([f"{k}={getattr(self, k)}" for k in fields])
+        attrs = ', '.join([f"{k}={getattr(self, k)}" for k in fields if not self._field_types.get(k) == Field.VirtualLink])
         return f"{self.__name__}({attrs})"
     
     def __setattr__(self, name, value):
@@ -65,7 +65,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
 
         cls._model_fields = [attr for attr, val in cls.__dict__.items() if isinstance(val, Field.BaseType)]
         mdef.field_names = cls._model_fields
-        cls.view_tuple = namedtuple(f"{cls.__name__}_View", ["id", *cls._model_fields])
+        cls._view_tuple = namedtuple(f"{cls.__name__}_View", ["id", *cls._model_fields])
 
         field_sizes_dict = {}
         field_types_raw_dict = {}
@@ -153,6 +153,21 @@ class Model(ModelBaseMixin, ModelQueryMixin):
     def make(self: T) -> T:
         self.save()
         return self
+    
+    def connect_child(self: T, child_model: type, field_name: str) -> None:
+        if getattr(self, field_name) is not None:
+            return
+        
+        if not hasattr(self, f'_{field_name}_id'):
+            return
+        
+        child_id = getattr(self, f'_{field_name}_id')
+        if (not child_id and child_id != 0)  or child_id == -1:
+            return
+        
+        child = child_model.get(child_id)
+        setattr(self, field_name, child)
+
     
     def save(self):
         self.make_cache()

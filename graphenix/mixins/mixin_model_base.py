@@ -12,7 +12,7 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
     _mdef: object
     _cache_init: bool = False
     _model_fields: list = []
-    view_tuple: type
+    _view_tuple: type | None
     #_total_size: int = 0
     #_field_sizes: dict[str, int] = {}
     #_field_types_raw: dict[str, int] = {} # for parsing in c++
@@ -46,6 +46,11 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
     @abc.abstractclassmethod
     def get_mdef(cls):
         raise NotImplementedError
+    
+    @abc.abstractmethod
+    def connect_child(self, child_model, field_name):
+        raise NotImplementedError
+
     
 
     

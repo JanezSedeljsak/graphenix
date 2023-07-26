@@ -61,6 +61,10 @@ class Query:
         self.query_object.agg_field_index = -1
         self.query_object.agg_vector = []
 
+        # linking
+        self.query_object.links = []
+        self.query_object.is_subquery = False
+
     def filter(self, *conditions) -> "Query":
         f_children, f_conditions = [], []
         for cond in conditions:
@@ -108,7 +112,13 @@ class Query:
         
 
     def link(self, **link_map) -> "Query":
-        ...
+        links = []
+        for link_key, link in link_map.items():
+            link_obj = ge2.link_object()
+            links.append(link_obj)
+
+        self.query_object.links = links
+
     
     def all(self) -> tuple[int, Generator[T, None, None]]:
         self.base_model.make_cache()
@@ -116,7 +126,7 @@ class Query:
     
         def generator_func():
             for trec in tuple_records:
-                ntuple_res = self.base_model.view_tuple._make(trec)
+                ntuple_res = self.base_model._view_tuple._make(trec)
                 yield ntuple_res
 
         return len(tuple_records), generator_func()
@@ -128,7 +138,7 @@ class Query:
         if len(data) != 1:
             return None
         
-        ntuple_res = self.base_model.view_tuple._make(data[0])
+        ntuple_res = self.base_model._view_tuple._make(data[0])
         return self.base_model.from_view(ntuple_res)
     
     def agg(self, by = None, **aggregations) -> list:
@@ -150,8 +160,8 @@ class Query:
 
         self.query_object.agg_vector = aggs
         data = ge2.execute_agg_query(self.query_object)
-        view_tuple = namedtuple("AggView", res_keys)
-        result = [view_tuple._make(row) for row in data]
+        agg_view_tuple = namedtuple("AggView", res_keys)
+        result = [agg_view_tuple._make(row) for row in data]
         return result
 
 

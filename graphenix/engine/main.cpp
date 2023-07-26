@@ -78,7 +78,10 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def_readwrite("order_asc", &query_object::order_asc)
         .def_readwrite("agg_field_index", &query_object::agg_field_index)
         .def_readwrite("agg_vector", &query_object::agg_vector)
-        .def_readwrite("filter_root", &query_object::filter_root);
+        .def_readwrite("filter_root", &query_object::filter_root)
+        .def_readwrite("links", &query_object::links)
+        .def_readwrite("link_vector", &query_object::link_vector)
+        .def_readwrite("is_subquery", &query_object::is_subquery);
 
     py::class_<cond_object>(m, "cond_object")
         .def(py::init<>())
@@ -96,6 +99,12 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def(py::init<>())
         .def_readwrite("option", &aggregate_object::option)
         .def_readwrite("field_index", &aggregate_object::field_index);
+
+    py::class_<link_object>(m, "link_object")
+        .def(py::init<>())
+        .def_readwrite("is_direct_link", &link_object::is_direct_link)
+        .def_readwrite("link_field_index", &link_object::link_field_index)
+        .def_readwrite("child_link_field_index", &link_object::child_link_field_index);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
