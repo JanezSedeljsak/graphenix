@@ -1,6 +1,7 @@
 from .mixins.mixin_model_base import T, ModelBaseMixin
 from .mixins.mixin_field_order import FieldOrderMixin
 from typing import Type, Generator
+from collections import namedtuple
 import graphenix_engine2 as ge2
 
 def every(*conditions):
@@ -40,16 +41,25 @@ class Query:
         self.base_model.make_cache()
         self.query_object = ge2.query_object()
         self.query_object.mdef = self.base_model._mdef
+
+        # order
         self.query_object.field_indexes = []
         self.query_object.order_asc = []
+
+        # limit
         self.query_object.limit = 0
         self.query_object.offset = 0
 
-        self.filter_root = ge2.cond_node()
-        self.filter_root.conditions = []
-        self.filter_root.children = []
-        self.filter_root.is_and = True
-        self.query_object.filter_root = self.filter_root
+        # filtering
+        filter_root = ge2.cond_node()
+        filter_root.conditions = []
+        filter_root.children = []
+        filter_root.is_and = True
+        self.query_object.filter_root = filter_root
+
+        # aggregation
+        self.query_object.agg_field_index = -1
+        self.query_object.agg_vector = []
 
     def filter(self, *conditions) -> "Query":
         f_children, f_conditions = [], []
@@ -121,8 +131,51 @@ class Query:
         record_dict = ge2.build_record(self.base_model._mdef, data[0])
         record : T = self.base_model(**record_dict)
         return record
-
     
+    def agg(self, by = None, **aggregations) -> list:
+        res_keys = list(aggregations.keys())
+        if by is not None:
+            res_keys = [by.name, *res_keys]
+            self.query_object.agg_field_index = self.base_model._model_fields.index(by.name)
+        
+        aggs = []
+        for [field_name, func] in aggregations.values():
+            agg_obj = ge2.aggregate_object()
+            agg_obj.option = func
+            agg_obj.field_index = self.base_model._model_fields.index(field_name)
+            aggs.append(agg_obj)
+
+        self.query_object.agg_vector = aggs
+        data = ge2.execute_agg_query(self.query_object)
+        view_tuple = namedtuple("AggView", res_keys)
+        result = [view_tuple._make(row) for row in data]
+        return result
+
+
+class AGG:
+    
+    class _Options:
+        SUM = 0
+        MIN = 1
+        MAX = 2
+        COUNT = 3
+
+    @staticmethod
+    def min(field):
+        return [field, AGG._Options.MIN]
+    
+    @staticmethod
+    def max(field):
+        return [field, AGG._Options.MAX]
+    
+    @staticmethod
+    def sum(field):
+        return [field, AGG._Options.SUM]
+    
+    @staticmethod
+    def count(field):
+        return [field, AGG._Options.COUNT]
+
 
 class ModelQueryMixin:
     
@@ -153,3 +206,7 @@ class ModelQueryMixin:
     @classmethod
     def order(cls, *fields) -> Query:
         return Query(cls).order(*fields)
+    
+    @classmethod
+    def agg(cls, by = None, **aggregations) -> list:
+        return Query(cls).agg(by=by, **aggregations)

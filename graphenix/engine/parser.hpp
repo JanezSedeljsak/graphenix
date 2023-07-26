@@ -46,6 +46,19 @@ enum FILTER_OPERATION_TYPE
     REGEX = 6
 };
 
+enum AGGREGATE_OPERATION
+{
+    SUM = 0,
+    MIN = 1,
+    MAX = 2,
+    COUNT = 3
+};
+
+struct aggregate_object
+{
+    int option, field_index;
+};
+
 struct model_def
 {
     std::string db_name;
@@ -70,7 +83,7 @@ struct cond_object
         for (size_t i = 0; i < mdef.field_names.size(); ++i)
             if (mdef.field_names[i] == field_name)
                 idx = static_cast<int>(i);
-        
+
         const bool not_pk = idx != -1;
         const int offset = not_pk ? mdef.field_offsets[idx] : mdef.record_size;
         const int size = not_pk ? mdef.field_sizes[idx] : IX_SIZE;
@@ -170,7 +183,7 @@ struct query_object
     // entity data
     model_def mdef;
 
-    // order data
+    // ordering
     vector_i field_indexes;
     std::vector<bool> order_asc;
 
@@ -179,6 +192,10 @@ struct query_object
 
     // limit + offset
     size_t limit, offset;
+
+    // aggregation
+    int agg_field_index;
+    std::vector<aggregate_object> agg_vector;
 
     bool validate_conditions(char *record)
     {
@@ -234,6 +251,127 @@ struct query_object
         return false;
     }
 
+    void compare_and_swap(char *record, std::vector<py::object> &current)
+    {
+        size_t len = agg_vector.size();
+        for (size_t i = 0; i < len; i++)
+        {
+            std::cout << "test test\n";
+            const AGGREGATE_OPERATION agg_func = static_cast<AGGREGATE_OPERATION>(agg_vector[i].option);
+            std::cout << "test test t\n";
+
+            if (agg_func == COUNT)
+            {
+                int64_t current_value = py::cast<int64_t>(current[i]);
+                current[i] = py::cast(current_value + 1);
+                continue;
+            }
+
+            const int idx = agg_vector[i].field_index;
+            const int offset = mdef.field_offsets[idx];
+            const FIELD_TYPE type = static_cast<FIELD_TYPE>(mdef.field_types[idx]);
+            std::cout << "test test test\n";
+
+            char *field_ptr = record + offset;
+            switch (type)
+            {
+            case INT:
+            case DATETIME:
+            {
+                const int64_t int_value = *reinterpret_cast<int64_t *>(field_ptr);
+                const int64_t current_value = py::cast<int64_t>(current[i]);
+                switch (agg_func)
+                {
+                case MIN:
+                    current[i] = py::cast(std::min(int_value, current_value));
+                    break;
+
+                case MAX:
+                    current[i] = py::cast(std::max(int_value, current_value));
+                    break;
+
+                case SUM:
+                    current[i] = py::cast(int_value + current_value);
+                    break;
+
+                case COUNT:
+                    break;
+                }
+                break;
+            }
+
+            case DOUBLE:
+            {
+                const double double_value = *reinterpret_cast<double *>(field_ptr);
+                const double current_value = py::cast<double>(current[i]);
+                switch (agg_func)
+                {
+                case MIN:
+                    current[i] = py::cast(std::min(double_value, current_value));
+                    break;
+
+                case MAX:
+                    current[i] = py::cast(std::max(double_value, current_value));
+                    break;
+
+                case SUM:
+                {
+                    double new_sum = double_value + current_value;
+                    std::cout << "current value " << current_value << " new sum " << new_sum << std::endl;
+                    current[i] = py::cast(new_sum);
+                    break;
+                }
+                case COUNT:
+                    break;
+                }
+                break;
+            }
+
+            default:
+                throw std::runtime_error("Invalid aggregate type!");
+                break;
+            }
+        }
+    }
+
+    std::vector<py::object> make_agg_tuple()
+    {
+        std::vector<py::object> agg_tuple(agg_vector.size());
+        for (size_t i = 0; i < agg_vector.size(); i++)
+        {
+            const FIELD_TYPE type = static_cast<FIELD_TYPE>(agg_vector[i].field_index);
+            switch (agg_vector[i].option)
+            {
+            case SUM:
+            case COUNT:
+                agg_tuple[i] = py::cast(0);
+                break;
+
+            case MIN:
+                if (type == INT)
+                    agg_tuple[i] = py::cast(std::numeric_limits<int64_t>::max());
+                else
+                    agg_tuple[i] = py::cast(std::numeric_limits<double>::max());
+
+                break;
+
+            case MAX:
+                if (type == INT)
+                    agg_tuple[i] = py::cast(std::numeric_limits<int64_t>::min());
+                else
+                    agg_tuple[i] = py::cast(std::numeric_limits<double>::min());
+
+                break;
+
+            default:
+                throw std::runtime_error("Invalid aggregation functions was used!");
+                break;
+            }
+        }
+
+        return agg_tuple;
+    }
+
     bool operator()(char *a, char *b) const
     {
         size_t len = field_indexes.size();
@@ -283,7 +421,7 @@ struct query_object
             case VIRTUAL_LINK:
                 throw std::runtime_error("Cannot use VirtualLink as comperator!");
                 break;
-                
+
             default:
                 throw std::runtime_error("Invalid comperator type!");
                 break;
@@ -335,7 +473,7 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def &mdef, const std
             memcpy(&int_val, bin_values[i], sizeof(int64_t));
             record[i] = py::cast(int_val);
             // std::cout << "int value  " << int_val << std::endl;
-            break;        
+            break;
 
         case STRING:
             str_val = bin_values[i];
@@ -414,7 +552,7 @@ inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &p
             break;
 
         case VIRTUAL_LINK:
-            // skip virtual_links when storing records
+            // skip virtual links when storing records
             break;
 
         default:

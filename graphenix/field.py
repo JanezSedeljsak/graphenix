@@ -214,10 +214,8 @@ class Field:
             if not instance:
                 return self
             
-            return getattr(instance, '_' + self.name, self.default)
+            return []
 
         def __set__(self, instance, value: list) -> None:
-            """
-            This should only be assigned when creating a class instance from view
-            """
-            setattr(instance, '_' + self.name, value)
+            # links should never be set on class instances
+            return None

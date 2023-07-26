@@ -2,11 +2,15 @@
 #include <fstream>
 #include <vector>
 #include <queue>
+#include <unordered_map>
 #include <string>
 #include <numeric>
+#include <limits>
 #include <filesystem>
 #include <cstring>
 #include <algorithm>
+#include <variant>
+#include <any>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -61,7 +65,7 @@ inline py::tuple build_record(const model_def &mdef, const py::bytes raw_record)
         // skip virtual links can only be created through queries
         if (mdef.field_types[i] == VIRTUAL_LINK)
             continue;
-            
+
         char *field_buffer = new char[mdef.field_sizes[i]];
         memcpy(field_buffer, buffer + offset, mdef.field_sizes[i]);
         offset += mdef.field_sizes[i];
@@ -79,6 +83,131 @@ inline py::tuple build_record(const model_def &mdef, const py::bytes raw_record)
 
     delete[] buffer;
     return record;
+}
+
+std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobject)
+{
+    const auto &mdef = qobject.mdef;
+    std::string file_name = get_file_name(mdef.db_name, mdef.model_name);
+    std::string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
+
+    std::fstream file(file_name, std::ios::binary | std::ios::in | std::ios::out);
+    std::fstream ix_file(ix_file_name, std::ios::binary | std::ios::in | std::ios::out);
+    std::vector<std::pair<int64_t, int64_t>> offsets;
+
+    ix_read_all(ix_file, offsets);
+    ix_file.close();
+
+    const bool is_global_agg = qobject.agg_field_index == -1;
+    const FIELD_TYPE field_type = static_cast<FIELD_TYPE>(mdef.field_types[qobject.agg_field_index]);
+    const int64_t key_field_offset = mdef.field_offsets[qobject.agg_field_index];
+    const int64_t key_field_size = mdef.field_offsets[qobject.agg_field_index];
+
+    std::unordered_map<std::variant<std::string, double, int64_t>, std::vector<py::object>> hashmap;
+    query_object qobject_temp = const_cast<query_object &>(qobject);
+    std::vector<py::object> agg_tuple = qobject_temp.make_agg_tuple();
+
+    if (is_global_agg)
+        hashmap[0] = agg_tuple;
+
+    std::sort(offsets.begin(), offsets.end());
+    const auto &clusters = clusterify(offsets);
+
+    char *buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
+    for (const auto &cluster : clusters)
+    {
+        const int64_t first_offset = cluster.front().first;
+        const int64_t last_offset = cluster.back().first;
+        file.seekg(first_offset + IX_SIZE, ios::beg);
+        file.read(buffer, last_offset + mdef.record_size - first_offset);
+        for (const auto &offset : cluster)
+        {
+            char *current_record = new char[mdef.record_size + IX_SIZE];
+            memcpy(current_record, buffer + offset.first - first_offset, mdef.record_size);
+            memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset.second), IX_SIZE);
+            const bool valid = qobject_temp.validate_conditions(current_record);
+            if (!valid)
+            {
+                delete[] current_record;
+                continue;
+            }
+
+            if (is_global_agg)
+            {
+                qobject_temp.compare_and_swap(current_record, hashmap[0]);
+            }
+            else
+            {
+                char *field_ptr = current_record + key_field_offset;
+                std::variant<std::string, double, int64_t> key;
+                switch (field_type)
+                {
+                case INT:
+                case LINK:
+                case BOOL:
+                case DATETIME:
+                    key = *reinterpret_cast<int64_t *>(field_ptr);
+                    break;
+
+                case STRING:
+                {
+                    std::string str_key(field_ptr, key_field_size);
+                    key = str_key;
+                    break;
+                }
+
+                case DOUBLE:
+                    key = *reinterpret_cast<double *>(field_ptr);
+                    break;
+
+                default:
+                    throw std::runtime_error("Invaldi type for group key!");
+                    break;
+                }
+
+                auto it = hashmap.find(key);
+                if (it == hashmap.end())
+                {
+                    // add new object to hashmap
+                    std::vector<py::object> temp_tuple = qobject_temp.make_agg_tuple();
+                    hashmap[key] = temp_tuple;
+                }
+
+                qobject_temp.compare_and_swap(current_record, hashmap[key]);
+            }
+        }
+    }
+
+    file.close();
+    delete[] buffer;
+    std::vector<py::tuple> rows;
+
+    if (is_global_agg)
+    {
+        std::vector<py::object> global_agg_vector = hashmap[0];
+        py::tuple global_agg(global_agg_vector.size());
+        for (size_t i = 0; i < global_agg_vector.size(); i++)
+            global_agg[i] = global_agg_vector[i];
+
+        rows.push_back(global_agg);
+        return rows;
+    }
+
+    rows.resize(hashmap.size());
+    size_t idx = 0;
+    for (const auto &pair : hashmap)
+    {
+        std::vector<py::object> global_agg_vector = pair.second;
+        py::tuple global_agg(global_agg_vector.size() + 1);
+        for (size_t i = 0; i < global_agg_vector.size(); i++)
+            global_agg[i + 1] = global_agg_vector[i];
+
+        global_agg[0] = pair.first;
+        rows[idx] = global_agg;
+        idx++;
+    }
+
+    return rows;
 }
 
 std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
@@ -128,7 +257,7 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
             char *current_record = new char[mdef.record_size + IX_SIZE];
             memcpy(current_record, buffer + offset.first - first_offset, mdef.record_size);
             memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset.second), IX_SIZE);
-            const bool valid = const_cast<query_object&>(qobject).validate_conditions(current_record);
+            const bool valid = const_cast<query_object &>(qobject).validate_conditions(current_record);
             if (!valid)
             {
                 delete[] current_record;

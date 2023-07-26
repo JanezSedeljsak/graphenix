@@ -55,6 +55,7 @@ PYBIND11_MODULE(graphenix_engine2, m)
     m.def("model_delete_record", &RecordManager::delete_record, "Delete a record from a given table");
 
     m.def("execute_query", &QueryManager::execute_query, "Executes query and retrieves the desired rows");
+    m.def("execute_agg_query", &QueryManager::execute_agg_query, "Executes aggregation query and retrieves the desired rows");
     // m.def("build_record", &QueryManager::build_record, "Builds a record from raw bytes");
 
     py::class_<model_def>(m, "model_def")
@@ -75,6 +76,8 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def_readwrite("offset", &query_object::offset)
         .def_readwrite("field_indexes", &query_object::field_indexes)
         .def_readwrite("order_asc", &query_object::order_asc)
+        .def_readwrite("agg_field_index", &query_object::agg_field_index)
+        .def_readwrite("agg_vector", &query_object::agg_vector)
         .def_readwrite("filter_root", &query_object::filter_root);
 
     py::class_<cond_object>(m, "cond_object")
@@ -88,6 +91,11 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def_readwrite("conditions", &cond_node::conditions)
         .def_readwrite("children", &cond_node::children)
         .def_readwrite("is_and", &cond_node::is_and);
+    
+    py::class_<aggregate_object>(m, "aggregate_object")
+        .def(py::init<>())
+        .def_readwrite("option", &aggregate_object::option)
+        .def_readwrite("field_index", &aggregate_object::field_index);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
