@@ -43,7 +43,9 @@ enum FILTER_OPERATION_TYPE
     GREATER_OR_EQUAL = 3,
     LESS = 4,
     LESS_OR_EQUAL = 5,
-    REGEX = 6
+    REGEX = 6,
+    IS_IN = 7,
+    NOT_IN = 8
 };
 
 enum AGGREGATE_OPERATION
@@ -90,11 +92,78 @@ struct cond_object
         const FIELD_TYPE type = not_pk ? static_cast<FIELD_TYPE>(mdef.field_types[idx]) : INT;
         char *cmp_field = record + offset;
 
+        if (operation_index == IS_IN || operation_index == NOT_IN)
+        {
+            if (!py::isinstance<py::list>(value))
+            {
+                throw std::runtime_error("You did not provide a list as the IN/NOT_IN argument");
+                return false;
+            }
+
+            // if we find a matching item and we are in IS_IN then we return TRUE
+            // if we find a matching item and we are in NOT_IN we return FALSE
+            const bool if_found_value = operation_index == IS_IN;
+            py::list py_list = py::cast<py::list>(value);
+            switch (type)
+            {
+            case INT:
+            case DATETIME:
+            case LINK:
+            {
+                const int64_t int_value = *reinterpret_cast<int64_t *>(cmp_field);
+                for (py::handle item : py_list)
+                {
+                    const int64_t other = py::cast<int64_t>(item);
+                    if (int_value == other)
+                        return if_found_value;
+                }
+
+                return !if_found_value;
+            }
+            case STRING:
+            {
+                const size_t str_size = std::strlen(cmp_field);
+                for (py::handle item : py_list)
+                {
+                    py::str py_str = py::cast<py::str>(item);
+                    const std::string other = py_str;
+                    if (std::memcmp(cmp_field, other.c_str(), str_size) == 0)
+                        return if_found_value;
+                }
+
+                return !if_found_value;
+            }
+            case DOUBLE:
+            {
+                const double double_value = *reinterpret_cast<double *>(cmp_field);
+                for (py::handle item : py_list)
+                {
+                    const double other = py::cast<double>(item);
+                    if (double_value == other)
+                        return if_found_value;
+                }
+
+                return !if_found_value;
+            }
+            case VIRTUAL_LINK:
+            case BOOL:
+                throw std::runtime_error("Cannot use VirtualLink or Boolean for checking IN condition!");
+                break;
+
+            default:
+                throw std::runtime_error("Invalid comperator type!");
+                break;
+            }
+
+            return false;
+        }
+
         int cmp_res = 0;
         switch (type)
         {
         case INT:
         case DATETIME:
+        case LINK:
         {
             const int64_t int_a = *reinterpret_cast<int64_t *>(cmp_field);
             const int64_t int_b = py::cast<int64_t>(value);
@@ -395,6 +464,7 @@ struct query_object
             {
             case INT:
             case DATETIME:
+            case LINK:
             {
                 const int64_t int_a = *reinterpret_cast<int64_t *>(val_a);
                 const int64_t int_b = *reinterpret_cast<int64_t *>(val_b);

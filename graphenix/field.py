@@ -21,6 +21,8 @@ class FilterOperationEnum:
     LESS = 4
     LESS_OR_EQUAL = 5
     REGEX = 6
+    IS_IN = 7
+    NOT_IN = 8
 
 class Field:
 
@@ -68,6 +70,12 @@ class Field:
         
         def regex(self, val):
             raise Exception("Regex is only allowed on type String")
+        
+        def is_in(self, values):
+            return self.make_cond_object(self.name, FilterOperationEnum.IS_IN, values)
+        
+        def not_in(self, values):
+            return self.make_cond_object(self.name, FilterOperationEnum.NOT_IN, values)
 
 
     class Int(BaseType):
@@ -160,6 +168,14 @@ class Field:
         def __le__(self, val):
             posix = int(val.timestamp())
             return self.make_cond_object(self.name, FilterOperationEnum.LESS_OR_EQUAL, posix)
+        
+        def is_in(self, values):
+            posix_values = [int(val.timestamp()) for val in values]
+            return self.make_cond_object(self.name, FilterOperationEnum.IS_IN, posix_values)
+    
+        def not_in(self, values):
+            posix_values = [int(val.timestamp()) for val in values]
+            return self.make_cond_object(self.name, FilterOperationEnum.IS_IN, posix_values)
     
     class Link(BaseType):
         def __init__(self, default = -1):
