@@ -128,9 +128,8 @@ class Query:
         if len(data) != 1:
             return None
         
-        record_dict = ge2.build_record(self.base_model._mdef, data[0])
-        record : T = self.base_model(**record_dict)
-        return record
+        ntuple_res = self.base_model.view_tuple._make(data[0])
+        return self.base_model.from_view(ntuple_res)
     
     def agg(self, by = None, **aggregations) -> list:
         res_keys = list(aggregations.keys())
@@ -146,7 +145,7 @@ class Query:
                 agg_obj.field_index = self.base_model._model_fields.index(field_name)
             else:
                 agg_obj.field_index = -1
-                
+
             aggs.append(agg_obj)
 
         self.query_object.agg_vector = aggs

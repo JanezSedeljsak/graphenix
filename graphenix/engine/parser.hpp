@@ -406,7 +406,6 @@ struct query_object
         {
             const int idx = agg_vector[i].field_index;
             const FIELD_TYPE type = idx != -1 ? static_cast<FIELD_TYPE>(mdef.field_types[idx]) : INT;
-            std::cout << "type " << type << std::endl;
             switch (agg_vector[i].option)
             {
             case SUM:
