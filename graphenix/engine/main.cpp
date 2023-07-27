@@ -104,7 +104,9 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def(py::init<>())
         .def_readwrite("is_direct_link", &link_object::is_direct_link)
         .def_readwrite("link_field_index", &link_object::link_field_index)
-        .def_readwrite("child_link_field_index", &link_object::child_link_field_index);
+        .def_readwrite("child_link_field_index", &link_object::child_link_field_index)
+        .def_readwrite("limit", &link_object::limit)
+        .def_readwrite("offset", &link_object::offset);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

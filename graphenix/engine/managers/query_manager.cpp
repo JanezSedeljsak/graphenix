@@ -3,6 +3,7 @@
 #include <vector>
 #include <queue>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <numeric>
 #include <limits>
@@ -210,7 +211,7 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
     return rows;
 }
 
-std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
+std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qobject)
 {
     const auto &mdef = qobject.mdef;
     std::string file_name = get_file_name(mdef.db_name, mdef.model_name);
@@ -228,9 +229,20 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
     std::vector<std::pair<int64_t, int64_t>> offsets;
 
     ix_read_all(ix_file, offsets);
-    const size_t ix_amount = offsets.size();
     ix_file.close();
 
+    if (qobject.is_subquery)
+    {
+        // when searching for virtuallink fields so when keys are PKs this won't work
+        offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
+                                     [&](const std::pair<int64_t, int64_t> &p)
+                                     {
+                                         return qobject.ix_constraints.find(p.second) == qobject.ix_constraints.end();
+                                     }),
+                      offsets.end());
+    }
+
+    const size_t ix_amount = offsets.size();
     std::sort(offsets.begin(), offsets.end());
     const auto &clusters = clusterify(offsets);
 
@@ -328,4 +340,78 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
         delete[] raw_rows[i];
 
     return rows;
+}
+
+std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
+{
+    std::vector<py::tuple> root_result = QueryManager::execute_entity_query(qobject);
+    const size_t subquery_count = qobject.link_vector.size();
+    if (subquery_count == 0)
+        return root_result;
+
+    std::vector<std::unordered_map<int64_t, std::vector<py::tuple>>> subquery_result_maps(subquery_count);
+    std::vector<std::unordered_set<int64_t>> ix_set(subquery_count);
+    for (py::tuple rec_tuple : root_result)
+    {
+        for (size_t i = 0; i < subquery_count; i++)
+        {
+            // we add 1 to the field_index because of PK which is not in the default fields vector
+            const int field_index = qobject.links[i].link_field_index + 1;
+            const int64_t link_key = py::cast<int64_t>(rec_tuple[field_index]);
+            if (link_key == -1)
+                continue;
+
+            ix_set[i].insert(link_key);
+            subquery_result_maps[i].emplace(link_key, std::vector<py::tuple>());
+        }
+    }
+
+    for (size_t i = 0; i < subquery_count; i++)
+    {
+        query_object subquery = qobject.link_vector[i];
+        subquery.ix_constraints = ix_set[i];
+
+        std::vector<py::tuple> subquery_result = QueryManager::execute_entity_query(subquery);
+        auto &current_map = subquery_result_maps[i];
+        for (py::tuple rec_tuple : subquery_result)
+        {
+            int64_t pk = py::cast<int64_t>(rec_tuple[0]);
+            current_map[pk].push_back(rec_tuple);
+        }
+    }
+
+    for (size_t j = 0, n = root_result.size(); j < n; j++)
+    {
+        py::tuple current = root_result[j];
+        // std::vector<py::object> and then at the end create a new py::tuple
+        for (size_t i = 0; i < subquery_count; i++)
+        {
+            auto &current_map = subquery_result_maps[i];
+            const int field_index = qobject.links[i].link_field_index + 1;
+            const int64_t link_key = py::cast<int64_t>(current[field_index]);
+            py::tuple modified_tuple(current.size());
+            for (int k = 0; k < current.size(); k++)
+            {
+                if (k == field_index)
+                {
+                    auto groupped_records = current_map[link_key];
+                    if (groupped_records.size() > 0)
+                    {
+                        modified_tuple[k] = current_map[link_key][0];
+                    }
+                    else
+                    {
+                        modified_tuple[k] = py::cast(-1);
+                    }
+
+                }
+                else
+                    modified_tuple[k] = current[k];
+            }
+
+            root_result[j] = modified_tuple;
+        }
+    }
+
+    return root_result;
 }

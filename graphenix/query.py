@@ -128,10 +128,12 @@ class Query:
                 # direct link
                 link_obj.child_link_field_index = -1
                 link_obj.is_direct_link = True
+                link_obj.limit = 0
+                link_obj.offset = 0
 
                 subquery = Query(link)
                 subquery.query_object.is_subquery = True
-                link_vector.append(subquery)
+                link_vector.append(subquery.query_object)
             else:
                 # virtual link
                 subquery = link
@@ -141,19 +143,23 @@ class Query:
                 if not isinstance(subquery, Query):
                     raise ValueError("Virtual link can't be resolved to query type!")
 
-                # reset limit and offset on subqueries (they are not allowed)
-                subquery.query_object.limit = 0
-                subquery.query_object.offset = 0
-                subquery.query_object.is_subquery = True
-                
                 link_obj.child_link_field_index = subquery.base_model._model_fields.index(vlink_field) 
                 link_obj.is_direct_link = False
-                link_vector.append(subquery)
+
+                # original limit and offset get moved from original subquery to link object
+                link_obj.limit = subquery.query_object.limit
+                link_obj.offset = subquery.query_object.offset
+                subquery.query_object.limit = 0
+                subquery.query_object.offset = 0
+
+                subquery.query_object.is_subquery = True
+                link_vector.append(subquery.query_object)
 
             links.append(link_obj)
 
         self.query_object.links = links
         self.query_object.link_vector = link_vector
+        return self
 
     
     def all(self) -> tuple[int, Generator[T, None, None]]:
