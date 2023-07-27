@@ -22,12 +22,15 @@ class ViewSearilizer:
                 
                 tvalue = tuple_as_dict[field]
                 if not hasattr(cls, field):
+                    if isinstance(tvalue, tuple) or isinstance(tvalue, list):
+                        raise AttributeError(f'Field - "{field}" should have a searilizer!')
+                    
                     res_dict[field] = cls.jsonify(tvalue)
                     continue
 
                 searilizer = getattr(cls, field)
                 if not issubclass(searilizer, ViewSearilizer):
-                    raise AttributeError(f'Field - {field} is not as a searilizer!')
+                    raise AttributeError(f'Field - "{field}" is not as a searilizer!')
                 
                 res_dict[field] = searilizer.jsonify(tvalue)
 
