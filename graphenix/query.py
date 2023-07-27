@@ -168,6 +168,7 @@ class Query:
     
         def generator_func():
             for trec in tuple_records:
+                # TODO: go through all the children from the query tree and make them into namedtuples
                 ntuple_res = self.base_model._view_tuple._make(trec)
                 yield ntuple_res
 
@@ -180,6 +181,7 @@ class Query:
         if len(data) != 1:
             return None
         
+        # TODO: go through all the children from the query tree and make them into namedtuples
         ntuple_res = self.base_model._view_tuple._make(data[0])
         return self.base_model.from_view(ntuple_res)
     
