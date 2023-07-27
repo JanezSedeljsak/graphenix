@@ -346,9 +346,10 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
 {
     std::vector<py::tuple> root_result = QueryManager::execute_entity_query(qobject);
     const size_t subquery_count = qobject.link_vector.size();
-    if (subquery_count == 0)
+    if (subquery_count == 0 || root_result.size() == 0)
         return root_result;
 
+    const size_t record_size = qobject.mdef.field_offsets.size() + 1;
     std::vector<std::unordered_map<int64_t, std::vector<py::tuple>>> subquery_result_maps(subquery_count);
     std::vector<std::unordered_set<int64_t>> ix_set(subquery_count);
     for (py::tuple rec_tuple : root_result)
@@ -380,37 +381,28 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
         }
     }
 
+    std::vector<py::object> temp_record(record_size);
     for (size_t j = 0, n = root_result.size(); j < n; j++)
     {
         py::tuple current = root_result[j];
-        // std::vector<py::object> and then at the end create a new py::tuple
+        for (size_t i = 0; i < record_size; i++)
+            temp_record[i] = current[i];
+
         for (size_t i = 0; i < subquery_count; i++)
         {
-            auto &current_map = subquery_result_maps[i];
+            auto current_map = subquery_result_maps[i];
             const int field_index = qobject.links[i].link_field_index + 1;
             const int64_t link_key = py::cast<int64_t>(current[field_index]);
-            py::tuple modified_tuple(current.size());
-            for (int k = 0; k < current.size(); k++)
-            {
-                if (k == field_index)
-                {
-                    auto groupped_records = current_map[link_key];
-                    if (groupped_records.size() > 0)
-                    {
-                        modified_tuple[k] = current_map[link_key][0];
-                    }
-                    else
-                    {
-                        modified_tuple[k] = py::cast(-1);
-                    }
-
-                }
-                else
-                    modified_tuple[k] = current[k];
-            }
-
-            root_result[j] = modified_tuple;
+            auto groupped_records = current_map[link_key];
+            if (groupped_records.size() > 0)
+                temp_record[field_index] = py::cast(groupped_records);
         }
+
+        py::tuple record_with_links(record_size);
+        for (size_t i = 0; i < record_size; i++)
+            record_with_links[i] = temp_record[i];
+
+        root_result[j] = record_with_links;
     }
 
     return root_result;
