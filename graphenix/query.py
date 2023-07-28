@@ -64,6 +64,7 @@ class Query:
         # linking
         self.query_object.links = []
         self.query_object.is_subquery = False
+        self.subqueries = []
 
     def filter(self, *conditions) -> "Query":
         f_children, f_conditions = [], []
@@ -120,6 +121,8 @@ class Query:
 
     def link(self, **link_map) -> "Query":
         links, link_vector = [], []
+        self.subqueries = []
+
         for link_key, link in link_map.items():
             link_obj = ge2.link_object()
             link_obj.link_field_index = self.base_model._model_fields.index(link_key)
@@ -133,6 +136,7 @@ class Query:
 
                 subquery = Query(link)
                 subquery.query_object.is_subquery = True
+                self.subqueries.append(subquery)
                 link_vector.append(subquery.query_object)
             else:
                 # virtual link
@@ -153,6 +157,7 @@ class Query:
                 subquery.query_object.offset = 0
 
                 subquery.query_object.is_subquery = True
+                self.subqueries.append(subquery)
                 link_vector.append(subquery.query_object)
 
             links.append(link_obj)
@@ -160,16 +165,50 @@ class Query:
         self.query_object.links = links
         self.query_object.link_vector = link_vector
         return self
-
     
+    def handle_tuple_field(self, field, idx: int, link_map: dict):
+        link_index = link_map.get(idx)
+        if not link_index and link_index != 0:
+            return field
+        
+        subquery = self.subqueries[link_index]
+        sublink = self.query_object.links[link_index]
+        sublink_map = {
+            link.link_field_index + 1: idx
+            for idx, link in enumerate(subquery.query_object.links)
+        }
+
+        if sublink.is_direct_link:
+            return subquery.make_namedtuple(field, sublink_map) if field != -1 else None
+        
+        if not isinstance(field, list):
+            raise ValueError('Link data should be a list!')
+
+        return [subquery.make_namedtuple(row, sublink_map) for row in field]   
+
+
+    def make_namedtuple(self, tuple_record: tuple, link_map: dict) -> tuple:
+        if not self.query_object.links:
+            return self.base_model._view_tuple._make(tuple_record)
+        
+        new_record = tuple(
+            self.handle_tuple_field(field, idx, link_map)
+            for idx, field in enumerate(tuple_record)
+        )
+        rec = self.base_model._view_tuple._make(new_record)
+        return rec
+
     def all(self) -> tuple[int, Generator[T, None, None]]:
         self.base_model.make_cache()
         tuple_records = ge2.execute_query(self.query_object)
+        link_map = {
+            link.link_field_index + 1: idx
+            for idx, link in enumerate(self.query_object.links)
+        }
     
         def generator_func():
             for trec in tuple_records:
-                # TODO: go through all the children from the query tree and make them into namedtuples
-                ntuple_res = self.base_model._view_tuple._make(trec)
+                ntuple_res = self.make_namedtuple(trec, link_map)
                 yield ntuple_res
 
         return len(tuple_records), generator_func()
@@ -180,10 +219,14 @@ class Query:
         data = ge2.execute_query(self.query_object)
         if len(data) != 1:
             return None
-        
-        # TODO: go through all the children from the query tree and make them into namedtuples
-        ntuple_res = self.base_model._view_tuple._make(data[0])
-        return self.base_model.from_view(ntuple_res)
+
+        link_map = {
+            link.link_field_index + 1: idx
+            for idx, link in enumerate(self.query_object.links)
+        }
+
+        ntuple_res = self.make_namedtuple(data[0], link_map)
+        return ntuple_res
     
     def agg(self, by = None, **aggregations) -> list:
         res_keys = list(aggregations.keys())

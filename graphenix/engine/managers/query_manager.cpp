@@ -344,11 +344,13 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
 
 std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
 {
+    // execute main query
     std::vector<py::tuple> root_result = QueryManager::execute_entity_query(qobject);
     const size_t subquery_count = qobject.link_vector.size();
     if (subquery_count == 0 || root_result.size() == 0)
         return root_result;
 
+    // preapre ix constraints for subquery execution
     const size_t record_size = qobject.mdef.field_offsets.size() + 1;
     std::vector<std::unordered_map<int64_t, std::vector<py::tuple>>> subquery_result_maps(subquery_count);
     std::vector<std::unordered_set<int64_t>> ix_set(subquery_count);
@@ -367,6 +369,7 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
         }
     }
 
+    // recursively execute subqueries and push data into maps
     for (size_t i = 0; i < subquery_count; i++)
     {
         query_object subquery = qobject.link_vector[i];
@@ -381,6 +384,7 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
         }
     }
 
+    // loop through the root result and append the subquery results
     std::vector<py::object> temp_record(record_size);
     for (size_t j = 0, n = root_result.size(); j < n; j++)
     {
@@ -390,11 +394,18 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
 
         for (size_t i = 0; i < subquery_count; i++)
         {
-            auto current_map = subquery_result_maps[i];
+            std::unordered_map<int64_t, std::vector<py::tuple>> current_map = subquery_result_maps[i];
             const int field_index = qobject.links[i].link_field_index + 1;
             const int64_t link_key = py::cast<int64_t>(current[field_index]);
-            auto groupped_records = current_map[link_key];
-            if (groupped_records.size() > 0)
+            std::vector<py::tuple> groupped_records = current_map[link_key];
+            if (qobject.links[i].is_direct_link)
+            {
+                if (groupped_records.size() > 0)
+                    temp_record[field_index] = groupped_records[0];
+                else
+                    temp_record[field_index] = py::cast(-1);
+            }
+            else
                 temp_record[field_index] = py::cast(groupped_records);
         }
 
