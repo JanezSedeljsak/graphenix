@@ -8,29 +8,29 @@ def _make_cond_object(operation, cmp_value):
         cond_obj.value = cmp_value
         return cond_obj
 
-class ModelFilteringMixin:    
+class ModelFilteringMixin:
     @classmethod
-    def __eq__(cls, val):
+    def equals(cls, val):
         return _make_cond_object(FilterOperationEnum.EQUAL, val)
     
     @classmethod
-    def __ne__(cls, val):
+    def is_not(cls, val):
         return _make_cond_object(FilterOperationEnum.NOTEQUAL, val)
 
     @classmethod
-    def __gt__(cls, val):
+    def greater(cls, val):
         return _make_cond_object(FilterOperationEnum.GREATER, val)
 
     @classmethod
-    def __ge__(cls, val):
+    def greater_or_equal(cls, val):
         return _make_cond_object(FilterOperationEnum.GREATER_OR_EQUAL, val)
 
     @classmethod
-    def __lt__(cls, val):
+    def less(cls, val):
         return _make_cond_object(FilterOperationEnum.LESS, val)
     
     @classmethod
-    def __le__(cls, val):
+    def less_or_equal(cls, val):
         return _make_cond_object(FilterOperationEnum.LESS_OR_EQUAL, val)
     
     @classmethod
