@@ -1,4 +1,5 @@
 from datetime import datetime
+import types
 
 class ViewSearilizer:
 
@@ -6,8 +7,16 @@ class ViewSearilizer:
     required = ()
 
     @classmethod
+    def is_all(cls):
+        return isinstance(cls.fields, str) and cls.fields == '*'
+
+    @classmethod
     def validate(cls, data):
         required = cls.required if not isinstance(cls.required, str) else (cls.required,)
+
+        if isinstance(data, types.GeneratorType):
+            data = list(data)
+            
         if isinstance(data, list):
             return all(cls.validate(row) for row in data)
 
@@ -36,7 +45,12 @@ class ViewSearilizer:
 
     @classmethod
     def jsonify(cls, data):
-        fields = cls.fields if not isinstance(cls.fields, str) else (cls.fields,)
+        if not cls.is_all():
+            fields = cls.fields if not isinstance(cls.fields, str) else (cls.fields,)
+
+        if isinstance(data, types.GeneratorType):
+            data = list(data)
+
         if isinstance(data, list):
             return [cls.jsonify(row) for row in data]
         
@@ -46,7 +60,8 @@ class ViewSearilizer:
         elif isinstance(data, tuple) and hasattr(data, '_asdict'):
             tuple_as_dict = data._asdict() # type: ignore
             res_dict = {}
-            for field in fields:
+            fields_list = fields if not cls.is_all() else list(tuple_as_dict.keys())
+            for field in fields_list:
                 if field not in tuple_as_dict:
                     res_dict[field] = None
                     continue

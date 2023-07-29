@@ -67,6 +67,7 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def_readwrite("field_offsets", &model_def::field_offsets)
         .def_readwrite("field_indexes", &model_def::field_indexes)
         .def_readwrite("field_names", &model_def::field_names)
+        .def_readwrite("field_date_indexes", &model_def::field_date_indexes)
         .def_readwrite("record_size", &model_def::record_size);
 
     py::class_<query_object>(m, "query_object")

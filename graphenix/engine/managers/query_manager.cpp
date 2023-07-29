@@ -342,7 +342,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     return rows;
 }
 
-std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
+std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject, const int depth)
 {
     // execute main query
     std::vector<py::tuple> root_result = QueryManager::execute_entity_query(qobject);
@@ -363,7 +363,12 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
                                         ? (qobject.links[i].link_field_index + 1)
                                         : 0;
 
-            const int64_t link_key = py::cast<int64_t>(rec_tuple[field_index]);
+            int64_t link_key = 0;
+            if (py::isinstance<py::tuple>(rec_tuple[field_index]))
+                link_key = py::cast<int64_t>(rec_tuple[field_index][0]);
+            else
+                link_key = py::cast<int64_t>(rec_tuple[field_index]);
+
             if (link_key == -1)
                 continue;
 
@@ -383,7 +388,7 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
             // TODO: add the ix_set[i] to subquery.filter_root.conditions
         }
 
-        std::vector<py::tuple> subquery_result = QueryManager::execute_entity_query(subquery);
+        std::vector<py::tuple> subquery_result = QueryManager::execute_query(subquery, depth + 1);
         auto &current_map = subquery_result_maps[i];
         for (py::tuple rec_tuple : subquery_result)
         {
@@ -411,7 +416,12 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
                                         ? (qobject.links[i].link_field_index + 1)
                                         : 0;
 
-            const int64_t link_key = py::cast<int64_t>(current[field_index]);
+            int64_t link_key = 0;
+            if (py::isinstance<py::tuple>(current[field_index]))
+                link_key = py::cast<int64_t>(current[field_index][0]);
+            else
+                link_key = py::cast<int64_t>(current[field_index]);
+
             std::vector<py::tuple> groupped_records = current_map[link_key];
             if (qobject.links[i].is_direct_link)
             {

@@ -2,6 +2,7 @@ from .mixins.mixin_model_base import T, ModelBaseMixin
 from .mixins.mixin_field_order import FieldOrderMixin
 from typing import Type, Generator
 from collections import namedtuple
+from datetime import datetime
 import graphenix_engine2 as ge2
 
 def every(*conditions):
@@ -46,9 +47,15 @@ class Query:
         field = getattr(self.base_model, key)
         return field.link_field
     
+    def _is_date_field(self, idx: int) -> bool:
+        return self.query_object.mdef.field_date_indexes[idx - 1]
+
     def _handle_tuple_field(self, field, idx: int, link_map: dict):
+        if self._is_date_field(idx):
+            return datetime.fromtimestamp(field)
+        
         link_index = link_map.get(idx)
-        if not link_index and link_index != 0:
+        if not link_index and link_index != 0:                
             return field
         
         subquery = self.subqueries[link_index]
@@ -68,7 +75,11 @@ class Query:
 
 
     def _make_namedtuple(self, tuple_record: tuple, link_map: dict) -> tuple:
-        if not link_map:
+        if not isinstance(tuple_record, tuple):
+            raise ValueError(f'Expected tuple got {type(tuple_record)} for record')
+        
+        has_date_fields = any(self.query_object.mdef.field_date_indexes)
+        if not link_map and not has_date_fields:
             return self.base_model._view_tuple._make(tuple_record)
         
         new_record = tuple(
@@ -170,7 +181,10 @@ class Query:
                 link_obj.limit = 0
                 link_obj.offset = 0
 
-                subquery = Query(link)
+                subquery = link
+                if isinstance(link, type) and issubclass(link, ModelBaseMixin):
+                    subquery = Query(link)
+
                 subquery.query_object.has_ix_constraints = True
                 subquery.query_object.is_subquery = True
                 self.subqueries.append(subquery)
@@ -207,7 +221,7 @@ class Query:
 
     def all(self) -> tuple[int, Generator[T, None, None]]:
         self.base_model.make_cache()
-        tuple_records = ge2.execute_query(self.query_object)
+        tuple_records = ge2.execute_query(self.query_object, 0)
         link_map = {
             self._handle_link_index(link): idx
             for idx, link in enumerate(self.query_object.links)
@@ -223,7 +237,7 @@ class Query:
     def first(self) -> T | None:
         self.query_object.limit = 1
         self.base_model.make_cache()
-        data = ge2.execute_query(self.query_object)
+        data = ge2.execute_query(self.query_object, 0)
         if len(data) != 1:
             return None
 

@@ -73,6 +73,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
         field_offsets: list[int] = []
         field_indexes: list[bool] = []
         current_offset: int = 0
+        field_date_indexes: list[bool] = []
 
         for field_name, field in cls.__dict__.items():
             if isinstance(field, Field.BaseType):
@@ -86,6 +87,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
                 actual_type = type(field)
                 cls._field_types[field_name] = actual_type
                 cls._field_defaults[field_name] = field.default
+                is_date = False
 
                 match actual_type:
                     case Field.Int:
@@ -96,6 +98,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
                         raw_type_index = FieldTypeEnum.BOOL
                     case Field.DateTime:
                         raw_type_index = FieldTypeEnum.DATETIME
+                        is_date = True
                     case Field.Link:
                         raw_type_index = FieldTypeEnum.LINK
                     case Field.Double:
@@ -106,12 +109,14 @@ class Model(ModelBaseMixin, ModelQueryMixin):
                         raise AttributeError("Field type is not valid!")
 
                 field_types_raw_dict[field_name] = raw_type_index
+                field_date_indexes.append(is_date)
         
         mdef.record_size = sum(field_sizes_dict.values())
         mdef.field_sizes = [field_sizes_dict[field] for field in cls._model_fields]
         mdef.field_types = [field_types_raw_dict[field] for field in cls._model_fields]
         mdef.field_offsets = field_offsets
         mdef.field_indexes = field_indexes
+        mdef.field_date_indexes = field_date_indexes
 
         cls._mdef = mdef
         cls._cache_init = True
@@ -125,8 +130,7 @@ class Model(ModelBaseMixin, ModelQueryMixin):
     def get(cls: Type[T], record_id: int):
         cls.make_cache()
 
-        record = ge2.model_get_record(cls._mdef, record_id)
-        
+        record = ge2.model_get_record(cls._mdef, record_id) 
         record_as_dict = {field: record[idx] for idx, field in enumerate(cls._model_fields)}
         instance = cls(**record_as_dict)
         instance._id = record_id

@@ -135,8 +135,8 @@ class Field:
             if not instance:
                 return self
             
-            diff: int = getattr(instance, '_' + self.name, self.default)
-            return datetime.fromtimestamp(diff)
+            epoch: int = getattr(instance, '_' + self.name, self.default)
+            return datetime.fromtimestamp(epoch)
         
         def __set__(self, instance, value: datetime | int):
             if isinstance(value, int):
