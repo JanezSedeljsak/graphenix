@@ -231,9 +231,9 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     ix_read_all(ix_file, offsets);
     ix_file.close();
 
-    if (qobject.is_subquery)
+    if (qobject.is_subquery && qobject.has_ix_constraints)
     {
-        // when searching for virtuallink fields so when keys are PKs this won't work
+        // used for direct links
         offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
                                      [&](const std::pair<int64_t, int64_t> &p)
                                      {
@@ -359,7 +359,10 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
         for (size_t i = 0; i < subquery_count; i++)
         {
             // we add 1 to the field_index because of PK which is not in the default fields vector
-            const int field_index = qobject.links[i].link_field_index + 1;
+            const int field_index = qobject.links[i].is_direct_link
+                                        ? (qobject.links[i].link_field_index + 1)
+                                        : 0;
+
             const int64_t link_key = py::cast<int64_t>(rec_tuple[field_index]);
             if (link_key == -1)
                 continue;
@@ -373,14 +376,23 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
     for (size_t i = 0; i < subquery_count; i++)
     {
         query_object subquery = qobject.link_vector[i];
-        subquery.ix_constraints = ix_set[i];
+        if (subquery.has_ix_constraints)
+            subquery.ix_constraints = ix_set[i];
+        else
+        {
+            // TODO: add the ix_set[i] to subquery.filter_root.conditions
+        }
 
         std::vector<py::tuple> subquery_result = QueryManager::execute_entity_query(subquery);
         auto &current_map = subquery_result_maps[i];
         for (py::tuple rec_tuple : subquery_result)
         {
-            int64_t pk = py::cast<int64_t>(rec_tuple[0]);
-            current_map[pk].push_back(rec_tuple);
+            const int child_link_index = qobject.links[i].child_link_field_index + 1;
+            const int64_t link_key = py::cast<int64_t>(rec_tuple[child_link_index]);
+            if (link_key == -1)
+                continue;
+
+            current_map[link_key].push_back(rec_tuple);
         }
     }
 
@@ -394,8 +406,11 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
 
         for (size_t i = 0; i < subquery_count; i++)
         {
-            std::unordered_map<int64_t, std::vector<py::tuple>> current_map = subquery_result_maps[i];
-            const int field_index = qobject.links[i].link_field_index + 1;
+            auto &current_map = subquery_result_maps[i];
+            const int field_index = qobject.links[i].is_direct_link
+                                        ? (qobject.links[i].link_field_index + 1)
+                                        : 0;
+
             const int64_t link_key = py::cast<int64_t>(current[field_index]);
             std::vector<py::tuple> groupped_records = current_map[link_key];
             if (qobject.links[i].is_direct_link)
@@ -406,7 +421,29 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject)
                     temp_record[field_index] = py::cast(-1);
             }
             else
-                temp_record[field_index] = py::cast(groupped_records);
+            {
+                const size_t list_size = groupped_records.size();
+                const int list_field_index = qobject.links[i].link_field_index + 1;
+
+                if (qobject.links[i].offset >= list_size)
+                    temp_record[list_field_index] = py::list();
+
+                else if (qobject.links[i].limit == 0 && qobject.links[i].offset == 0)
+                    temp_record[list_field_index] = py::cast(groupped_records);
+
+                else
+                {
+                    size_t end_idx = qobject.links[i].limit > 0
+                                         ? std::min(list_size, qobject.links[i].offset + qobject.links[i].limit)
+                                         : list_size;
+
+                    std::vector<py::tuple> records_with_limit = std::vector<py::tuple>(
+                        groupped_records.begin() + qobject.links[i].offset,
+                        groupped_records.begin() + end_idx);
+
+                    temp_record[list_field_index] = py::cast(records_with_limit);
+                }
+            }
         }
 
         py::tuple record_with_links(record_size);

@@ -1,6 +1,7 @@
 from datetime import datetime
 from .mixins.mixin_model_base import T
 from .mixins.mixin_field_order import FO, FieldOrderMixin
+from .mixins.mixin_model_base import ModelBaseMixin
 
 import graphenix_engine2 as ge2
 
@@ -191,6 +192,12 @@ class Field:
             if isinstance(value, int):
                 setattr(instance, '_' + self.name + '_id', value)
                 return
+
+            if not isinstance(value, ModelBaseMixin):
+                raise ValueError('Link can be None | int(PK) | instance of an object!')
+            
+            if value.is_new:
+                raise ValueError('Record must be saved so it can be assigned to a parent!')
 
             # set both the id stored id _{field_name}_id & the actual model in  _{field_name}
             setattr(instance, '_' + self.name + '_id', int(value.id)) # type: ignore

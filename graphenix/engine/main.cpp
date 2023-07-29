@@ -81,7 +81,8 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def_readwrite("filter_root", &query_object::filter_root)
         .def_readwrite("links", &query_object::links)
         .def_readwrite("link_vector", &query_object::link_vector)
-        .def_readwrite("is_subquery", &query_object::is_subquery);
+        .def_readwrite("is_subquery", &query_object::is_subquery)
+        .def_readwrite("has_ix_constraints", &query_object::has_ix_constraints);
 
     py::class_<cond_object>(m, "cond_object")
         .def(py::init<>())

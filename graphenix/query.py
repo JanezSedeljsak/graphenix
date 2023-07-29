@@ -36,6 +36,48 @@ class Query:
     base_model: Type[T]
     query_object: object
 
+    def _handle_link_index(self, link):
+        return link.link_field_index + 1
+    
+    def _get_virtual_link_field(self, key):
+        if not hasattr(self.base_model, key):
+            raise AttributeError(f"Invalid key for linking {key}")
+
+        field = getattr(self.base_model, key)
+        return field.link_field
+    
+    def _handle_tuple_field(self, field, idx: int, link_map: dict):
+        link_index = link_map.get(idx)
+        if not link_index and link_index != 0:
+            return field
+        
+        subquery = self.subqueries[link_index]
+        sublink = self.query_object.links[link_index]
+        sublink_map = {
+            self._handle_link_index(link): idx
+            for idx, link in enumerate(subquery.query_object.links)
+        }
+
+        if sublink.is_direct_link:
+            return subquery._make_namedtuple(field, sublink_map) if field != -1 else None
+        
+        if not isinstance(field, list):
+            raise ValueError('Link data should be a list!')
+
+        return [subquery._make_namedtuple(row, sublink_map) for row in field]   
+
+
+    def _make_namedtuple(self, tuple_record: tuple, link_map: dict) -> tuple:
+        if not link_map:
+            return self.base_model._view_tuple._make(tuple_record)
+        
+        new_record = tuple(
+            self._handle_tuple_field(field, idx, link_map)
+            for idx, field in enumerate(tuple_record)
+        )
+        rec = self.base_model._view_tuple._make(new_record)
+        return rec
+
     def __init__(self, model: Type[T]):
         self.base_model = model
         self.base_model.make_cache()
@@ -63,7 +105,8 @@ class Query:
 
         # linking
         self.query_object.links = []
-        self.query_object.is_subquery = False
+        self.query_object.has_ix_constraints = False
+        self.query_object.is_subquery = True
         self.subqueries = []
 
     def filter(self, *conditions) -> "Query":
@@ -110,13 +153,6 @@ class Query:
         self.query_object.field_indexes = field_indexes
         self.query_object.order_asc = order_asc
         return self
-        
-    def get_virtual_link_field(self, key):
-        if not hasattr(self.base_model, key):
-            raise AttributeError(f"Invalid key for linking {key}")
-
-        field = getattr(self.base_model, key)
-        return field.link_field
 
 
     def link(self, **link_map) -> "Query":
@@ -126,7 +162,7 @@ class Query:
         for link_key, link in link_map.items():
             link_obj = ge2.link_object()
             link_obj.link_field_index = self.base_model._model_fields.index(link_key)
-            vlink_field = self.get_virtual_link_field(link_key)
+            vlink_field = self._get_virtual_link_field(link_key)
             if vlink_field is None:
                 # direct link
                 link_obj.child_link_field_index = -1
@@ -135,13 +171,14 @@ class Query:
                 link_obj.offset = 0
 
                 subquery = Query(link)
+                subquery.query_object.has_ix_constraints = True
                 subquery.query_object.is_subquery = True
                 self.subqueries.append(subquery)
                 link_vector.append(subquery.query_object)
             else:
                 # virtual link
                 subquery = link
-                if issubclass(link, ModelBaseMixin):
+                if isinstance(link, type) and issubclass(link, ModelBaseMixin):
                     subquery = Query(link)
                 
                 if not isinstance(subquery, Query):
@@ -156,6 +193,8 @@ class Query:
                 subquery.query_object.limit = 0
                 subquery.query_object.offset = 0
 
+                # here we will have to apppend the foreign keys as a filter condition
+                subquery.query_object.has_ix_constraints = False
                 subquery.query_object.is_subquery = True
                 self.subqueries.append(subquery)
                 link_vector.append(subquery.query_object)
@@ -165,50 +204,18 @@ class Query:
         self.query_object.links = links
         self.query_object.link_vector = link_vector
         return self
-    
-    def handle_tuple_field(self, field, idx: int, link_map: dict):
-        link_index = link_map.get(idx)
-        if not link_index and link_index != 0:
-            return field
-        
-        subquery = self.subqueries[link_index]
-        sublink = self.query_object.links[link_index]
-        sublink_map = {
-            link.link_field_index + 1: idx
-            for idx, link in enumerate(subquery.query_object.links)
-        }
-
-        if sublink.is_direct_link:
-            return subquery.make_namedtuple(field, sublink_map) if field != -1 else None
-        
-        if not isinstance(field, list):
-            raise ValueError('Link data should be a list!')
-
-        return [subquery.make_namedtuple(row, sublink_map) for row in field]   
-
-
-    def make_namedtuple(self, tuple_record: tuple, link_map: dict) -> tuple:
-        if not self.query_object.links:
-            return self.base_model._view_tuple._make(tuple_record)
-        
-        new_record = tuple(
-            self.handle_tuple_field(field, idx, link_map)
-            for idx, field in enumerate(tuple_record)
-        )
-        rec = self.base_model._view_tuple._make(new_record)
-        return rec
 
     def all(self) -> tuple[int, Generator[T, None, None]]:
         self.base_model.make_cache()
         tuple_records = ge2.execute_query(self.query_object)
         link_map = {
-            link.link_field_index + 1: idx
+            self._handle_link_index(link): idx
             for idx, link in enumerate(self.query_object.links)
         }
     
         def generator_func():
             for trec in tuple_records:
-                ntuple_res = self.make_namedtuple(trec, link_map)
+                ntuple_res = self._make_namedtuple(trec, link_map)
                 yield ntuple_res
 
         return len(tuple_records), generator_func()
@@ -221,11 +228,11 @@ class Query:
             return None
 
         link_map = {
-            link.link_field_index + 1: idx
+            self._handle_link_index(link): idx
             for idx, link in enumerate(self.query_object.links)
         }
 
-        ntuple_res = self.make_namedtuple(data[0], link_map)
+        ntuple_res = self._make_namedtuple(data[0], link_map)
         return ntuple_res
     
     def agg(self, by = None, **aggregations) -> list:
