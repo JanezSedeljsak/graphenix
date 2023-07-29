@@ -1,4 +1,5 @@
 from datetime import datetime
+from .mixins.mixin_model_base import ModelBaseMixin
 import types
 
 class ViewSearilizer:
@@ -16,7 +17,7 @@ class ViewSearilizer:
 
         if isinstance(data, types.GeneratorType):
             data = list(data)
-            
+
         if isinstance(data, list):
             return all(cls.validate(row) for row in data)
 
@@ -41,6 +42,9 @@ class ViewSearilizer:
 
             return True
 
+        if isinstance(data, ModelBaseMixin):
+            return True
+
         return False
 
     @classmethod
@@ -54,10 +58,10 @@ class ViewSearilizer:
         if isinstance(data, list):
             return [cls.jsonify(row) for row in data]
         
-        elif isinstance(data, datetime):
+        if isinstance(data, datetime):
             return data.isoformat()
         
-        elif isinstance(data, tuple) and hasattr(data, '_asdict'):
+        if isinstance(data, tuple) and hasattr(data, '_asdict'):
             tuple_as_dict = data._asdict() # type: ignore
             res_dict = {}
             fields_list = fields if not cls.is_all() else list(tuple_as_dict.keys())
@@ -80,6 +84,11 @@ class ViewSearilizer:
                 
                 res_dict[field] = searilizer.jsonify(tvalue)
 
+            return res_dict
+        
+        if isinstance(data, ModelBaseMixin):
+            fields_list = fields if not cls.is_all() else list(tuple_as_dict.keys())
+            res_dict = {field: getattr(data, field) for field in fields_list}
             return res_dict
 
         return data
