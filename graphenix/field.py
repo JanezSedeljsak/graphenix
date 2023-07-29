@@ -1,6 +1,6 @@
 from datetime import datetime
 from .mixins.mixin_model_base import T
-from .mixins.mixin_field_order import FO, FieldOrderMixin
+from .mixins.mixin_field_order import FO, FieldOrderMixin, FilterOperationEnum
 from .mixins.mixin_model_base import ModelBaseMixin
 
 import graphenix_engine2 as ge2
@@ -13,17 +13,6 @@ class FieldTypeEnum:
     LINK = 4
     DOUBLE = 5
     VIRTUAL_LINK = 6
-
-class FilterOperationEnum:
-    EQUAL = 0
-    NOTEQUAL = 1
-    GREATER = 2
-    GREATER_OR_EQUAL = 3
-    LESS = 4
-    LESS_OR_EQUAL = 5
-    REGEX = 6
-    IS_IN = 7
-    NOT_IN = 8
 
 class Field:
 

@@ -1,4 +1,4 @@
-from typing import TypeVar, NamedTuple
+from typing import TypeVar
 import abc
 
 T = TypeVar('T', bound='ModelBaseMixin')

@@ -84,9 +84,10 @@ struct cond_object
     bool validate(model_def &mdef, char *record)
     {
         int idx = -1;
-        for (size_t i = 0; i < mdef.field_names.size(); ++i)
-            if (mdef.field_names[i] == field_name)
-                idx = static_cast<int>(i);
+        if (!field_name.empty())
+            for (size_t i = 0; i < mdef.field_names.size(); ++i)
+                if (mdef.field_names[i] == field_name)
+                    idx = static_cast<int>(i);
 
         const bool not_pk = idx != -1;
         const int offset = not_pk ? mdef.field_offsets[idx] : mdef.record_size;

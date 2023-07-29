@@ -3,10 +3,11 @@ import graphenix_engine2 as ge2
 from typing import Type, NamedTuple
 from collections import namedtuple
 from .mixins.mixin_model_base import ModelBaseMixin, T
+from .mixins.mixin_model_filtering import ModelFilteringMixin
 from .query import ModelQueryMixin
 from .field import Field, FieldTypeEnum
 
-class Model(ModelBaseMixin, ModelQueryMixin):
+class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
     _db = None
     _view_tuple = None
 

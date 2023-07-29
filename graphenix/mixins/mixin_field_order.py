@@ -26,3 +26,14 @@ class FieldOrderMixin(metaclass=abc.ABCMeta):
         needs to be ordered desc.
         """
         raise NotImplementedError
+    
+class FilterOperationEnum:
+    EQUAL = 0
+    NOTEQUAL = 1
+    GREATER = 2
+    GREATER_OR_EQUAL = 3
+    LESS = 4
+    LESS_OR_EQUAL = 5
+    REGEX = 6
+    IS_IN = 7
+    NOT_IN = 8

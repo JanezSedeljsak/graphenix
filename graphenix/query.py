@@ -252,8 +252,14 @@ class Query:
         ntuple_res = self._make_namedtuple(data[0], link_map)
         return ntuple_res
     
+    def pick_id(self) -> list:
+        return self.pick(None)
+    
     def pick(self, field) -> list:
-        field_index = self.base_model._model_fields.index(field.name)
+        field_index = -1
+        if field is not None:
+            field_index = self.base_model._model_fields.index(field.name)
+
         self.query_object.picked_index = field_index
         data = ge2.execute_query(self.query_object, 0)
         return [picked for picked, *_ in data]
