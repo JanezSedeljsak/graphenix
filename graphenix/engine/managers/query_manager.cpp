@@ -102,7 +102,6 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
     const bool is_global_agg = qobject.agg_field_index == -1;
     const FIELD_TYPE field_type = static_cast<FIELD_TYPE>(mdef.field_types[qobject.agg_field_index]);
     const int64_t key_field_offset = mdef.field_offsets[qobject.agg_field_index];
-    const int64_t key_field_size = mdef.field_offsets[qobject.agg_field_index];
 
     std::unordered_map<std::variant<std::string, double, int64_t>, std::vector<py::object>> hashmap;
     query_object qobject_temp = const_cast<query_object &>(qobject);
@@ -152,7 +151,8 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
 
                 case STRING:
                 {
-                    std::string str_key(field_ptr, key_field_size);
+                    const size_t str_size = std::strlen(field_ptr);
+                    std::string str_key(field_ptr, str_size);
                     key = str_key;
                     break;
                 }

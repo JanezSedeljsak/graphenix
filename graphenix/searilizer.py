@@ -1,15 +1,29 @@
 from datetime import datetime
 from .mixins.mixin_model_base import ModelBaseMixin
 import types
+import csv
 
 class ViewSearilizer:
 
     fields = ()
     required = ()
+    instance = None
 
     @classmethod
     def is_all(cls):
         return isinstance(cls.fields, str) and cls.fields == '*'
+    
+    @classmethod
+    def default(cls):
+        if cls.instance is not None:
+            return cls.instance
+        
+        class AllSearilizer(ViewSearilizer):
+            fields = '*'
+            
+        cls.instance = AllSearilizer
+        return cls.instance
+
 
     @classmethod
     def validate(cls, data):
@@ -46,6 +60,26 @@ class ViewSearilizer:
             return True
 
         return False
+    
+    @classmethod
+    def dump2csv(cls, data: list, filename: str) -> bool:
+        rows = cls.jsonify(data)
+        if not rows:
+            return False
+
+        keys = rows[0].keys()
+        try:
+            with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=keys, delimiter=';')
+                
+                writer.writeheader()
+                writer.writerows(rows)
+            
+            return True
+        
+        except Exception as err:
+            print(f'Error writting to csv {err}')
+            return False
 
     @classmethod
     def jsonify(cls, data):
