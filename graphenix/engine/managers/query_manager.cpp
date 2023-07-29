@@ -333,7 +333,15 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     for (size_t i = 0; i < end; i++)
     {
         py::bytes raw_record = py::bytes(raw_rows[i + qobject.offset], mdef.record_size + IX_SIZE);
-        rows[i] = build_record(mdef, raw_record);
+        py::tuple parsed_record = build_record(mdef, raw_record);
+        if (qobject.picked_index != -1)
+        {
+            py::tuple picked(1);
+            picked[0] = parsed_record[qobject.picked_index + 1];
+            parsed_record = picked;
+        }
+
+        rows[i] = parsed_record;
     }
 
     for (size_t i = 0; i < raw_rows.size(); i++)

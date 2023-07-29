@@ -283,13 +283,9 @@ struct query_object
     std::vector<query_object> link_vector;
     bool has_ix_constraints, is_subquery;
     std::unordered_set<int64_t> ix_constraints;
-    // if links are not empty we have to create a tree query
-    // first we execute query on the current table
-    // we need to store the ix results into queried set
-    // we loop through the child queries but we need to only include the ixs from queried set
-    // for each query we return a normal vector<py::tuple>
-    // we convert the vector into a unordered_map<key, vector<py::tuple>> mapped_children
-    // we loop through the main query result and for each link (use links field) we add mapped_children[current_key] as a vector<py::tuple>
+
+    // single field select
+    int picked_index;
 
     bool validate_conditions(char *record)
     {

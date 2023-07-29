@@ -120,6 +120,9 @@ class Query:
         self.query_object.is_subquery = True
         self.subqueries = []
 
+        # single field select
+        self.query_object.picked_index = -1
+
     def filter(self, *conditions) -> "Query":
         f_children, f_conditions = [], []
         for cond in conditions:
@@ -248,6 +251,12 @@ class Query:
 
         ntuple_res = self._make_namedtuple(data[0], link_map)
         return ntuple_res
+    
+    def pick(self, field) -> list:
+        field_index = self.base_model._model_fields.index(field.name)
+        self.query_object.picked_index = field_index
+        data = ge2.execute_query(self.query_object, 0)
+        return [picked for picked, *_ in data]
     
     def agg(self, by = None, **aggregations) -> list:
         res_keys = list(aggregations.keys())
