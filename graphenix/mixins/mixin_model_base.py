@@ -30,6 +30,10 @@ class ModelBaseMixin(metaclass=abc.ABCMeta):
     def desc(cls) -> str:
         raise NotImplementedError
     
+    @classmethod
+    def bulkcreate(cls, rows) -> None:
+        raise NotImplementedError
+    
     @abc.abstractclassmethod
     def get(cls, id: int):
         raise NotImplementedError
