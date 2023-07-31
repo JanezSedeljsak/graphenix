@@ -336,7 +336,8 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     {
         py::bytes raw_record = py::bytes(raw_rows[i + qobject.offset], mdef.record_size + IX_SIZE);
         py::tuple parsed_record = build_record(mdef, raw_record);
-        if (qobject.picked_index != -1)
+        // here -1 MARKS PK this is why we have -2 as default
+        if (qobject.picked_index != -2)
         {
             py::tuple picked(1);
             picked[0] = parsed_record[qobject.picked_index + 1];

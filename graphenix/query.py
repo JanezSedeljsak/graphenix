@@ -75,8 +75,8 @@ class Query:
         self.query_object.is_subquery = True
         self.subqueries = []
 
-        # single field select
-        self.query_object.picked_index = -1
+        # single field select (-1 -> PK, -2 -> IGNORE)
+        self.query_object.picked_index = -2
 
     def filter(self, *conditions) -> "Query":
         f_children, f_conditions = [], []
