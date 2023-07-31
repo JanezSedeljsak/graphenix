@@ -78,7 +78,7 @@ GROUP BY t.lab_id
 ```
 The SQL statement translates to:
 ```python
-lab_stats = Teacher.agg(by=Teacher.laboratory, count=AGG.count())
+lab_stats = Teacher.agg(by=Teacher.laboratory, count=gx.AGG.count())
 ```
 
 #### Query operations
