@@ -7,7 +7,7 @@ from .tests_data import *
 
 class GraphenixPerfTests(CommonTestBase):
     
-    @CommonTestBase.ignore
+    # @CommonTestBase.ignore
     @CommonTestBase.perf("Create 10K users and read them by IDs", times=5)
     @CommonTestBase().prepare_and_destroy
     def test_create_10k_users_and_read(self):
@@ -34,7 +34,7 @@ class GraphenixPerfTests(CommonTestBase):
             temp_dt = dt + timedelta(days=uid)
             self.assertEqual(temp_dt.day, read_user.created_at.day)
 
-    @CommonTestBase.ignore
+    # @CommonTestBase.ignore
     @CommonTestBase.perf("Create 100K basic codelist records and read them by IDs", times=5)
     @CommonTestBase().prepare_and_destroy
     def test_create_100k_records_and_read(self):
@@ -51,7 +51,7 @@ class GraphenixPerfTests(CommonTestBase):
             self.assertEqual(temp_record.name, city.name)
             self.assertEqual(temp_record.population_thousands, city.population_thousands)
 
-    @CommonTestBase.ignore
+    # @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read 1M records at once", times=5)
@@ -64,7 +64,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(0, first.id)
         self.assertEqual('SLO0', first.country)
 
-    @CommonTestBase.ignore
+    # @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with limit 100 from Model with 1M records", times=5)
@@ -77,7 +77,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(0, first.id)
         self.assertEqual('SLO0', first.country)
 
-    @CommonTestBase.ignore
+    # @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with order by country from Model with 1M records", times=5)
@@ -91,7 +91,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
-    @CommonTestBase.ignore
+    # @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with limit 100 + order by country from Model with 1M records", times=5)
@@ -106,7 +106,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
-    @CommonTestBase.ignore
+    # @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with limit 1500 + order by country from Model with 1M records", times=5)
