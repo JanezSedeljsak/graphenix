@@ -125,12 +125,11 @@ struct cond_object
             }
             case STRING:
             {
-                const size_t str_size = std::strlen(cmp_field);
                 for (py::handle item : py_list)
                 {
                     py::str py_str = py::cast<py::str>(item);
                     const std::string other = py_str;
-                    if (std::memcmp(cmp_field, other.c_str(), str_size) == 0)
+                    if (std::strcmp(cmp_field, other.c_str()) == 0)
                         return if_found_value;
                 }
 
@@ -194,7 +193,7 @@ struct cond_object
                 return true;
             }
 
-            cmp_res = std::memcmp(cmp_field, val_b.c_str(), std::strlen(cmp_field));
+            cmp_res = std::strcmp(cmp_field, val_b.c_str());
             break;
         }
         case BOOL:
