@@ -8,27 +8,27 @@ Graphenix requires Python 3.10 or higher to be installed.
 
 ## Usage
 
-To use Graphenix, you can create models that inherit from the `Model` class provided by Graphenix. You can define the fields for your model using the various field types provided by Graphenix (e.g. `Field.String`, `Field.Int`, `Field.DateTime`, etc.).
+To use Graphenix, you can create models that inherit from the `Model` class provided by Graphenix. You can define the fields for your model using the various field types provided by Graphenix (e.g. `gx.Field.String`, `gx.Field.Int`, `gx.Field.DateTime`, etc.).
 
 ### Schema definition
 Here is an example of how you might define two models, `Teacher` and `Laboratory`, using Graphenix (each user can be a part of one laboratory):
 ```py
-from graphenix import Field, Schema, Model
+import graphenix as gx
 
-class Teacher(Model):
-    full_name = Field.String(size=256)
-    email = Field.String(size=128)
-    laboratory = Field.Link()
+class Teacher(gx.Model):
+    full_name = gx.Field.String(size=256)
+    email = gx.Field.String(size=128)
+    laboratory = gx.Field.Link()
 
-class Laboratory(Model):
-    name = Field.String(size=64)
-    room_number = Field.Int()
-    teachers = Field.VirtualLink('laboratory')
+class Laboratory(gx.Model):
+    name = gx.Field.String(size=64)
+    room_number = gx.Field.Int()
+    teachers = gx.Field.VirtualLink('laboratory')
 ```
 
 Once you have defined your models, you can create a schema and add your models to it:
 ```py
-my_schema = Schema('my_schema', models=[Teacher, Laboratory])
+my_schema = gx.Schema('my_schema', models=[Teacher, Laboratory])
 ```
 
 You can then create the schema and any necessary tables by calling the `create()` method on your schema:
@@ -96,11 +96,11 @@ The method is meant to replace the `WHERE` operator in `SQL` it is a bit differe
 ```python
 query = Teacher.filter(
     Teacher.full_name.is_not('John'),
-    some(Teacher.is_in([1,2,3]), Teacher.email.regex('.*@gmail.*'))
+    gx.some(Teacher.is_in([1,2,3]), Teacher.email.regex('.*@gmail.*'))
 )
 ```
 
-We have 2 options when we want to create a condition tree (`.every(...)`, `.some(...)`) which are a replacement for multiple AND, OR operators.
+We have 2 options when we want to create a condition tree (`.gx.every(...)`, `.gx.some(...)`) which are a replacement for multiple AND, OR operators.
 
 #### `.limit(), .offset()`
 
@@ -123,16 +123,16 @@ query = Teacher.order(Teacher.full_name, Teacher.email.desc())
 For returning data we usually want a `JSON` format. We took a similar approach to the `DJANGO` framework and used `searilizers`.
 If we want to return teachers with keys `id`, `email` we can just do:
 ```python
-class TeacherBasicSearilizer(ViewSearilizer):
+class TeacherBasicSearilizer(gx.ViewSearilizer):
     fields = ('id', 'email')
 ```
 
 Then we can also add nested searilizers when we have a more complex structure:
 ```python
-class TeacherSearilizer(ViewSearilizer):
+class TeacherSearilizer(gx.ViewSearilizer):
     fields = ('id', 'full_name', 'email')
 
-class LaboratorySearilizer(ViewSearilizer):
+class LaboratorySearilizer(gx.ViewSearilizer):
     fields = '*'
     teachers = TeacherSearilizer
 ```
@@ -161,30 +161,30 @@ parsed = LaboratorySearilizer.jsonify(labs_list)
 
 Suppose we have the following database schema:
 ```python
-class User(Model):
-    first_name = Field.String(size=15)
-    last_name = Field.String(size=15)
-    email = Field.String(size=50)
-    age = Field.Int()
-    is_admin = Field.Bool()
-    created_at = Field.DateTime()
-    tasks = Field.VirtualLink("owner")
-    laboratory = Field.Link()
+class User(gx.Model):
+    first_name = gx.Field.String(size=15)
+    last_name = gx.Field.String(size=15)
+    email = gx.Field.String(size=50)
+    age = gx.Field.Int()
+    is_admin = gx.Field.Bool()
+    created_at = gx.Field.DateTime()
+    tasks = gx.Field.VirtualLink("owner")
+    laboratory = gx.Field.Link()
 
-class Task(Model):
-    name = Field.String(size=20)
-    owner = Field.Link()
-    subtasks = Field.VirtualLink('parent_task')
+class Task(gx.Model):
+    name = gx.Field.String(size=20)
+    owner = gx.Field.Link()
+    subtasks = gx.Field.VirtualLink('parent_task')
 
-class SubTask(Model):
-    name = Field.String(size=40)
-    date_created = Field.DateTime()
-    parent_task = Field.Link()
+class SubTask(gx.Model):
+    name = gx.Field.String(size=40)
+    date_created = gx.Field.DateTime()
+    parent_task = gx.Field.Link()
 
-class Laboratory(Model):
-    name = Field.String(size=50)
-    room_number = Field.Int()
-    users = Field.VirtualLink('laboratory')
+class Laboratory(gx.Model):
+    name = gx.Field.String(size=50)
+    room_number = gx.Field.Int()
+    users = gx.Field.VirtualLink('laboratory')
 ```
 
 The following query is just an example of what is possible, it is not meant to be anything logical:
@@ -194,7 +194,7 @@ count, data = User\
     .order(User.first_name, User.last_name.desc())\
     .link(
         tasks = Task.offset(1).limit(3).link(subtasks = SubTask.filter(
-                some(
+                gx.some(
                     SubTask.greater(10),
                     SubTask.name.is_in(['SubTask 4', 'SubTask 3'])
                 )
@@ -202,7 +202,7 @@ count, data = User\
         ),
         laboratory = Laboratory.link(
             users = User.order(User.desc()).filter(
-                some(
+                gx.some(
                     User.is_in(User.filter(User.is_admin.equals(True)).pick_id()),
                     User.last_name.equals('')
                 )
