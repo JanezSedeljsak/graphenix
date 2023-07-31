@@ -1,12 +1,14 @@
-from sqlalchemy import create_engine, Column, String, Integer, Boolean, DateTime
-from sqlalchemy.orm import sessionmaker, declarative_base
-from .data import user_data
-import mysql.connector
+from sqlalchemy import create_engine, Column, String, Integer, Boolean, DateTime, inspect
+from sqlalchemy.orm import sessionmaker, as_declarative
+    
 import time
 import sys
-import os
 
-Base = declarative_base()
+@as_declarative()
+class Base:
+    def _asdict(self):
+        return {c.key: getattr(self, c.key)
+                for c in inspect(self).mapper.column_attrs}
 
 class User(Base):
     __tablename__ = 'users'
@@ -21,24 +23,17 @@ class User(Base):
 def main():
     num_users = int(sys.argv[1])
     dbname = f'singleselect_{num_users}'
-
-    conn = mysql.connector.connect(host='localhost', port=3307, user='root', password='root')
-    cursor = conn.cursor()
-    cursor.execute(f"DROP DATABASE IF EXISTS {dbname}")
-    cursor.execute(f"CREATE DATABASE IF NOT EXISTS {dbname}")
-    cursor.close()
-    conn.close()
     
     engine = create_engine(f'mysql+mysqlconnector://root:root@localhost:3307/{dbname}')
-    Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
+
     start_time = time.perf_counter()
-
-    users = [User(**{**user_data, "is_admin": i%2 == 0}) for i in range(num_users)]
-
     session = Session()
-    session.bulk_save_objects(users)
-    session.commit()
+
+    data = session.query(User).all()
+    searilized = [row._asdict() for row in data]
+    if len(searilized) != num_users or not isinstance(searilized[0], dict):
+        raise ValueError("Searilization failed - recorsds should be list[dict]")
 
     session.close()
     end_time = time.perf_counter()

@@ -29,21 +29,24 @@ def main():
     cursor.execute(create_table)
     cursor.close()
     conn.close()
-
     
     start_time = time.perf_counter()
     conn = mysql.connector.connect(host='localhost', port=3307, user='root', password='root')
     cursor = conn.cursor()
     cursor.execute(f"USE {dbname}")
     
+    user_data_list = []
     for i in range(num_users):
-        cu = {**user_data, "is_admin": i%2 == 0}
-        str = f"INSERT INTO users (first_name, last_name, email, age, is_admin, created_at) " \
-            + f"""VALUES ('{cu['first_name']}', '{cu['last_name']}', '{cu['email']}', {cu['age']}, {int(cu['is_admin'])}, '{cu['created_at']}')"""
+        is_admin = i % 2 == 0
+        user_tuple = (user_data['first_name'], user_data['last_name'], user_data['email'],
+                      user_data['age'], int(is_admin), user_data['created_at'])
+        user_data_list.append(user_tuple)
 
-        cursor.execute(str)
-    
+    insert_query = f"INSERT INTO users (first_name, last_name, email, age, is_admin, created_at) " \
+                   + "VALUES (%s, %s, %s, %s, %s, %s)"
+    cursor.executemany(insert_query, user_data_list)
     conn.commit()
+
     cursor.close()
     conn.close()
     end_time = time.perf_counter()

@@ -1,5 +1,4 @@
 from graphenix import Field, Schema, Model
-from .data import user_data
 import sys
 import time
 
@@ -14,16 +13,13 @@ class User(Model):
 def main():
     num_users = int(sys.argv[1])
     my_schema = Schema(f'singleinsert_{num_users}', models=[User])
-    if my_schema.exists():
-        my_schema.delete()
-
-    my_schema.create()
 
     start_time = time.perf_counter()
-    for i in range(num_users):
-        current_user = {**user_data, "is_admin": i%2 == 0}
-        user = User(**current_user)
-        user.save()
+    
+    _, data = User.all()
+    searilized = data.as_dict()
+    if len(searilized) != num_users or not isinstance(searilized[0], dict):
+        raise ValueError("Searilization failed - recorsds should be list[dict]")    
 
     end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000
