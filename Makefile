@@ -50,3 +50,21 @@ _read_a:
 	chmod +x analysis_runner.sh
 	./analysis_runner.sh singleread 10000 100000 200000
 	@echo "[graphenix] Finished single read analysis!"
+
+_find_a:
+	@echo "[graphenix] Running find without index analysis..."
+	chmod +x analysis_runner.sh
+	./analysis_runner.sh find_no_index 100000 1000000
+	@echo "[graphenix] Finished find without index analysis!"
+
+_findi_a:
+	@echo "[graphenix] Running find with index analysis..."
+	chmod +x analysis_runner.sh
+	./analysis_runner.sh find_index 100000 1000000
+	@echo "[graphenix] Finished find with index analysis!"
+
+_join_a:
+	@echo "[graphenix] Running find with index analysis..."
+	chmod +x analysis_runner.sh
+	./analysis_runner.sh join 1000 10000 100000 200000
+	@echo "[graphenix] Finished find with index analysis!"

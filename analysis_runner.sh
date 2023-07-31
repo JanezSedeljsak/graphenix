@@ -17,6 +17,10 @@ for size in "${SIZES[@]}"; do
 
     echo "Running for size $size"
     for script_name in "${SCRIPTS[@]}"; do
+        if [ ! -f "analysis/$group/$script_name.py" ]; then
+            continue
+        fi
+
         sum=0
         echo "  Running script $script_name"
 
@@ -28,7 +32,7 @@ for size in "${SIZES[@]}"; do
         if [ $COUNT -gt 0 ]; then
             average=$(bc <<< "scale=2; $sum / $COUNT")
             echo "$average" >> "analysis/$group/result_$size.txt"
-            echo "Average for $group $size was $average"
+            echo "  Average for $group $size was $average"
         fi
 
     done
