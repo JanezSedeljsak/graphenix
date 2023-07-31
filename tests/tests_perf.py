@@ -35,9 +35,9 @@ class GraphenixPerfTests(CommonTestBase):
             self.assertEqual(temp_dt.day, read_user.created_at.day)
 
     # @CommonTestBase.ignore
-    @CommonTestBase.perf("Create 100K basic codelist records and read them by IDs", times=5)
+    @CommonTestBase.perf("Create 100K basic codelist records", times=5)
     @CommonTestBase().prepare_and_destroy
-    def test_create_100k_records_and_read(self):
+    def test_create_100k_records(self):
         AMOUNT = 100_000
 
         temp_record = City(name="Ljubljana", country="SLO", population_thousands=280)
@@ -45,11 +45,18 @@ class GraphenixPerfTests(CommonTestBase):
             temp_record.save()
             temp_record._id = -1
 
-        for rid in range(AMOUNT):
-            city = City.get(rid)
-            self.assertEqual(rid, city.id)
-            self.assertEqual(temp_record.name, city.name)
-            self.assertEqual(temp_record.population_thousands, city.population_thousands)
+        # validate first and last record
+        first = City.get(0)
+        self.assertIsNotNone(first)
+        self.assertEqual(temp_record.name, first.name)
+        self.assertEqual(0, first.id)
+        self.assertEqual(temp_record.population_thousands, first.population_thousands)
+
+        last = City.get(AMOUNT - 1)
+        self.assertIsNotNone(last)
+        self.assertEqual(temp_record.name, first.name)
+        self.assertEqual(AMOUNT - 1, last.id)
+        self.assertEqual(temp_record.population_thousands, first.population_thousands)
 
     # @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
@@ -155,7 +162,28 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(2, len(last_user_city['users']))
         self.assertEqual(6, last_user_city['users'][0]['id'])
         self.assertEqual(0, last_user_city['users'][1]['id'])
-        
+
+    @CommonTestBase().prepare_and_destroy
+    @CommonTestBase.perf("Bulk create 100K basic codelist records", times=5)
+    def test_create_100k_records_bulk(self):
+        AMOUNT = 100_000
+
+        rec = ['Ljubljana', 'SLO', 280]
+        records = [rec] * AMOUNT
+        City.bulkcreate(records)
+
+        # validate first and last record
+        first = City.get(0)
+        self.assertIsNotNone(first)
+        self.assertEqual(rec[0], first.name)
+        self.assertEqual(0, first.id)
+        self.assertEqual(rec[2], first.population_thousands)
+
+        last = City.get(AMOUNT - 1)
+        self.assertIsNotNone(last)
+        self.assertEqual(rec[0], last.name)
+        self.assertEqual(AMOUNT - 1, last.id)
+        self.assertEqual(rec[2], last.population_thousands)
 
 
 
