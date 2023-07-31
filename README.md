@@ -66,7 +66,7 @@ _, labs_list = Laboratory.link(teachers = Teacher).all()
 The .first() method retrieves the first record that matches the query object. It is commonly used when you need to get a single record that fulfills certain criteria. The method returns a single record as a `namedtuple`, or None if no matching record is found.
 
 ```python
-lab = Laboratory.filter(Laboratory.name == 'Bioinformatics').first()
+lab = Laboratory.filter(Laboratory.name.equals('Bioinformatics')).first()
 ```
 #### `.agg()`
 The .agg() method is designed for performing aggregation operations on the data, such as counting the number of records, calculating the sum, finding the minimum or maximum values. It is useful when you need to gather summarized information from the dataset.
@@ -92,10 +92,10 @@ Link is used to join data either by a direct or a virtual link:
 #### `.filter()`
 
 The method is meant to replace the `WHERE` operator in `SQL` it is a bit different it can only be used within the entity you are querying. It supports
-9 operations (==, !=, >, >=, <, <=, regex(), is_in(), not_in()) + we can also wrap these methods into a condition tree like so:
+9 operations (equals, is_not, greater, greater_or_equal, less, less_or_equal, regex(), is_in(), not_in()) + we can also wrap these methods into a condition tree like so:
 ```python
 query = Teacher.filter(
-    Teacher.full_name != 'John',
+    Teacher.full_name.is_not('John'),
     some(Teacher.is_in([1,2,3]), Teacher.email.regex('.*@gmail.*'))
 )
 ```
@@ -203,8 +203,8 @@ count, data = User\
         laboratory = Laboratory.link(
             users = User.order(User.desc()).filter(
                 some(
-                    User.is_in(User.filter(User.is_admin == True).pick_id()),
-                    User.last_name == ''
+                    User.is_in(User.filter(User.is_admin.equals(True)).pick_id()),
+                    User.last_name.equals('')
                 )
             )
         )

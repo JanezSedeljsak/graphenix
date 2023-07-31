@@ -57,8 +57,8 @@ class GraphenixPerfTests(CommonTestBase):
         AMOUNT = 1_000_000
         count, rows = City.all()
         self.assertEqual(AMOUNT, count)
-        first = next(rows)
-        self.assertIsInstance(first, City._view_tuple)
+        first = rows[0]
+        self.assertIsInstance(City.from_view(first), City)
         self.assertEqual(0, first.id)
         self.assertEqual('SLO0', first.country)
 
@@ -69,8 +69,8 @@ class GraphenixPerfTests(CommonTestBase):
         LIMIT = 100
         count, rows = City.limit(LIMIT).all()
         self.assertEqual(LIMIT, count)
-        first = next(rows)
-        self.assertIsInstance(first, City._view_tuple)
+        first = rows[0]
+        self.assertIsInstance(City.from_view(first), City)
         self.assertEqual(0, first.id)
         self.assertEqual('SLO0', first.country)
 
@@ -81,9 +81,9 @@ class GraphenixPerfTests(CommonTestBase):
         AMOUNT = 1_000_000
         count, rows = City.order(City.country.desc()).all()
         self.assertEqual(AMOUNT, count)
-        first = next(rows)
+        first = rows[0]
         last_id = AMOUNT - 1
-        self.assertIsInstance(first, City._view_tuple)
+        self.assertIsInstance(City.from_view(first), City)
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
@@ -95,9 +95,9 @@ class GraphenixPerfTests(CommonTestBase):
         LIMIT = 100
         count, rows = City.order(City.country.desc()).limit(LIMIT).all()
         self.assertEqual(LIMIT, count)
-        first = next(rows)
+        first = rows[0]
         last_id = AMOUNT - 1
-        self.assertIsInstance(first, City._view_tuple)
+        self.assertIsInstance(City.from_view(first), City)
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
@@ -109,9 +109,9 @@ class GraphenixPerfTests(CommonTestBase):
         LIMIT = 1500
         count, rows = City.order(City.country.desc()).limit(LIMIT).all()
         self.assertEqual(LIMIT, count)
-        first = next(rows)
+        first = rows[0]
         last_id = AMOUNT - 1
-        self.assertIsInstance(first, City._view_tuple)
+        self.assertIsInstance(City.from_view(first), City)
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
