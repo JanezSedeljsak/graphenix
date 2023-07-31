@@ -40,22 +40,22 @@ class Field:
             cond_obj.value = cmp_value
             return cond_obj
         
-        def __eq__(self, val):
+        def equals(self, val):
             return self.make_cond_object(self.name, FilterOperationEnum.EQUAL, val)
 
-        def __ne__(self, val):
+        def is_not(self, val):
             return self.make_cond_object(self.name, FilterOperationEnum.NOTEQUAL, val)
 
-        def __gt__(self, val):
+        def greater(self, val):
             return self.make_cond_object(self.name, FilterOperationEnum.GREATER, val)
 
-        def __ge__(self, val):
+        def greater_or_equal(self, val):
             return self.make_cond_object(self.name, FilterOperationEnum.GREATER_OR_EQUAL, val)
 
-        def __lt__(self, val):
+        def less(self, val):
             return self.make_cond_object(self.name, FilterOperationEnum.LESS, val)
 
-        def __le__(self, val):
+        def less_or_equal(self, val):
             return self.make_cond_object(self.name, FilterOperationEnum.LESS_OR_EQUAL, val)
         
         def regex(self, val):
@@ -135,27 +135,27 @@ class Field:
             diff = int(value.timestamp())
             setattr(instance, '_' + self.name, diff)
 
-        def __eq__(self, val):
+        def equals(self, val):
             posix = int(val.timestamp())
             return self.make_cond_object(self.name, FilterOperationEnum.EQUAL, posix)
 
-        def __ne__(self, val):
+        def is_not(self, val):
             posix = int(val.timestamp())
             return self.make_cond_object(self.name, FilterOperationEnum.NOTEQUAL, posix)
 
-        def __gt__(self, val):
+        def greater(self, val):
             posix = int(val.timestamp())
             return self.make_cond_object(self.name, FilterOperationEnum.GREATER, posix)
 
-        def __ge__(self, val):
+        def greater_or_equal(self, val):
             posix = int(val.timestamp())
             return self.make_cond_object(self.name, FilterOperationEnum.GREATER_OR_EQUAL, posix)
 
-        def __lt__(self, val):
+        def less(self, val):
             posix = int(val.timestamp())
             return self.make_cond_object(self.name, FilterOperationEnum.LESS, posix)
 
-        def __le__(self, val):
+        def less_or_equal(self, val):
             posix = int(val.timestamp())
             return self.make_cond_object(self.name, FilterOperationEnum.LESS_OR_EQUAL, posix)
         

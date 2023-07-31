@@ -56,6 +56,7 @@ PYBIND11_MODULE(graphenix_engine2, m)
 
     m.def("execute_query", &QueryManager::execute_query, "Executes query and retrieves the desired rows");
     m.def("execute_agg_query", &QueryManager::execute_agg_query, "Executes aggregation query and retrieves the desired rows");
+    m.def("execute_entity_query", &QueryManager::execute_entity_query, "Executes aggregation query and retrieves the desired rows");
     // m.def("build_record", &QueryManager::build_record, "Builds a record from raw bytes");
 
     py::class_<model_def>(m, "model_def")
@@ -110,6 +111,45 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def_readwrite("child_link_field_index", &link_object::child_link_field_index)
         .def_readwrite("limit", &link_object::limit)
         .def_readwrite("offset", &link_object::offset);
+
+    py::class_<Record>(m, "Record")
+        .def("attr", &Record::attr)
+        .def("as_tuple", &Record::as_tuple)
+        .def("as_dict", &Record::as_dict)
+        .def("as_str", &Record::as_str)
+        .def("__getattr__", [](const Record& self, const std::string& name) {
+            return self.attr(name);
+        })
+        .def("__str__", [](const Record& self) {
+            return self.as_str();
+        })
+        .def("__repr__", [](const Record& self) {
+            return self.as_str();
+        });
+
+    py::class_<RecordView>(m, "RecordView")
+        .def("attr", &RecordView::attr)
+        .def("as_tuple", &RecordView::as_tuple)
+        .def("as_dict", &RecordView::as_dict)
+        .def("as_str", &RecordView::as_str)
+        .def("__getattr__", [](const RecordView& self, const std::string& name) {
+            return self.attr(name);
+        })
+        .def("__str__", [](const RecordView& self) {
+            return self.as_str();
+        })
+        .def("__repr__", [](const RecordView& self) {
+            return self.as_str();
+        });
+
+    py::class_<View>(m, "View")
+        .def(py::init<>())
+        .def_readonly("records", &View::records)
+        .def_readonly("field_names", &View::field_names)
+        .def("at", &View::at)
+        .def("size", &View::size)
+        .def("as_dict", &View::as_dict)
+        .def("as_tuple", &View::as_tuple);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

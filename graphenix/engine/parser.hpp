@@ -252,8 +252,8 @@ struct cond_node
 
 struct link_object
 {
-    bool is_direct_link; // VirtualLink -> false, Link -> true
-    int link_field_index; // the index of the field in the parent table
+    bool is_direct_link;        // VirtualLink -> false, Link -> true
+    int link_field_index;       // the index of the field in the parent table
     int child_link_field_index; // the index of the field in the child table (Link -> -1 - PK)
 
     // limit & offset get evaluated after query execution in subqueries

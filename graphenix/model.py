@@ -9,7 +9,6 @@ from .field import Field, FieldTypeEnum
 
 class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
     _db = None
-    _view_tuple = None
 
     def __init__(self, **fields):
         self._id = -1
@@ -45,8 +44,8 @@ class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
         return 'id'
     
     @classmethod
-    def from_view(cls: Type[T], view_record: NamedTuple) -> T:
-        view_dict = view_record._asdict()
+    def from_view(cls: Type[T], record_view) -> T:
+        view_dict = record_view.as_dict()
         record_id = view_dict.pop('id')
         rec = cls(**view_dict)
         rec._id = record_id
@@ -66,7 +65,6 @@ class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
 
         cls._model_fields = [attr for attr, val in cls.__dict__.items() if isinstance(val, Field.BaseType)]
         mdef.field_names = cls._model_fields
-        cls._view_tuple = namedtuple(f"{cls.__name__}_View", ["id", *cls._model_fields])
 
         field_sizes_dict = {}
         field_types_raw_dict = {}

@@ -41,8 +41,7 @@ def add_teacher():
     if lab is None:
         abort(404, description=f'Lab with name {lab_name} doesn\'t exist')
 
-    lab_obj = Laboratory.from_view(lab)
-    new_teacher = Teacher(full_name=full_name, email=email, laboratory=lab_obj).make()
+    new_teacher = Teacher(full_name=full_name, email=email, laboratory=lab).make()
     return api_respnse(TeacherSearilizer.jsonify(new_teacher))
 
 @app.route('/stats')

@@ -1,6 +1,7 @@
 from datetime import datetime
 from .mixins.mixin_model_base import ModelBaseMixin
-import types
+from .view import QueryView
+import graphenix_engine2 as ge2
 import csv
 
 class ViewSearilizer:
@@ -8,6 +9,7 @@ class ViewSearilizer:
     fields = ()
     required = ()
     instance = None
+    model: ModelBaseMixin | None = None
 
     @classmethod
     def is_all(cls):
@@ -23,43 +25,6 @@ class ViewSearilizer:
             
         cls.instance = AllSearilizer
         return cls.instance
-
-
-    @classmethod
-    def validate(cls, data):
-        required = cls.required if not isinstance(cls.required, str) else (cls.required,)
-
-        if isinstance(data, types.GeneratorType):
-            data = list(data)
-
-        if isinstance(data, list):
-            return all(cls.validate(row) for row in data)
-
-        if isinstance(data, dict):
-            keys_with_values = set(key for key, val in data.items() if (val or val == 0))
-            diff = set(required).difference(keys_with_values)
-            if diff:
-                return False
-            
-            for field in required:
-                current_value = data[field]
-                if isinstance(current_value, list) or isinstance(current_value, dict):
-                    if not hasattr(cls, field):
-                         raise AttributeError(f'Field - "{field}" should have a searilizer!')
-                    
-                    searilizer = getattr(cls, field)
-                    if not isinstance(searilizer, type) or not issubclass(searilizer, ViewSearilizer):
-                        raise AttributeError(f'Field - "{field}" is not as a searilizer!')
-
-                    if not searilizer.validate(current_value):
-                        return False
-
-            return True
-
-        if isinstance(data, ModelBaseMixin):
-            return True
-
-        return False
     
     @classmethod
     def dump2csv(cls, data: list, filename: str) -> bool:
@@ -86,17 +51,17 @@ class ViewSearilizer:
         if not cls.is_all():
             fields = cls.fields if not isinstance(cls.fields, str) else (cls.fields,)
 
-        if isinstance(data, types.GeneratorType):
-            data = list(data)
-
+        if isinstance(data, ge2.View):
+            data = QueryView(data)
+        
         if isinstance(data, list):
             return [cls.jsonify(row) for row in data]
         
         if isinstance(data, datetime):
-            return data.isoformat()
-        
-        if isinstance(data, tuple) and hasattr(data, '_asdict'):
-            tuple_as_dict = data._asdict() # type: ignore
+            return data.isoformat()        
+
+        if isinstance(data, ge2.Record) or isinstance(data, ge2.RecordView):
+            tuple_as_dict = data.as_dict() # type: ignore
             res_dict = {}
             fields_list = fields if not cls.is_all() else list(tuple_as_dict.keys())
             for field in fields_list:
@@ -121,7 +86,7 @@ class ViewSearilizer:
             return res_dict
         
         if isinstance(data, ModelBaseMixin):
-            fields_list = fields if not cls.is_all() else list(tuple_as_dict.keys())
+            fields_list = fields if not cls.is_all() else ['id', *data._model_fields]
             res_dict = {field: getattr(data, field) for field in fields_list}
             return res_dict
 

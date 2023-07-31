@@ -18,6 +18,7 @@
 #include "managers.h"
 #include "../util.cpp"
 #include "../parser.hpp"
+#include "../view.hpp"
 
 inline void ix_read_all(std::fstream &ix_file, std::vector<std::pair<int64_t, int64_t>> &offsets)
 {
@@ -350,17 +351,17 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     return rows;
 }
 
-std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject, const int depth)
+View QueryManager::execute_query(const query_object &qobject, const int depth)
 {
     // execute main query
     std::vector<py::tuple> root_result = QueryManager::execute_entity_query(qobject);
     const size_t subquery_count = qobject.link_vector.size();
-    if (subquery_count == 0 || root_result.size() == 0)
-        return root_result;
+    const size_t result_size = root_result.size();
+    if (subquery_count == 0 || result_size == 0)
+        return View::make_view(qobject.mdef.field_names, root_result, qobject.mdef.model_name);
 
     // preapre ix constraints for subquery execution
-    const size_t record_size = qobject.mdef.field_offsets.size() + 1;
-    std::vector<std::unordered_map<int64_t, std::vector<py::tuple>>> subquery_result_maps(subquery_count);
+    std::vector<std::unordered_map<int64_t, View>> subquery_result_maps(subquery_count);
     std::vector<std::unordered_set<int64_t>> ix_set(subquery_count);
     for (py::tuple rec_tuple : root_result)
     {
@@ -381,7 +382,9 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject, 
                 continue;
 
             ix_set[i].insert(link_key);
-            subquery_result_maps[i].emplace(link_key, std::vector<py::tuple>());
+            subquery_result_maps[i].emplace(link_key, View::make_empty(
+                                                          qobject.link_vector[i].mdef.field_names,
+                                                          qobject.link_vector[i].mdef.model_name));
         }
     }
 
@@ -396,27 +399,23 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject, 
             // TODO: add the ix_set[i] to subquery.filter_root.conditions
         }
 
-        std::vector<py::tuple> subquery_result = QueryManager::execute_query(subquery, depth + 1);
+        View subquery_result = QueryManager::execute_query(subquery, depth + 1);
         auto &current_map = subquery_result_maps[i];
-        for (py::tuple rec_tuple : subquery_result)
+        for (Record rec_tuple : subquery_result.records)
         {
             const int child_link_index = qobject.links[i].child_link_field_index + 1;
-            const int64_t link_key = py::cast<int64_t>(rec_tuple[child_link_index]);
+            const int64_t link_key = py::cast<int64_t>(rec_tuple.record[child_link_index]);
             if (link_key == -1)
                 continue;
 
-            current_map[link_key].push_back(rec_tuple);
+            current_map[link_key].records.push_back(rec_tuple);
         }
     }
 
     // loop through the root result and append the subquery results
-    std::vector<py::object> temp_record(record_size);
     for (size_t j = 0, n = root_result.size(); j < n; j++)
     {
-        py::tuple current = root_result[j];
-        for (size_t i = 0; i < record_size; i++)
-            temp_record[i] = current[i];
-
+        py::tuple &current = root_result[j];
         for (size_t i = 0; i < subquery_count; i++)
         {
             auto &current_map = subquery_result_maps[i];
@@ -430,13 +429,13 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject, 
             else
                 link_key = py::cast<int64_t>(current[field_index]);
 
-            std::vector<py::tuple> groupped_records = current_map[link_key];
+            View groupped_records = current_map[link_key];
             if (qobject.links[i].is_direct_link)
             {
                 if (groupped_records.size() > 0)
-                    temp_record[field_index] = groupped_records[0];
+                    current[field_index] = RecordView::from_view(groupped_records);
                 else
-                    temp_record[field_index] = py::cast(-1);
+                    current[field_index] = py::cast(-1);
             }
             else
             {
@@ -444,32 +443,31 @@ std::vector<py::tuple> QueryManager::execute_query(const query_object &qobject, 
                 const int list_field_index = qobject.links[i].link_field_index + 1;
 
                 if (qobject.links[i].offset >= list_size)
-                    temp_record[list_field_index] = py::list();
+                    current[list_field_index] = View::make_empty(qobject.link_vector[i].mdef.field_names,
+                                                                     qobject.link_vector[i].mdef.model_name);
 
                 else if (qobject.links[i].limit == 0 && qobject.links[i].offset == 0)
-                    temp_record[list_field_index] = py::cast(groupped_records);
+                    current[list_field_index] = groupped_records;
 
                 else
                 {
-                    size_t end_idx = qobject.links[i].limit > 0
+                    const size_t end_idx = qobject.links[i].limit > 0
                                          ? std::min(list_size, qobject.links[i].offset + qobject.links[i].limit)
                                          : list_size;
 
-                    std::vector<py::tuple> records_with_limit = std::vector<py::tuple>(
-                        groupped_records.begin() + qobject.links[i].offset,
-                        groupped_records.begin() + end_idx);
+                    std::vector<Record> records_with_limit = std::vector<Record>(
+                        groupped_records.records.begin() + qobject.links[i].offset,
+                        groupped_records.records.begin() + end_idx);
 
-                    temp_record[list_field_index] = py::cast(records_with_limit);
+                    View view_instance = View::make_empty(qobject.link_vector[i].mdef.field_names,
+                                                qobject.link_vector[i].mdef.model_name);
+                        
+                    view_instance.records = records_with_limit;
+                    current[list_field_index] = view_instance;
                 }
             }
         }
-
-        py::tuple record_with_links(record_size);
-        for (size_t i = 0; i < record_size; i++)
-            record_with_links[i] = temp_record[i];
-
-        root_result[j] = record_with_links;
     }
 
-    return root_result;
+    return View::make_view(qobject.mdef.field_names, root_result, qobject.mdef.model_name);
 }

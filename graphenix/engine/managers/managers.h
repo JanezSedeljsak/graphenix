@@ -6,6 +6,8 @@
 #include <map>
 #include <vector>
 
+#include "../view.hpp"
+
 using namespace std;
 
 class SchemaManager {
@@ -42,7 +44,7 @@ public:
 
 class QueryManager {
 public:
-    static vector<py::tuple> execute_query(const query_object& qobject, const int depth);
+    static View execute_query(const query_object& qobject, const int depth);
     static vector<py::tuple> execute_entity_query(const query_object& qobject);
     static vector<py::tuple> execute_agg_query(const query_object& qobject);
     // static py::dict build_record(const model_def& mdef, const py::bytes raw_record);

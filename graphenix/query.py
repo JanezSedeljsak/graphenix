@@ -1,8 +1,8 @@
 from .mixins.mixin_model_base import T, ModelBaseMixin
 from .mixins.mixin_field_order import FieldOrderMixin
+from .view import QueryView
 from typing import Type, Generator
 from collections import namedtuple
-from datetime import datetime
 import graphenix_engine2 as ge2
 
 def every(*conditions):
@@ -36,9 +36,6 @@ def some(*conditions):
 class Query:
     base_model: Type[T]
     query_object: object
-
-    def _handle_link_index(self, link):
-        return link.link_field_index + 1
     
     def _get_virtual_link_field(self, key):
         if not hasattr(self.base_model, key):
@@ -46,48 +43,6 @@ class Query:
 
         field = getattr(self.base_model, key)
         return field.link_field
-    
-    def _is_date_field(self, idx: int) -> bool:
-        return self.query_object.mdef.field_date_indexes[idx - 1]
-
-    def _handle_tuple_field(self, field, idx: int, link_map: dict):
-        if self._is_date_field(idx):
-            return datetime.fromtimestamp(field)
-        
-        link_index = link_map.get(idx)
-        if not link_index and link_index != 0:                
-            return field
-        
-        subquery = self.subqueries[link_index]
-        sublink = self.query_object.links[link_index]
-        sublink_map = {
-            self._handle_link_index(link): idx
-            for idx, link in enumerate(subquery.query_object.links)
-        }
-
-        if sublink.is_direct_link:
-            return subquery._make_namedtuple(field, sublink_map) if field != -1 else None
-        
-        if not isinstance(field, list):
-            raise ValueError('Link data should be a list!')
-
-        return [subquery._make_namedtuple(row, sublink_map) for row in field]   
-
-
-    def _make_namedtuple(self, tuple_record: tuple, link_map: dict) -> tuple:
-        if not isinstance(tuple_record, tuple):
-            raise ValueError(f'Expected tuple got {type(tuple_record)} for record')
-        
-        has_date_fields = any(self.query_object.mdef.field_date_indexes)
-        if not link_map and not has_date_fields:
-            return self.base_model._view_tuple._make(tuple_record)
-        
-        new_record = tuple(
-            self._handle_tuple_field(field, idx, link_map)
-            for idx, field in enumerate(tuple_record)
-        )
-        rec = self.base_model._view_tuple._make(new_record)
-        return rec
 
     def __init__(self, model: Type[T]):
         self.base_model = model
@@ -224,33 +179,18 @@ class Query:
 
     def all(self) -> tuple[int, Generator[T, None, None]]:
         self.base_model.make_cache()
-        tuple_records = ge2.execute_query(self.query_object, 0)
-        link_map = {
-            self._handle_link_index(link): idx
-            for idx, link in enumerate(self.query_object.links)
-        }
-    
-        def generator_func():
-            for trec in tuple_records:
-                ntuple_res = self._make_namedtuple(trec, link_map)
-                yield ntuple_res
-
-        return len(tuple_records), generator_func()
+        view = ge2.execute_query(self.query_object, 0)
+        return view.size(), QueryView(view)
 
     def first(self) -> T | None:
         self.query_object.limit = 1
         self.base_model.make_cache()
-        data = ge2.execute_query(self.query_object, 0)
-        if len(data) != 1:
+        data = QueryView(ge2.execute_query(self.query_object, 0))
+        if not data:
             return None
+        
+        return self.base_model.from_view(data[0])
 
-        link_map = {
-            self._handle_link_index(link): idx
-            for idx, link in enumerate(self.query_object.links)
-        }
-
-        ntuple_res = self._make_namedtuple(data[0], link_map)
-        return ntuple_res
     
     def pick_id(self) -> list:
         return self.pick(None)
@@ -261,7 +201,7 @@ class Query:
             field_index = self.base_model._model_fields.index(field.name)
 
         self.query_object.picked_index = field_index
-        data = ge2.execute_query(self.query_object, 0)
+        data = ge2.execute_entity_query(self.query_object)
         return [picked for picked, *_ in data]
     
     def agg(self, by = None, **aggregations) -> list:
