@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, String, Integer, Boolean, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base
-from _data import user_data
+from .data import user_data
 import mysql.connector
 import time
 import sys
@@ -19,7 +19,9 @@ class User(Base):
     created_at = Column(DateTime)
 
 def main():
-    dbname = 'singleselect'
+    num_users = int(sys.argv[1])
+    dbname = f'singleselect_{num_users}'
+
     conn = mysql.connector.connect(host='localhost', port=3307, user='root', password='root')
     cursor = conn.cursor()
     cursor.execute(f"DROP DATABASE IF EXISTS {dbname}")
@@ -28,16 +30,13 @@ def main():
     conn.close()
     
     engine = create_engine(f'mysql+mysqlconnector://root:root@localhost:3307/{dbname}')
-    num_users = int(sys.argv[1])
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     start_time = time.perf_counter()
 
     session = Session()
-    for i in range(num_users):
-        current_user = {**user_data, "is_admin": i%2 == 0}
-        user = User(**current_user)
-        session.add(user)
+    users = [User(**{**user_data, "is_admin": i%2 == 0}) for i in range(num_users)]
+    session.add_all(users)
 
     session.commit()
     session.close()

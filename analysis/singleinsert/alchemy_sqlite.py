@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, String, Integer, Boolean, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base
-from _data import user_data
+from .data import user_data
 import time
 import sys
 import os
@@ -18,21 +18,19 @@ class User(Base):
     created_at = Column(DateTime)
 
 def main():
-    if os.path.exists('users.db'):
-        os.remove('users.db')
-       
     num_users = int(sys.argv[1])
-    engine = create_engine('sqlite:///users.db')
+    if os.path.exists('graphenix_db/sqlite_singleinsert_alchemy_{num_users}.db'):
+        os.remove('graphenix_db/sqlite_singleinsert_alchemy_{num_users}.db')
+       
+    engine = create_engine(f'sqlite:///graphenix_db/sqlite_singleinsert_alchemy_{num_users}.db')
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     start_time = time.perf_counter()
 
     session = Session()
-    for i in range(num_users):
-        current_user = {**user_data, "is_admin": i%2 == 0}
-        user = User(**current_user)
-        session.add(user)
-
+    users = [User(**{**user_data, "is_admin": i%2 == 0}) for i in range(num_users)]
+    session.add_all(users)
+    
     session.commit()
     session.close()
     end_time = time.perf_counter()

@@ -30,3 +30,9 @@ _perf_test:
 	@echo "[graphenix] Running tests..."
 	sudo python3 -m tests.tests_perf
 	@echo "[graphenix] Finished tests!"
+
+_singleinsert_analysis:
+	@echo "[graphenix] Running single insert analysis..."
+	chmod +x analysis_runner.sh
+	./analysis_runner.sh singleinsert 10 100 1000 10000 100000 
+	@echo "[graphenix] Finished single insert analysis!"

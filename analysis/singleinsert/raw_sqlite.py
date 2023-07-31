@@ -1,45 +1,41 @@
-from _data import user_data
-import mysql.connector
+from .data import user_data
+import sqlite3
 import time
 import sys
 import os
 
 create_table = """
-    CREATE TABLE `users` (
-        `id` INTEGER NOT NULL AUTO_INCREMENT,
-        `first_name` varchar(50) DEFAULT NULL,
-        `last_name` varchar(50) DEFAULT NULL,
-        `email` varchar(50) DEFAULT NULL,
-        `age` int(11) DEFAULT NULL,
-        `is_admin` tinyint(1) DEFAULT NULL,
-        `created_at` datetime DEFAULT NULL,
-    PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+     CREATE TABLE users (
+        id INTEGER PRIMARY KEY,
+        first_name TEXT,
+        last_name TEXT,
+        email TEXT,
+        age INTEGER,
+        is_admin INTEGER,
+        created_at TIMESTAMP
+    )
     """
 
 def main():
-    dbname = 'raw_singleselect'
-    conn = mysql.connector.connect(host='localhost', port=3307, user='root', password='root')
-    cursor = conn.cursor()
-    cursor.execute(f"DROP DATABASE IF EXISTS {dbname}")
-    cursor.execute(f"CREATE DATABASE IF NOT EXISTS {dbname}")
-    cursor.execute(f"USE {dbname}")
-    cursor.execute(create_table)
-    cursor.close()
-    conn.close()
-
     num_users = int(sys.argv[1])
-    start_time = time.perf_counter()
-    conn = mysql.connector.connect(host='localhost', port=3307, user='root', password='root')
-    cursor = conn.cursor()
-    cursor.execute(f"USE {dbname}")
+    dbname = f'sqlite_singleinsert_raw_{num_users}'
     
+    if os.path.exists(f'graphenix_db/{dbname}.db'):
+        os.remove(f'graphenix_db/{dbname}.db')
+
+    conn = sqlite3.connect(f'graphenix_db/{dbname}.db')
+    cursor = conn.cursor()
+    cursor.execute(create_table)
+    conn.commit()
+    
+    start_time = time.perf_counter()
+
     for i in range(num_users):
         cu = {**user_data, "is_admin": i%2 == 0}
-        str = f"INSERT INTO users (first_name, last_name, email, age, is_admin, created_at) " \
-            + f"""VALUES ('{cu['first_name']}', '{cu['last_name']}', '{cu['email']}', {cu['age']}, {int(cu['is_admin'])}, '{cu['created_at']}')"""
-
-        cursor.execute(str)
+        cursor.execute(
+            "INSERT INTO users (first_name, last_name, email, age, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+            tuple(cu.values())
+        )
     
     conn.commit()
     cursor.close()

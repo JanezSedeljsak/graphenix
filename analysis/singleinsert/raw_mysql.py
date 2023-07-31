@@ -1,4 +1,4 @@
-from _data import user_data
+from .data import user_data
 import mysql.connector
 import time
 import sys
@@ -18,7 +18,9 @@ create_table = """
     """
 
 def main():
-    dbname = 'raw_singleselect'
+    num_users = int(sys.argv[1])
+    dbname = f'raw_singleselect_{num_users}'
+
     conn = mysql.connector.connect(host='localhost', port=3307, user='root', password='root')
     cursor = conn.cursor()
     cursor.execute(f"DROP DATABASE IF EXISTS {dbname}")
@@ -28,7 +30,7 @@ def main():
     cursor.close()
     conn.close()
 
-    num_users = int(sys.argv[1])
+    
     start_time = time.perf_counter()
     conn = mysql.connector.connect(host='localhost', port=3307, user='root', password='root')
     cursor = conn.cursor()

@@ -1,5 +1,5 @@
 from graphenix import Field, Schema, Model
-from datetime import datetime
+from .data import user_data
 import sys
 import time
 
@@ -12,17 +12,10 @@ class User(Model):
     created_at = Field.DateTime()
 
 my_schema = Schema('singleinsert', models=[User])
-my_schema.delete()
-my_schema.create()
+if my_schema.exists():
+    my_schema.delete()
 
-user_data = {
-    "first_name": "John",
-    "last_name": "Doe",
-    "email": "john.doe@example.com",
-    "age": 35,
-    "is_admin": False,
-    "created_at": datetime.now()
-}
+my_schema.create()
 
 def main():
     num_users = int(sys.argv[1])
