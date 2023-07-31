@@ -71,7 +71,7 @@ class ViewSearilizer:
                 
                 tvalue = tuple_as_dict[field]
                 if not hasattr(cls, field):
-                    if isinstance(tvalue, tuple) or isinstance(tvalue, list):
+                    if isinstance(tvalue, ge2.RecordView) or isinstance(tvalue, list):
                         raise AttributeError(f'Field - "{field}" should have a searilizer!')
                     
                     res_dict[field] = cls.jsonify(tvalue)

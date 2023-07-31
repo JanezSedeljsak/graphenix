@@ -182,10 +182,10 @@ class Field:
                 setattr(instance, '_' + self.name + '_id', value)
                 return
 
-            if not isinstance(value, ModelBaseMixin):
+            if not any(isinstance(value, typ) for typ in (ModelBaseMixin, ge2.Record, ge2.RecordView)):
                 raise ValueError('Link can be None | int(PK) | instance of an object!')
             
-            if value.is_new:
+            if not any(isinstance(value, typ) for typ in (ge2.Record, ge2.RecordView)) and value.is_new:
                 raise ValueError('Record must be saved so it can be assigned to a parent!')
 
             # set both the id stored id _{field_name}_id & the actual model in  _{field_name}

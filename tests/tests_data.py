@@ -1,4 +1,4 @@
-from graphenix import Field, Schema, Model
+from graphenix import Field, Schema, Model, ViewSearilizer
 
 class User(Model):
     first_name = Field.String(size=15)
@@ -8,14 +8,41 @@ class User(Model):
     is_admin = Field.Bool()
     created_at = Field.DateTime()
     tasks = Field.VirtualLink("owner")
+    city = Field.Link()
 
 class Task(Model):
     name = Field.String(size=20)
     owner = Field.Link()
+    subtasks = Field.VirtualLink("parent_task")
 
 class City(Model):
     name = Field.String(size=50)
     country = Field.String(size=50)
     population_thousands = Field.Int()
+    users = Field.VirtualLink("city")
 
-mock_schema = Schema('test_school', models=[User, City, Task])
+class SubTask(Model):
+    name = Field.String(size=40)
+    date_created = Field.DateTime()
+    parent_task = Field.Link()
+
+class UserBasicSearilizer(ViewSearilizer):
+    fields = ('id', 'first_name', 'last_name', 'is_admin')
+
+class CitySearilizer(ViewSearilizer):
+    fields = ('name', 'population_thousands', 'users')
+    users = UserBasicSearilizer
+
+class SubTaskSearilizer(ViewSearilizer):
+    fields = ('id', 'name', 'date_created')
+
+class TaskSearilizer(ViewSearilizer):
+    fields = ('name', 'subtasks')
+    subtasks = SubTaskSearilizer
+
+class DeepUserSearilizer(ViewSearilizer):
+    fields = '*'
+    tasks = TaskSearilizer
+    city = CitySearilizer
+
+mock_schema = Schema('test_school', models=[User, City, Task, SubTask])

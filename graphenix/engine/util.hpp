@@ -1,5 +1,5 @@
-#ifndef UTIL
-#define UTIL
+#ifndef UTIL_HPP
+#define UTIL_HPP
 
 #include <iostream>
 #include <string>
@@ -129,4 +129,4 @@ unordered_set<T> make_set_intersection(const unordered_set<T> &set1, const unord
     return intersection_set;
 }
 
-#endif
+#endif // UTIL_HPP

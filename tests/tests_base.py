@@ -1,6 +1,7 @@
 import time
 import unittest
 from .tests_data import *
+from datetime import datetime
 
 class CommonTestBase(unittest.TestCase):
 
@@ -39,6 +40,33 @@ class CommonTestBase(unittest.TestCase):
             return result
         
         return callable
+    
+    def prepare_comlex_struct(self, method):
+        """ A decorator that prepares a more complex structure to test a more complex (multilevel) query """
+        def callable(*args, **kwargs):
+            city1 = City(name="London", population_thousands=432).make()
+            city2 = City(name="Ljubljana", population_thousands=100).make()
+            city3 = City(name="New York", population_thousands=500).make()
+            city4 = City(name="Tokyo", population_thousands=420).make()
+
+            user1 = User(first_name="John", last_name="Doe", email="john.doe@example.com", age=30, is_admin=True, created_at=datetime.now(), city=city1).make()
+            user2 = User(first_name="John", last_name="Smith", email="john.smith@example.com", age=25, is_admin=False, created_at=datetime.now(), city=city2).make()
+            user3 = User(first_name="Bob", last_name="Johnson", email="bob.johnson@example.com", age=28, is_admin=False, created_at=datetime.now(), city=city3).make()
+            user4 = User(first_name="Eve", last_name="Anderson", email="eve.anderson@example.com", age=15, is_admin=False, created_at=datetime.now(), city=city4).make()
+            user5 = User(first_name="Nobody", last_name="Anderson", email="nobodyanderson@gmail.com", age=40, is_admin=False, created_at=datetime.now(), city=city4).make()
+            user6 = User(first_name="Franc", last_name="Anderson", email="franc@example.com", age=44, is_admin=False, created_at=datetime.now(), city=city1).make()
+            user7 = User(first_name="Jože", last_name="", email="joze@gmail.com", age=49, is_admin=False, created_at=datetime.now(), city=city1).make()
+
+            for user in (user1, user2, user3, user4, user5, user6, user7):
+                for task_num in range(1, 20):
+                    task = Task(name=f"Task {task_num}", owner=user).make()
+                    for subtask_num in range(1, 20):
+                        SubTask(name=f"SubTask {subtask_num}", date_created=datetime.now(), parent_task=task).make()
+
+            result = method(*args, **kwargs)
+            return result
+        
+        return callable 
     
     def prepare_1M_cities(self, method):
         """ A decorator that inserts 1M cities into the db """

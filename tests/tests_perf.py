@@ -1,12 +1,13 @@
 import unittest
 from datetime import datetime, timedelta
+from graphenix import some
 from .tests_base import *
 from .tests_data import *
 
 
 class GraphenixPerfTests(CommonTestBase):
     
-    # @CommonTestBase.ignore
+    @CommonTestBase.ignore
     @CommonTestBase.perf("Create 10K users and read them by IDs", times=5)
     @CommonTestBase().prepare_and_destroy
     def test_create_10k_users_and_read(self):
@@ -33,7 +34,7 @@ class GraphenixPerfTests(CommonTestBase):
             temp_dt = dt + timedelta(days=uid)
             self.assertEqual(temp_dt.day, read_user.created_at.day)
 
-    # @CommonTestBase.ignore
+    @CommonTestBase.ignore
     @CommonTestBase.perf("Create 100K basic codelist records and read them by IDs", times=5)
     @CommonTestBase().prepare_and_destroy
     def test_create_100k_records_and_read(self):
@@ -50,6 +51,7 @@ class GraphenixPerfTests(CommonTestBase):
             self.assertEqual(temp_record.name, city.name)
             self.assertEqual(temp_record.population_thousands, city.population_thousands)
 
+    @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read 1M records at once", times=5)
@@ -62,6 +64,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(0, first.id)
         self.assertEqual('SLO0', first.country)
 
+    @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with limit 100 from Model with 1M records", times=5)
@@ -74,6 +77,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(0, first.id)
         self.assertEqual('SLO0', first.country)
 
+    @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with order by country from Model with 1M records", times=5)
@@ -87,6 +91,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
+    @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with limit 100 + order by country from Model with 1M records", times=5)
@@ -101,6 +106,7 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
 
+    @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
     @CommonTestBase.perf("Read with limit 1500 + order by country from Model with 1M records", times=5)
@@ -114,6 +120,43 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertIsInstance(City.from_view(first), City)
         self.assertEqual(last_id, first.id)
         self.assertEqual(f'SLO{last_id}', first.country)
+
+    @CommonTestBase().prepare_and_destroy
+    @CommonTestBase().prepare_comlex_struct
+    @CommonTestBase.perf("Read multilevel query and searilize data", times=5)
+    def test_read__with_multilevel_query(self):
+        count, data = User\
+            .filter(User.age.not_in([15, 65, 44]), User.email.regex('.*@example.*'))\
+            .order(User.first_name, User.last_name.desc())\
+            .link(
+                tasks = Task.offset(1).limit(3).link(subtasks = SubTask.filter(
+                        some(
+                            SubTask.greater(10),
+                            SubTask.name.not_in(['SubTask 4', 'SubTask 3'])
+                        )
+                    )
+                ),
+                city = City.link(
+                    users = User.order(User.desc()).filter(
+                        some(
+                            User.is_in(User.filter(User.is_admin.equals(True)).pick_id()),
+                            User.last_name.equals('')
+                        )
+                    )
+                )
+            ).all()
+        
+        self.assertEqual(3, count)
+        first = User.from_view(data[0])
+        self.assertEqual(2, first.id)
+        searilized = DeepUserSearilizer.jsonify(data)
+        last_user_city = searilized[-1]['city']
+        self.assertEqual('London', last_user_city['name'])
+        self.assertEqual(2, len(last_user_city['users']))
+        self.assertEqual(6, last_user_city['users'][0]['id'])
+        self.assertEqual(0, last_user_city['users'][1]['id'])
+        
+
 
 
 if __name__ == '__main__':

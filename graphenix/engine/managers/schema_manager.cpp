@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <filesystem>
 #include <omp.h>
-#include "../util.cpp"
+#include "../util.hpp"
 #include "../parser.hpp"
 
 using namespace std;
