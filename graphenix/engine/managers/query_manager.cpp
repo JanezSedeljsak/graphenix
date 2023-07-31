@@ -328,7 +328,9 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
 
     // the end index is set to K if we have limiting
     // we need to take into account the offset which is subtracted for correct index matching when setting the result
-    size_t end = (check_limit ? std::min(K, raw_rows.size()) : raw_rows.size()) - qobject.offset;
+    const size_t size_without_offset = check_limit ? std::min(K, raw_rows.size()) : raw_rows.size();
+    const size_t end = size_without_offset > qobject.offset ? (size_without_offset - qobject.offset) : 0;
+
     std::vector<py::tuple> rows(end);
     for (size_t i = 0; i < end; i++)
     {

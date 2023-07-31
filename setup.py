@@ -3,7 +3,7 @@ from pybind11.setup_helpers import Pybind11Extension
 from pybind11 import get_include
 from setuptools.command.build_ext import build_ext
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __engine_name__ = "graphenix_engine2"
 __name__ = "graphenix"
 
@@ -43,6 +43,6 @@ setup(name=__name__,
       packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
       install_requires=["pybind11", "graphenix_engine2"],
       description="Graphenix library",
-      exclude_package_data={"": ["*.cpp", "*.h", "*.hpp", "*.pyx", "*.pxd"]},
+      # exclude_package_data={"": ["*.cpp", "*.h", "*.hpp", "*.pyx", "*.pxd"]},
       **__author_data)
 

@@ -214,7 +214,21 @@ class GraphenixUnitTests(CommonTestBase):
 
     @CommonTestBase().prepare_and_destroy
     def test_query_empty_table(self):
-        """ TODO: test if querying empty table """
+        """ test if querying empty table """
+        _, data = SubTask.all()
+        self.assertEqual(0, len(data))
+
+        _, data = SubTask.limit(10).all()
+        self.assertEqual(0, len(data))
+
+        _, data = SubTask.offset(10).all()
+        self.assertEqual(0, len(data))
+
+        ids = SubTask.pick_id()
+        self.assertEqual(0, len(ids))
+
+        first = SubTask.first()
+        self.assertIsNone(first)
 
     @CommonTestBase().prepare_and_destroy
     def test_limit_empty_table(self):

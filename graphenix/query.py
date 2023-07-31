@@ -284,5 +284,13 @@ class ModelQueryMixin:
         return Query(cls).order(*fields)
     
     @classmethod
+    def pick(cls, field) -> Query:
+        return Query(cls).pick(field)
+    
+    @classmethod
+    def pick_id(cls) -> Query:
+        return Query(cls).pick_id()
+    
+    @classmethod
     def agg(cls, by = None, **aggregations) -> list:
         return Query(cls).agg(by=by, **aggregations)
