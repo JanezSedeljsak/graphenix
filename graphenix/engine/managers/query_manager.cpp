@@ -358,7 +358,8 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
     const size_t subquery_count = qobject.link_vector.size();
     const size_t result_size = root_result.size();
     if (subquery_count == 0 || result_size == 0)
-        return View::make_view(qobject.mdef.field_names, root_result, qobject.mdef.model_name);
+        return View::make_view(qobject.mdef.field_names, root_result,
+                               qobject.mdef.field_date_indexes, qobject.mdef.model_name);
 
     // preapre ix constraints for subquery execution
     std::vector<std::unordered_map<int64_t, View>> subquery_result_maps(subquery_count);
@@ -444,7 +445,7 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
 
                 if (qobject.links[i].offset >= list_size)
                     current[list_field_index] = View::make_empty(qobject.link_vector[i].mdef.field_names,
-                                                                     qobject.link_vector[i].mdef.model_name);
+                                                                 qobject.link_vector[i].mdef.model_name);
 
                 else if (qobject.links[i].limit == 0 && qobject.links[i].offset == 0)
                     current[list_field_index] = groupped_records;
@@ -452,16 +453,16 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
                 else
                 {
                     const size_t end_idx = qobject.links[i].limit > 0
-                                         ? std::min(list_size, qobject.links[i].offset + qobject.links[i].limit)
-                                         : list_size;
+                                               ? std::min(list_size, qobject.links[i].offset + qobject.links[i].limit)
+                                               : list_size;
 
                     std::vector<Record> records_with_limit = std::vector<Record>(
                         groupped_records.records.begin() + qobject.links[i].offset,
                         groupped_records.records.begin() + end_idx);
 
                     View view_instance = View::make_empty(qobject.link_vector[i].mdef.field_names,
-                                                qobject.link_vector[i].mdef.model_name);
-                        
+                                                          qobject.link_vector[i].mdef.model_name);
+
                     view_instance.records = records_with_limit;
                     current[list_field_index] = view_instance;
                 }
@@ -469,5 +470,6 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
         }
     }
 
-    return View::make_view(qobject.mdef.field_names, root_result, qobject.mdef.model_name);
+    return View::make_view(qobject.mdef.field_names, root_result,
+                           qobject.mdef.field_date_indexes, qobject.mdef.model_name);
 }

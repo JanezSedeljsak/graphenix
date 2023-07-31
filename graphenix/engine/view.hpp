@@ -8,12 +8,6 @@
 
 #include <pybind11/pybind11.h>
 
-py::object int2datetime(int64_t int_value)
-{
-    py::module datetime_module = py::module::import("datetime");
-    return datetime_module.attr("datetime").attr("fromtimestamp")(int_value);
-}
-
 struct View;
 
 struct Record
@@ -68,7 +62,9 @@ struct View
     }
 
     static View make_view(const std::vector<std::string> &fieldnames,
-                          const std::vector<py::tuple> &rows, const std::string &modelname)
+                          const std::vector<py::tuple> &rows,
+                          const std::vector<int> date_indexes,
+                          const std::string &modelname)
     {
         View *view_instance = new View;
         const size_t result_size = rows.size();
@@ -76,9 +72,14 @@ struct View
         view_instance->field_names = std::vector<std::string>(fieldnames);
         view_instance->field_names.insert(view_instance->field_names.begin(), "id");
         view_instance->records.resize(result_size);
+        py::module datetime_module = py::module::import("datetime");
 
         for (size_t i = 0; i < result_size; i++)
         {
+            // check if any fields are dates and convert
+            for (const auto &dindex : date_indexes)
+                rows[i][dindex + 1] = datetime_module.attr("datetime").attr("fromtimestamp")(rows[i][dindex + 1]);
+
             Record record_instance = Record::make_record(view_instance, rows[i]);
             view_instance->records[i] = record_instance;
         }
@@ -113,11 +114,11 @@ struct RecordView
 
 py::object Record::attr(const std::string &field_name) const
 {
-    const View& view_ref = *view;
+    const View &view_ref = *view;
     auto it = std::find(view_ref.field_names.begin(), view_ref.field_names.end(), field_name);
     if (it == view_ref.field_names.end())
         throw std::runtime_error("Field name not found in View.");
-    
+
     size_t idx = std::distance(view_ref.field_names.begin(), it);
     return record[idx];
 }
@@ -127,7 +128,7 @@ py::object RecordView::attr(const std::string &field_name) const
     auto it = std::find(field_names.begin(), field_names.end(), field_name);
     if (it == field_names.end())
         throw std::runtime_error("Field name not found in View.");
-    
+
     size_t idx = std::distance(field_names.begin(), it);
     return record[idx];
 }

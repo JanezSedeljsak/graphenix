@@ -115,7 +115,7 @@ class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
         mdef.field_types = [field_types_raw_dict[field] for field in cls._model_fields]
         mdef.field_offsets = field_offsets
         mdef.field_indexes = field_indexes
-        mdef.field_date_indexes = field_date_indexes
+        mdef.field_date_indexes = [dindex for dindex, is_date in enumerate(field_date_indexes) if is_date]
 
         cls._mdef = mdef
         cls._cache_init = True
