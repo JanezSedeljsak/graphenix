@@ -66,14 +66,24 @@ _qread_a:
 _find_make_base:
 	@echo "[graphenix] Creating large DBs for find analysis..."
 	# create DBs with 500K rows
-	python3 -m analysis.find.mysql_make 500000
-	python3 -m analysis.find.sqlite_make 500000
-	python3 -m analysis.find.graphenix_make 500000
+	# python3 -m analysis.singleinsert.raw_sqlite 500000
+	# python3 -m analysis.singleinsert.graphenix_bulk 500000
+	# python3 -m analysis.singleinsert.mysql_bulk 500000
+ 
+	# # create DBs with 1M rows
+	# python3 -m analysis.singleinsert.raw_sqlite 1000000
+	# python3 -m analysis.singleinsert.graphenix_bulk 1000000
+	# python3 -m analysis.singleinsert.mysql_bulk 1000000
 
-	# create DBs with 1M rows
-	python3 -m analysis.find.mysql_make 1000000
-	python3 -m analysis.find.sqlite_make 1000000
-	python3 -m analysis.find.graphenix_make 1000000
+	# create indexed DBs with 500K rows
+	python3 -m analysis.indexinsert.raw_sqlite 500000
+	python3 -m analysis.indexinsert.graphenix_bulk 500000
+	python3 -m analysis.indexinsert.mysql_bulk 500000
+
+	# create indexed DBs with 1M rows
+	python3 -m analysis.indexinsert.raw_sqlite 1000000
+	python3 -m analysis.indexinsert.graphenix_bulk 1000000
+	python3 -m analysis.indexinsert.mysql_bulk 1000000
 	@echo "[graphenix] Finished creating large DBs!"
 
 _find_a:
@@ -97,6 +107,7 @@ _join_a:
 _sizes_a:
 	@echo "[graphenix] Running size analysis..."
 	chmod +x ./analysis/singleinsert/file_sizes.sh
-	./analysis/singleinsert/file_sizes.sh 200000
-	python3 -m analysis.singleinsert.sizes_analysis 200000
+	./analysis/singleinsert/file_sizes.sh 1000000
+	./analysis/singleinsert/file_sizes_indexed.sh 1000000
+	python3 -m analysis.singleinsert.sizes_analysis 1000000
 	@echo "[graphenix] Finished size analysis!"
