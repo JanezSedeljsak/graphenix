@@ -8,7 +8,7 @@ shift
 SIZES=("$@")
 
 SCRIPTS=("graphenix" "alchemy_sqlite" "alchemy_mysql" "raw_sqlite" "raw_mysql" "graphenix_bulk")
-COUNT=5
+COUNT=20
 
 for size in "${SIZES[@]}"; do
     if [ -f "analysis/$group/result_$size.txt" ]; then
@@ -40,4 +40,4 @@ for size in "${SIZES[@]}"; do
 
 done
 
-# python3 -m "analysis.$group.graph"
+python3 -m "analysis.$group.graph"
