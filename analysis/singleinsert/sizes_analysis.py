@@ -29,8 +29,8 @@ def main():
 
     fig, ax = plt.subplots(figsize=(16, 12))
 
-    ibars = ax.bar(np.arange(3), mb_indexed_sizes, color=['#EEEC7B', '#92D6B4', '#35BFEC'])
-    bars = ax.bar(np.arange(3), mb_sizes, color=['#B1B04F', '#649A7C', '#1784A9'])
+    total_size = ax.bar(np.arange(3), mb_indexed_sizes, color=['#B1B04F', '#649A7C', '#1784A9'])
+    index_diff_size = ax.bar(np.arange(3), mb_indexed_sizes - mb_sizes, color=['#EEEC7B', '#92D6B4', '#35BFEC'])
 
     
 
@@ -40,14 +40,14 @@ def main():
     ax.set_title('')
     ax.set_xticks(np.arange(3))
     ax.set_xticklabels(['Graphenix', 'SQLite', 'MySQL'], rotation=0)
-    for ibar, bar in zip(ibars, bars):
-        height = bar.get_height()
-        bottom_offset = 2
-        ax.text(bar.get_x() + bar.get_width() / 2, bottom_offset, f'{height:.2f} MB', 
-                ha='center', va='bottom', fontweight='normal', color="white")
+    for ix_size, totals in zip(index_diff_size, total_size):
+        height = totals.get_height()
+        bottom_offset = 0.5
+        ax.text(totals.get_x() + totals.get_width() / 2, bottom_offset, f'{height:.2f} MB', 
+                ha='center', va='bottom', fontweight='normal')
         
-        iheight = ibar.get_height()
-        ax.text(bar.get_x() + bar.get_width() / 2, 7, f'{(iheight - height):.2f} MB', 
+        iheight = ix_size.get_height()
+        ax.text(totals.get_x() + totals.get_width() / 2, iheight + bottom_offset, f'{(iheight):.2f} MB', 
                 ha='center', va='bottom', fontweight='normal', color="white")
 
     plt.savefig(f'./analysis/singleinsert/sizes.png', bbox_inches='tight')

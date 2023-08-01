@@ -66,14 +66,14 @@ _qread_a:
 _find_make_base:
 	@echo "[graphenix] Creating large DBs for find analysis..."
 	# create DBs with 500K rows
-	# python3 -m analysis.singleinsert.raw_sqlite 500000
-	# python3 -m analysis.singleinsert.graphenix_bulk 500000
-	# python3 -m analysis.singleinsert.mysql_bulk 500000
+	python3 -m analysis.singleinsert.raw_sqlite 500000
+	python3 -m analysis.singleinsert.graphenix_bulk 500000
+	python3 -m analysis.singleinsert.mysql_bulk 500000
  
 	# # create DBs with 1M rows
-	# python3 -m analysis.singleinsert.raw_sqlite 1000000
-	# python3 -m analysis.singleinsert.graphenix_bulk 1000000
-	# python3 -m analysis.singleinsert.mysql_bulk 1000000
+	python3 -m analysis.singleinsert.raw_sqlite 1000000
+	python3 -m analysis.singleinsert.graphenix_bulk 1000000
+	python3 -m analysis.singleinsert.mysql_bulk 1000000
 
 	# create indexed DBs with 500K rows
 	python3 -m analysis.indexinsert.raw_sqlite 500000
