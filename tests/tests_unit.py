@@ -1,9 +1,10 @@
 import graphenix_engine2 as ge2
 import unittest
 from random import randint
-from datetime import datetime
+from datetime import datetime, timedelta
 from .tests_base import *
 from .tests_data import *
+from graphenix import AGG, some, every, QueryView
 
 
 class GraphenixUnitTests(CommonTestBase):
@@ -22,6 +23,13 @@ class GraphenixUnitTests(CommonTestBase):
             User(first_name="Jonhhny", last_name="Brave", email="jb@gmail.com", age=randint(8, 60)),
         ]
         return users
+    
+    @classmethod
+    def _make_subtasks(cls):
+        SubTask(name="SubTask 1", date_created=datetime.now()).make()
+        SubTask(name="SubTask 5", date_created=datetime.now()).make()
+        SubTask(name="SubTask 3", date_created=datetime.now()).make()
+        SubTask(name="SubTask 1", date_created=datetime.now()).make()
 
     def test_library_hearbeat(self):
         """ Test if heartbeat returns 12 (it's my birthdate so i return that as heartbeat) """
@@ -218,11 +226,7 @@ class GraphenixUnitTests(CommonTestBase):
         _, data = SubTask.all()
         self.assertEqual(0, len(data))
 
-        _, data = SubTask.limit(10).all()
-        self.assertEqual(0, len(data))
 
-        _, data = SubTask.offset(10).all()
-        self.assertEqual(0, len(data))
 
         ids = SubTask.pick_id()
         self.assertEqual(0, len(ids))
@@ -232,37 +236,215 @@ class GraphenixUnitTests(CommonTestBase):
 
     @CommonTestBase().prepare_and_destroy
     def test_limit_empty_table(self):
-        """ TODO: test if limit set on empty table """
+        """ test if limit set on empty table """
+
+        _, data = SubTask.limit(10).all()
+        self.assertEqual(0, len(data))
 
     @CommonTestBase().prepare_and_destroy
     def test_offset_empty_table(self):
-        """ TODO: test if offset set on empty table """
+        """ test if offset set on empty table """
+
+        _, data = SubTask.offset(10).all()
+        self.assertEqual(0, len(data))
 
     @CommonTestBase().prepare_and_destroy
     def test_offset_limit_empty_table(self):
-        """ TODO: test if offset + limit set on empty table """
+        """ test if offset + limit set on empty table """
+
+        _, data = SubTask.offset(100).limit(500).all()
+        self.assertEqual(0, len(data))
 
     @CommonTestBase().prepare_and_destroy
-    def test_large_limit_small_table(self):
-        """ TODO: test if limit is bigger than row count """
+    def test_offset_pick_empty_table(self):
+        """ test pick on empty table """
+
+        picked = SubTask.pick(SubTask.name)
+        self.assertEqual(0, len(picked))
+
+        picked = SubTask.pick_id()
+        self.assertEqual(0, len(picked))
 
     @CommonTestBase().prepare_and_destroy
-    def test_order_by_one(self):
-        """ TODO: test if simple order by works """
+    def test_order_by_1(self):
+        """ test if simple order by works - desc PK """
+        self._make_subtasks()
+        _, data = SubTask.order(SubTask.desc()).all()
+        self.assertEqual(4, len(data))
+
+        self.assertEqual(3, data[0].id)
+        self.assertEqual(2, data[1].id)
+        self.assertEqual(1, data[2].id)
+        self.assertEqual(0, data[3].id)
+
 
     @CommonTestBase().prepare_and_destroy
-    def test_order_by_two(self):
-        """ TODO: test if order by two columns works """
+    def test_order_by_2(self):
+        """ test if simple order by works - asc PK """
+        self._make_subtasks()
+        _, data = SubTask.order(SubTask).all()
+        self.assertEqual(4, len(data))
+
+        self.assertEqual(0, data[0].id)
+        self.assertEqual(1, data[1].id)
+        self.assertEqual(2, data[2].id)
+        self.assertEqual(3, data[3].id)
 
     @CommonTestBase().prepare_and_destroy
-    def test_order_by_desc(self):
-        """ TODO: test if order by desc works """
+    def test_order_by_3(self):
+        """ test if simple order by works - name.desc, PK """
+        self._make_subtasks()
+        _, data = SubTask.order(SubTask.name.desc(), SubTask).all()
+        self.assertEqual(4, len(data))
+
+        self.assertEqual(1, data[0].id)
+        self.assertEqual(2, data[1].id)
+        self.assertEqual(0, data[2].id)
+        self.assertEqual(3, data[3].id)
+
+    
+    @CommonTestBase().prepare_and_destroy
+    def test_order_by_4(self):
+        """ test if simple order by works - name, PK """
+        self._make_subtasks()
+        _, data = SubTask.order(SubTask.name, SubTask).all()
+        self.assertEqual(4, len(data))
+
+        self.assertEqual(0, data[0].id)
+        self.assertEqual(3, data[1].id)
+        self.assertEqual(2, data[2].id)
+        self.assertEqual(1, data[3].id)
 
     @CommonTestBase().prepare_and_destroy
-    def test_order_by_multiple(self):
-        """ TODO: test if order by with diff directions works """
+    def test_filter_1(self):
+        """ test simple filter """
+        self._make_subtasks()
+        _, data = SubTask.filter(SubTask.name.equals("SubTask 1")).all()
+        self.assertEqual(2, len(data))
+
+        _, data = SubTask.filter(SubTask.name.equals("SubTask 3")).all()
+        self.assertEqual(1, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_2(self):
+        """ test simple regex filter """
+        self._make_subtasks()
+        _, data = SubTask.filter(SubTask.name.regex(".*SubTask.*")).all()
+        self.assertEqual(4, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_3(self):
+        """ test simple regex filter """
+        self._make_subtasks()
+        _, data = SubTask.filter(SubTask.name.regex(".*XD.*")).all()
+        self.assertEqual(0, len(data))
         
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_4(self):
+        """ test simple is_in + regex filter """
+        self._make_subtasks()
+        ids = SubTask.filter(SubTask.name.regex(".*1.*")).pick_id()
+        _, data = SubTask.filter(SubTask.is_in(ids)).all()
+        self.assertEqual(2, len(data))
 
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_5(self):
+        """ test simple not_in + regex filter """
+        self._make_subtasks()
+        ids = SubTask.filter(SubTask.name.regex(".*1.*")).pick_id()
+        _, data = SubTask.filter(SubTask.not_in(ids)).all()
+        self.assertEqual(2, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_6(self):
+        """ test simple not_in + regex filter """
+        self._make_subtasks()
+        ids = SubTask.filter(SubTask.name.regex(".*1.*")).pick_id()
+        _, data = SubTask.filter(SubTask.not_in(ids)).all()
+        self.assertEqual(2, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_7(self):
+        """ test simple multiple in filter """
+        self._make_subtasks()
+        _, data = SubTask.filter(
+            SubTask.name.regex(".*1.*"),
+            SubTask.equals(0),
+        ).all()
+
+        # one has ID = 0 + a "1" in name
+        self.assertEqual(1, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_8(self):
+        """ test simple some in filter """
+        self._make_subtasks()
+        _, data = SubTask.filter(
+            some(
+                SubTask.equals(1),
+                SubTask.equals(0),           
+            )
+        ).all()
+
+        self.assertEqual(2, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_9(self):
+        """ test simple every in filter """
+        self._make_subtasks()
+        _, data = SubTask.filter(
+            every(
+                SubTask.equals(1),
+                SubTask.equals(0),           
+            )
+        ).all()
+
+        self.assertEqual(0, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_10(self):
+        """ test simple every in filter 2 """
+        self._make_subtasks()
+        _, data = SubTask.filter(
+            every(
+                SubTask.name.is_not("SubTask 3"),
+                SubTask.equals(0),           
+            )
+        ).all()
+
+        self.assertEqual(1, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_11(self):
+        """ test simple some + every in filter """
+        self._make_subtasks()
+        _, data = SubTask.filter(
+            every(
+                SubTask.name.greater_or_equal("SubTask 2"),
+                SubTask.name.regex(".*SubTask.*")
+            ),
+            some(
+                SubTask.name.regex(".*1.*"),
+                SubTask.date_created.greater(datetime.now() - timedelta(days=1)),           
+            )
+        ).all()
+
+        self.assertEqual(2, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    @CommonTestBase().prepare_comlex_struct
+    def test_join_0(self):
+        """ test join 2 tables """
+        _, data = Task.link(subtasks = SubTask).all()
+        self.assertEqual(133, len(data))
+        self.assertEqual(data[0].name, 'Task 1')
+
+        _, data = Task.filter(Task.name.not_in(["Task 1", "Task"])).link(subtasks = SubTask).all()
+        self.assertIsInstance(data, QueryView)
+        self.assertEqual(126, len(data))
+        self.assertEqual(data[0].name, 'Task 2')
+        self.assertIsInstance(data[0].subtasks, ge2.View)
+        self.assertEqual("SubTask 1", data[0].subtasks[0].name)
     
 
 if __name__ == '__main__':

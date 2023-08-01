@@ -149,7 +149,10 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def("at", &View::at)
         .def("size", &View::size)
         .def("as_dict", &View::as_dict)
-        .def("as_tuple", &View::as_tuple);
+        .def("as_tuple", &View::as_tuple)
+        .def("__getitem__", [](const View& self, const int& index) {
+            return self.at(index);
+        });
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

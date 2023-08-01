@@ -16,7 +16,7 @@ def every(*conditions):
 
     condition_node.conditions = f_conditions
     condition_node.children = f_children
-    condition_node.is_and = False
+    condition_node.is_and = True
     return condition_node
 
 def some(*conditions):
