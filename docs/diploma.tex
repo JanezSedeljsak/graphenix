@@ -342,11 +342,12 @@ opis diplome v angleščini
   {\bf NoSQL} & nerelacijske podatkovne baze & nonrelational databases \\
   {\bf I/O} & input/output operations & vhodno/izhodne operacije \\
   {\bf SSD} & solid-state drive & negiljivi diski \\
-  {\bf ER diagram} & entitiy relationship diagram & diagram entitet in relaciji \\
+  {\bf ER} & entitiy relationship (diagram) & (diagram) entitet in relaciji \\
   {\bf ORM} & object-relational mapping & objektno relacijska preslikava \\
   {\bf HTTP} & hypertext transfer protocol & protokol za prenos hiperteksta \\
   {\bf CLI} & command line interface & vmesnik za ukazno vrstico \\
   {\bf CI/CD} & continuous integration, continuous delivery & neprekinjena integracija in postavitev \\
+  {\bf CSV} & comma-separated values & vrednosti, ločene z vejico \\
 %  \dots & \dots & \dots \\
 \end{tabular}
 
@@ -433,10 +434,10 @@ In the final part of the thesis, a performance analysis of the implemented data 
     \begin{figure}[h]
         \centerline{\includegraphics[height=0.5\textwidth, angle=0]{what-is-a-relational-database.jpg}}
         \caption{Preprost primer relacijske podatkovne baze.}
-        \label{sl:mindmap}
+        \label{relacijskabaza}
     \end{figure}
 
-    \colorbox{BurntOrange}{Zamenjaj sliko s lastno verzijo - sprememba sheme na User, Messages, Tasks}
+    \colorbox{BurntOrange}{Zamenjaj sliko z lastno verzijo - sprememba sheme na User, Messages, Tasks}
 
     Na primeru je prikazana struktura, kjer shranjujemo zapise uporabnikov in , ki se jih udeležujejo. Vsak zapis v relacijski podatkovni bazi ima svoj primarni ključ, preko katerega potekajo vse relacije znotraj podatkovne baze. Entiteti "Students" in "Courses" sta starševski entiteti. "StudentCourses", pa predstavlja povezovalno entiteto med prej omenjenima. Namreč vsak študent je lahko v več predmetih in enako velja za predmete (lahko vključujejo več študentov).
 
@@ -484,8 +485,8 @@ In the final part of the thesis, a performance analysis of the implemented data 
     Za nalogo je SQLAlchemy jedro pripravilo naslednjo poizvedbo:
     \begin{minted}{sql}
 SELECT * FROM users
-LEFT OUTER JOIN tasks AS tasks_1 ON users.id = tasks_1.user_id
-LEFT OUTER JOIN messages AS messages_1 ON users.id = messages_1.user_id
+LEFT OUTER JOIN tasks AS t ON users.id = t.user_id
+LEFT OUTER JOIN messages AS m ON users.id = m.user_id
     \end{minted}
 
     \noindent
@@ -584,11 +585,6 @@ total = my_math_module.custom_sum(5, 10)
 print(total) # prints 15
 \end{minted}
 
-    \section{Kako izboljšati razvijalsko izkušnjo uporabnikom knjižnice?}
-
-    \colorbox{BurntOrange}{Novosti Python 3.11 - uporaba type hints}\newline 
-    \colorbox{BurntOrange}{Razvijalcem prijazne strukture za delo s podatki}
-
 \chapter{Razvoj jedra podatkovnega sistema}
 \label{ch0}
     V poglavju predstavimo razvoj jedra za relacijski podatkovni sistem. V prvi fazi je predstavljena celotna strukturiranje podatkov in način shranjevanja na disk. Za tem predstavimo razvoj B+ drevesne strukture za optimalno indeksiranje podatkov. Nato, pa je predstavljena še optimizacija posameznih segmentov in sama strukture kode na nivoju jedra podatkovnega sistema. Vsa izvorna koda je dostopna na GitHub repozitoriju \cite{GRAPHENIX_GITHUB}.
@@ -644,13 +640,13 @@ class Message(Model):
             \item Logične vrednosti (ang. Bool) – je najmanjši podatkovni tip, ki ga vsebuje naš podatkovni sistem in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot to definira Python programski jezik.
             \item Datumi (ang. Datetime) – gre za podatkovni tip, ki ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970 \cite{EPOCH_FORMAT}. 
             \item Povezava (ang. Link) – gre za vgrajen tip relacije, kjer je podatek kazalec na drug zapis v določeni entiteti. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
+            \item Virtualna povezava (ang. VirtualLink) – gre za navidezno polje v entiteti, ki ne zavzame nobenega dodatnega prostora za shranjevanje podatkov. Polje je pomembno za kreiranje povezave, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
         \end{enumerate}
         
         \subsection{Realizacija relaciji med entitetami}
 
         Sama implementacija relaciji je dokaj preprosta, saj se povezave kreirajo avtomatsko direktno preko primarnega ključa posameznega zapisa. Razvijalcu je tako prepuščena le definicija entitete in atributov, kjer določimo povezave (oz. relacije) na drugo entiteto. Sama relacija, pa je realizirana s preprostim kazalcem, ki kaže na zapis v glavo entitete, ki jo želimo povezati.
 
-    \newpage
     \section{Indeksiranje z uporabo B+ dreves}
         \subsection{B+ drevesa in njihove značilnosti}
 
@@ -914,6 +910,8 @@ end function
 
         Izkaže se, da je algoritem z uporabo prioritetne vrste najbolj optimalen pristop, kar pokažejo tudi perfomančni testi, ki se izvajajo na platformi GitHub, saj z uporabo omenjenega pristopa dobili do 4x pohitritev izvedbe nabora podatkov iz ene entitete.
 
+        \subsection{Uporaba podatkovnih okvirjev za nalaganje podatkov}
+
     \section{Podprte funkcionalnosti na nivoju vgrajenega ORM sistema}
     \begin{itemize}
         \item \textbf{Filtriranje podatkov – funkcija ``filter`` (DBMS – where)}. Parametri te funkcije se drevo, kjer je posamezno vozlišče drevesa predstavljeno z enim ali več pogoji, ki so oviti v AND ali OR pogoj.
@@ -929,48 +927,28 @@ ORDER BY users.name, tasks.content
         Bi podatki bili urejeni po imenu uporabnika in nato še na istem nivoju po vsebini naloge. Ekvivalentna poizvedba na nivoju našega sistema bi izgleda tako:
 
 \begin{minted}[breaklines]{python}
-query = User.with(
+query = User.link(
     tasks=Task.order(Task.content)
 ).order(User.name)
 \end{minted}
 
         V tem bi dobili za vsakega uporabnika seznam njegovih nalog in bi ta seznam znotraj uporabnika bil urejen glede na vsebino naloge namesto, da ureditev po nazivu naloge vpliva na celotno matriko.
         
-        \item \textbf{Avtomatsko združevanje podatkov iz različnih entitet tekom poizvedb – funkcija ``with`` (DBMS – različne verzije JOIN stavka).}
+        \item \textbf{Avtomatsko združevanje podatkov iz različnih entitet tekom poizvedb – funkcija ``link`` (DBMS – različne verzije JOIN stavka).}
         \colorbox{BurntOrange}{Predstavimo algoritem združevanja zapisov v skupno strukturo}
-    \end{itemize}
 
-    \newpage    
-    \section{Struktura kode na nivoju jedra}
-    \dirtree{%
-        .1 engine\dotfill Vrhno vozlišče kode jedra. 
-        .2 bptree\dotfill Direktorij z implementacijo B+ drevesa.
-        .3 bptreeindex.hpp\dotfill Struktura celotnega drevesa.
-        .3 bptreenode.hpp\dotfill Logika za delo z vozliščem.
-        .2 managers\dotfill Direktorij z razredi za delo z entitetami.
-        .3 managers.h\dotfill Definicije razredov v direktoriju.
-        .3 query\_manager.cpp\dotfill Metode za delo s poizvedbami.
-        .3 record\_mangaer.cpp\dotfill Metode za delo z posameznimi zapisi.
-        .3 schema\_manager.cpp\dotfill Delo z celotnim ER diagramom.
-        .2 tests\dotfill Direktorij s vso potrebno vsebino za teste jedra.
-        .3 benchmark.h\dotfill Metode za izvedbo časovnih meritev.
-        .3 doctest.h\dotfill Knjižnica za izvedbo testov v C++ \cite{DOCTEST_GITHUB}.
-        .3 run\_tests.sh\dotfill Skripta za izvedbo testov jedra.
-        .3 test\_helpers.hpp\dotfill Metode za pomoč pri izvedbi testov.
-        .3 tests\_size\_3.cpp\dotfill Testi za B+ dreveso (red drevesa = 3).
-        .3 tests.cpp\dotfill Splošni testi za B+ drevesa.
-        .2 main.cpp\dotfill Vhodna datoteka za celotno knjižnico.
-        .2 parser.hpp\dotfill Metode namenjene preslikavi podatkovnih tipov (Python v C++ in obratno).
-        .2 util.cpp\dotfill Generalne metode za celotno jedro.
-    }
-   % \section{(?) Transakcije in sistem za obnovitev podatkov}
-   % section{(?) Migracije znotraj entitet}
+        \item \textbf{Agregacija oz. združevanje podatkov}
+        \newline
+        \colorbox{BurntOrange}{COUNT, SUM, MIN, MAX}
+
+        \item \textbf{Množične akcije}
+        \newline
+        \colorbox{BurntOrange}{bulkcreate, bulkdelete}
+    \end{itemize}
     
 \chapter{Analiza}
 \label{ch2}
-   \section{Karakteristike testnega okolja}
-   \colorbox{BurntOrange}{Opis okolja na katerem bodo izvedeni testi za vse različne konfiguracije}
-   
+
    \section{Testno usmerjen razvoj}
 
     Da zagotovimo pravilno delovanje nekega bolj kompleksnega sistema je na področju razvoja programske opreme zelo priporočen testno usmerjen razvoj. Gre za način validacije pravilnega delovanja posameznih komponent sistema, kot ločeni segmenti in kot celotna enota. V ta namen testno usmerjen razvoj delimo na tri testne faze. 
@@ -1010,15 +988,56 @@ query = User.with(
 
    Pristop avtomatskega testiranja in posodabljanja imenujemo tudi CI/CD, ki temelji na hitrem in varnem razvoju, ki razvijalce hitro obvesti o morebitnih napakah, ki se pojavljajo znotraj aplikacije in omogoča, tako avtomatsko testiranje kot tudi avtomatsko posodobitev produkcijskih verziji aplikacije ali v našem primeru posodobitev stabilne verzije knjižnice.
    
-   \section{Meritve na različnih napravah za shranjevanje in konfiguracijah}
-   \colorbox{BurntOrange}{Performančne razlike glede na napravo za shranjevanje}
-   \newline
-   \colorbox{BurntOrange}{SSD, Disk, USB, Zunanji SSD}
-   
+   %\section{Meritve na različnih napravah za shranjevanje in konfiguracijah}
+   %\colorbox{BurntOrange}{Performančne razlike glede na napravo za shranjevanje}
+   %\newline
+   %\colorbox{BurntOrange}{SSD, Disk, USB, Zunanji SSD}
+
+    \newpage
    \section{Primerjava z ostalimi relacijskimi sistemi}
-   \colorbox{BurntOrange}{Performančna analiza na vnaprej pripravljenih scenarijih}
-   \newline
-   \colorbox{BurntOrange}{moja knjižnica in nekaj pogosteje uporabljenih DMBS}
+   \subsection{Vnašanje podatkov v podatkovni sistemi}
+   \begin{figure}[H]
+        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{singleinsert.png}}
+        \caption{Preprost primer relacijske podatkovne baze.}
+        \label{vnospodatkov}
+    \end{figure}
+    
+    \begin{figure}[H]
+        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{indexinsert.png}}
+        \caption{Preprost primer relacijske podatkovne baze.}
+        \label{vnospodatkov_index}
+    \end{figure}
+
+    \newpage
+    \subsection{Velikosti podatkovnih sistemov na disku}
+    \begin{figure}[H]
+        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{sizes.png}}
+        \caption{Preprost primer relacijske podatkovne baze.}
+        \label{vnospodatkov_index}
+    \end{figure}
+
+    \newpage
+    \subsection{Primerjava poizvedb na eni entiteti}
+
+    \begin{figure}[H]
+        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{singleread.png}}
+        \caption{Preprost primer relacijske podatkovne baze.}
+        \label{vnospodatkov_index}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{queryread.png}}
+        \caption{Preprost primer relacijske podatkovne baze.}
+        \label{vnospodatkov_index}
+    \end{figure}
+
+    \newpage
+    \subsection{Primerjava poizvedb z uporabo relaciji}
+    
+    \newpage
+    \subsection{Filtriranje podatkov s pomočjo indeksiranja}
+
+
     
 \chapter{Scenariji oz. primeri uporabe}
 \label{ch3}
@@ -1028,7 +1047,7 @@ query = User.with(
 
     V prvi fazi si lahko pripravimo preprosto strežniško aplikacijo, ki ima vsega eno točko za pridobivanje podatkov in sicer ``get-range``, kjer lahko sami definiramo 3 argumente, to so ``start``, ``end`` in ``step``, kjer ima vsak od teh argumentov tudi privzete vrednosti.
 
-    \subsection{Implementacija strežniškega aplikacije brez beleženja}
+    \subsection{Aplikacija, ki služi kot osnova za modul beleženja}
 \begin{minted}{python}
 app = Flask(__name__)
 @app.route('/get-range')
@@ -1061,20 +1080,24 @@ if not logging.exists():
     V zgornjem segmentu pripravimo razred, ki predstavlja entiteto s posameznimi atributi, ki predstavljajo podatke, katere bomo tekom delovanja naše aplikacije beležili. V drugi fazi, pa moramo kreirati celotno shemo, kjer definiramo naziv celotne sheme in pa vse razrede oz. entitete, ki bodo uporabljene znotraj naše sheme.
 
     \newpage
-    \subsection{Dekorator za beleženje podatkov}
+    \subsection{Dekorator za dinamično dodajanje beleženja}
 
 \begin{minted}{python}
 def route_with_log(route):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            response = f(request, *args, **kwargs)
+            try:
+                response = f(request, *args, **kwargs)
+            except Exception as err:
+                response = None
+
             ReqInfo(
                 route=route,
                 timestamp=datetime.now(),
                 route_req=json.dumps(dict(request.args)),
-                route_res=response.get_data(as_text=True),
-                resp_code=response.status_code
+                route_res=response.get_data(as_text=True) if response else '',
+                resp_code=response.status_code if response else 500
             ).make()
 
             return response
@@ -1087,19 +1110,16 @@ def route_with_log(route):
     \noindent
     Dekorator je v vzorec, kjer funkcija vrača drugo funkcijo in predstavlja nek ovoj funkcije. Tekom izvedbe ovite funkcije lahko argumente in različne segmente izvajanja prestrežemo in jih prilagodimo glede na naše zahteve. Pogosta uporaba vzorca, je tudi ko želimo na različne akcije dodati različne zahteve npr. strežniški vhodni točki želimo dodati preverjanje, če je uporabnik prijavljen z uporabo žetona in v primeru, ko uporabnik ni prijavljen v funkcijo vrinemo funkcionalnost, ki zavrne zahtevo uporabnika in vrne status 401 (ne prijavljen uporabnik). V primeru našega dekoratorja, pa lahko dekorator $@app.route(...)$ preprosto zamenjamo z $route\_with\_log(...)$ in funkcija bo ohranila tip vhodne točke, poleg tega pa dobi tudi funkcionalnost beleženja podatkov.
 
-    \subsection{Branje zabeleženih podatkov}
+    \subsection{Branje zapisanih podatkov}
 
     V končni fazi je glavna prednost uporabe pripravljene knjižnice za beleženje podatkov struktura shranjenih podatkov. Namreč z uporabo relacijskega podatkovnega sistema dosežemo fiksno strukturo, ki je v primeru klasičnih datotek za beleženje nimamo. Omogočeno nam je tudi bistveno več načinov pridobivanja statistik na nivoju naše strežniške aplikacije, saj lahko podatke filtriramo in po potrebi dodamo še indeksiranje na stolpce, po katerih pogosteje iščemo in urejamo podatke npr. čas zahtevka (timestamp). Na nivoju administratorske aplikacije lahko nato prožimo različne poizvedbe nad $ReqInfo$ entiteto.
-\begin{minted}{python}
 
+    \subsubsection{Izpis zadnjih treh zahtevkov}
+
+\begin{minted}{python}
 # izpis zadnjih treh zahtevkov
 _, reqs = ReqInfo.order(ReqInfo.timestamp.desc()).limit(3).all()
-
-# izpis vseh zahtevkov, ki so uporabljali "get-route" vhodno točko
-_, reqs = ReqInfo.filter(ReqInfo.route == '/get-info').all()
 \end{minted}
-
-    \subsubsection{Primer izpisa zadnjih treh zahtevkov}
 
 \begin{minted}{python}
 ReqInfo(id=3, route=/get-range, timestamp=2023-07-16 03:02:15, 
@@ -1115,11 +1135,83 @@ ReqInfo(id=1, route=/get-range, timestamp=2023-07-16 03:02:05,
     route_res={"Range":[15,12]}, resp_code=200)
 \end{minted}
 
-    \section{Manjši strežniški API}
-    \colorbox{BurntOrange}{Preprost API, ki za trajno shranjevanje uporablja izdelano knjižnico}
+    \subsubsection{Statističen pregled zahtevkov}
+
+    Podatke lahko v vgrajenem podatkovnem sistemu tudi grupiramo, in sicer z uporabo $.agg(...)$ metode v poizvedbi, lahko definiramo polje po katerem grupiramo podatke, kot tudi agregacije, ki jih želimo izvesti.
     
-    \section{Preprosta mobilna aplikacija}
-    \colorbox{BurntOrange}{Preprosta mobilna aplikacije za izdelavo nakupovalnega seznama}
+\begin{minted}{python}
+route_stats = ReqInfo\
+    .agg(by=ReqInfo.route, count=AGG.count())
+\end{minted}
+
+    \subsubsection{Izpis napak v zadnjem dnevu}
+
+    Za nabor napak v zadnjem dnevu, lahko preprosto izvedemo poizvedbo, kjer zahtevamo, da je status odgovora $>= 400$, kar pri HTTP zahtevkih predstavlja razpon napak. Poleg tega, pa dodamo še zahtevo, da mora biti datum napake večji, kot včerajšnji datum ob enaki uri. Za konec zapise uredimo po datumu napake.
+    
+\begin{minted}{python}
+count, api_errors = ReqInfo\
+    .filter(
+        ReqInfo.resp_code >= 400,
+        ReqInfo.timestamp > datetime.now() - timedelta(days=1)
+    )\
+    .order(ReqInfo.timestamp.desc())\
+    .all()
+\end{minted}
+
+    \subsubsection{Izvoz vseh podatkov v .csv datoteko}
+
+    Podatkovni sistem omogoča tudi izvoz v csv datoteko, ki za nekatere uporabnike lahko pomeni lažjo obdelavo podatkov, poleg tega, pa lahko predstavlja tudi varnostno kopijo podatkovne baze v ločeni datoteki.
+
+    Za omenjeno nalogo potrebujemo najprej izvesti nabor vseh podatkov, nato pa s pomočjo privzetega pretvornika podatke izvozi v datoteko s pomočjo metode "dump2csv", ki prejme dva parametra – podatke in naziv izvozne datoteke.
+    
+\begin{minted}{python}
+_, all_reqs = ReqInfo.all()
+ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
+\end{minted}
+
+    \section{Manjši strežniški API}
+
+    Strežniške aplikacije, ki zahtevajo fleksibilno in hitro delo s podatkovnim sistemom postajajo vse bolj pogoste. Python predstavlja enega izmed najpogosteje uporabljenih programskih jezikov na omenjenem področju. Obstaja tudi že ogromno pripravljenih knjižnic za izdelavo API aplikaciji, kot tudi za sam podatkovni sistem, ki se uporablja znotraj aplikacije.
+
+    Tekom poglavja je predstavljena izdelava strežniške aplikacije, kjer uporabljamo Flask \cite{FLASK_GITHUB} ogrodje. Sama aplikacija, pa je namenjena delu z sistemu prefesorjev in laboratorijev.
+    
+    \subsection{Podatkovna shema za aplikacijo}
+
+    V shemi imamo vsega dve tabeli, ki bosta držali podatke o profesorjih in laboratorijih.
+\begin{minted}{python}
+class Teacher(Model):
+    full_name = Field.String(size=256)
+    email = Field.String(size=128)
+    laboratory = Field.Link()
+
+class Laboratory(Model):
+    name = Field.String(size=64)
+    room_number = Field.Int()
+    teachers = Field.VirtualLink('laboratory')
+\end{minted}
+
+    \newpage
+    \subsection{Pretvornik za serializacijo podatkov nad shemo}
+
+\begin{minted}{python}
+class TeacherSearilizer(ViewSearilizer):
+    fields = ('id', 'full_name', 'email')
+
+class LaboratorySearilizer(ViewSearilizer):
+    fields = '*'
+    teachers = TeacherSearilizer
+        
+class BasicLaboratorySearilizer(ViewSearilizer):
+    fields = ('id', 'name', 'room_number')
+
+class DetailTeacherSearilizer(ViewSearilizer):
+    fields = '*'
+    laboratory = BasicLaboratorySearilizer
+\end{minted}
+
+    \subsection{Kreiranje novega zapisa}
+    \subsection{Nabor podatkov profesorjev po laboratorijih}
+    \subsection{Nabor podatkov z dinamičnim filtriranjem}
 
 \chapter{Sklepne ugotovitve}
     \colorbox{BurntOrange}{Splošne ugotovitve tekom izdelave vgrajenega podatkovnega sistema}
