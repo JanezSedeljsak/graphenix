@@ -226,8 +226,6 @@ class GraphenixUnitTests(CommonTestBase):
         _, data = SubTask.all()
         self.assertEqual(0, len(data))
 
-
-
         ids = SubTask.pick_id()
         self.assertEqual(0, len(ids))
 
@@ -445,7 +443,76 @@ class GraphenixUnitTests(CommonTestBase):
         self.assertEqual(data[0].name, 'Task 2')
         self.assertIsInstance(data[0].subtasks, ge2.View)
         self.assertEqual("SubTask 1", data[0].subtasks[0].name)
+
     
+    @CommonTestBase().prepare_and_destroy
+    def test_bulk_create(self):
+        """ test bulk create function """
+        rows = [
+            ['SubTask 1', int(datetime.now().timestamp()), -1],
+            ['SubTask 2', int(datetime.now().timestamp()), -1],
+            ['SubTask 3', int(datetime.now().timestamp()), -1],
+            ['SubTask 4', int(datetime.now().timestamp()), -1],
+            ['SubTask 5', int(datetime.now().timestamp()), -1],
+        ]
+
+        SubTask.bulkcreate(rows)
+        _, data = SubTask.all()
+        self.assertEqual(len(rows), len(data))
+        self.assertEqual(rows[0][0], data[0].name)
+        self.assertEqual(-1, data[0].parent_task)
+        subtask_instance = SubTask.from_view(data[0])
+        self.assertEqual(rows[0][0], subtask_instance.name)
+        self.assertIsNone(subtask_instance.parent_task)
+
+    @CommonTestBase().prepare_and_destroy
+    def test_bulk_create(self):
+        """ test bulk create function """
+        rows = [
+            ['SubTask 1', int(datetime.now().timestamp()), -1],
+            ['SubTask 2', int(datetime.now().timestamp()), -1],
+            ['SubTask 3', int(datetime.now().timestamp()), -1],
+            ['SubTask 4', int(datetime.now().timestamp()), -1],
+            ['SubTask 5', int(datetime.now().timestamp()), -1],
+        ]
+
+        SubTask.bulkcreate(rows)
+        _, data = SubTask.all()
+        self.assertEqual(len(rows), len(data))
+        self.assertEqual(rows[0][0], data[0].name)
+        self.assertEqual(-1, data[0].parent_task)
+        subtask_instance = SubTask.from_view(data[0])
+        self.assertEqual(rows[0][0], subtask_instance.name)
+        self.assertIsNone(subtask_instance.parent_task)
+
+
+    @CommonTestBase().prepare_and_destroy
+    def test_bulk_delete(self):
+        """ Tests bulk delete """
+        self._make_subtasks()
+        _, data = SubTask.all()
+        self.assertEqual(4, len(data))
+
+        ids = SubTask.pick_id()
+        SubTask.bulkdelete(ids)
+        _, data = SubTask.all()
+        self.assertEqual(0, len(data))
+
+
+    @CommonTestBase().prepare_and_destroy
+    def test_bulk_delete_with_filter(self):
+        """ Tests bulk delete with filter """
+        self._make_subtasks()
+        _, data = SubTask.all()
+        self.assertEqual(4, len(data))
+
+        ids = SubTask.filter(SubTask.name.regex(".*1.*")).pick_id()
+        SubTask.bulkdelete(ids)
+        _, data = SubTask.order(SubTask.name.desc()).all()
+        self.assertEqual(2, len(data))
+        names = [row.name for row in data]
+        self.assertEqual(names[0], 'SubTask 5')
+        self.assertEqual(names[1], 'SubTask 3')
 
 if __name__ == '__main__':
     unittest.main()

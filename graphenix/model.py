@@ -126,11 +126,17 @@ class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
         return cls._mdef
     
     @classmethod
-    def bulkcreate(cls, rows: list) -> None:
+    def bulkcreate(cls: Type[T], rows: list) -> None:
         cls.make_cache()
         for row in rows:
             ge2.model_add_record(cls._mdef, row)
-    
+
+    @classmethod
+    def bulkdelete(cls: Type[T], ids:  list[int]) -> None:
+        cls.make_cache()
+        for rec_id in ids:
+            ge2.model_delete_record(cls._mdef, rec_id)
+
     @classmethod
     def get(cls: Type[T], record_id: int):
         cls.make_cache()

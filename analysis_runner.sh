@@ -7,7 +7,7 @@ shift
 # other args are sizes
 SIZES=("$@")
 
-SCRIPTS=("graphenix" "alchemy_sqlite" "alchemy_mysql" "raw_sqlite" "raw_mysql")
+SCRIPTS=("graphenix" "alchemy_sqlite" "alchemy_mysql" "raw_sqlite" "raw_mysql" "graphenix_bulk")
 COUNT=5
 
 for size in "${SIZES[@]}"; do
@@ -32,7 +32,8 @@ for size in "${SIZES[@]}"; do
         if [ $COUNT -gt 0 ]; then
             average=$(bc <<< "scale=2; $sum / $COUNT")
             echo "$average" >> "analysis/$group/result_$size.txt"
-            echo "  Average for $group $size was $average"
+            echo "  Average was: $average"
+            echo ""
         fi
 
     done
