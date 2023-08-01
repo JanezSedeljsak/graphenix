@@ -62,14 +62,14 @@ lab.save()
 ### Querying
 
 #### `.all()`
-The .all() method retrieves all records that match the fields defined in the query object. This method is ideal for fetching multiple records that satisfy the query conditions. It returns a the count and a generator of records, where each record is represented as a `namedtuple` containing the fields retrieved from the database.
+The .all() method retrieves all records that match the fields defined in the query object. This method is ideal for fetching multiple records that satisfy the query conditions. It returns a the count and `QueryView` of records, where each record is represented as a `Record` containing the fields retrieved from the database. `View`, `Record` are C++ wrappers for a `list[tuple]` where we can access fields by keys similar to how Pandas DataFrames work.
 
 ```python
 _, labs_list = Laboratory.link(teachers = Teacher).all()
 ```
 
 #### `.first()`
-The .first() method retrieves the first record that matches the query object. It is commonly used when you need to get a single record that fulfills certain criteria. The method returns a single record as a `namedtuple`, or None if no matching record is found.
+The .first() method retrieves the first record that matches the query object. It is commonly used when you need to get a single record that fulfills certain criteria. The method returns a single record as a insatnce of the model, or None if no matching record is found.
 
 ```python
 lab = Laboratory.filter(Laboratory.name.equals('Bioinformatics')).first()
@@ -92,8 +92,15 @@ lab_stats = Teacher.agg(by=Teacher.laboratory, count=gx.AGG.count())
 #### `.link()`
 
 Link is used to join data either by a direct or a virtual link:
-- `VirtualLink` -> for a specific lab we can get a list of teachers that are in that lab (```query = Laboratory.link(teachers = Teacher)```)
-- `Link` (direct link) -> for a specific teacher we get the lab he is in (```query = Teacher.link(laboratory = Laboratory)```)
+- `VirtualLink` -> for a specific lab we can get a list of teachers that are in that lab:
+```python
+query = Laboratory.link(teachers = Teacher)
+```
+
+- `Link` (direct link) -> for a specific teacher we get the lab he is in:
+```python
+query = Teacher.link(laboratory = Laboratory)
+```
 
 #### `.filter()`
 
