@@ -2,6 +2,8 @@ from graphenix import Field, Schema, Model
 from .data import user_data
 import sys
 import time
+import random
+random.seed(12)
 
 class User(Model):
     first_name = Field.String(size=50)
@@ -24,8 +26,8 @@ def main():
     user_data_list = []
     for i in range(num_users):
         is_admin = i % 2 == 0
-        usr = [user_data['first_name'], user_data['last_name'], user_data['email'],
-                      user_data['age'], is_admin, int(user_data['created_at'].timestamp())]
+        usr = [user_data['first_name'] + str(i), user_data['last_name'], user_data['email'],
+               random.randint(10, 80), is_admin, int(user_data['created_at'].timestamp())]
         user_data_list.append(usr)
 
     User.bulkcreate(user_data_list)

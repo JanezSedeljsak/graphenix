@@ -3,6 +3,8 @@ import sqlite3
 import time
 import sys
 import os
+import random
+random.seed(12)
 
 create_table = """
      CREATE TABLE users (
@@ -31,7 +33,8 @@ def main():
     start_time = time.perf_counter()
 
     for i in range(num_users):
-        cu = {**user_data, "is_admin": i%2 == 0}
+        cu = {**user_data, "is_admin": i%2 == 0, "age": random.randint(10, 80),
+              "first_name": user_data['first_name'] + str(i)}
         cursor.execute(
             "INSERT INTO users (first_name, last_name, email, age, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?)",
             tuple(cu.values())

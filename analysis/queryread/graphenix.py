@@ -16,7 +16,13 @@ def main():
 
     start_time = time.perf_counter()
     
-    _, data = User.all()
+    _, data = User\
+        .filter(User.is_admin.equals(True))\
+        .order(User.age, User).limit(500).all()
+    
+    searilized = data.as_dict()
+    assert len(searilized) == 500 and isinstance(searilized[0], dict) and searilized[0]['age'] == 10 \
+        and searilized[0]['first_name'] == 'John12'
 
     end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000
@@ -24,4 +30,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

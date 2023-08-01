@@ -3,6 +3,8 @@ import mysql.connector
 import time
 import sys
 import os
+import random
+random.seed(12)
 
 create_table = """
     CREATE TABLE `users` (
@@ -38,8 +40,8 @@ def main():
     user_data_list = []
     for i in range(num_users):
         is_admin = i % 2 == 0
-        user_tuple = (user_data['first_name'], user_data['last_name'], user_data['email'],
-                      user_data['age'], int(is_admin), user_data['created_at'])
+        user_tuple = (user_data['first_name'] + str(i), user_data['last_name'], user_data['email'],
+                      random.randint(10, 80), int(is_admin), user_data['created_at'])
         user_data_list.append(user_tuple)
 
     insert_query = f"INSERT INTO users (first_name, last_name, email, age, is_admin, created_at) " \

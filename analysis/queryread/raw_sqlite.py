@@ -10,10 +10,12 @@ def main():
     start_time = time.perf_counter()
     cursor = conn.cursor()
 
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users")
-    data = cursor.fetchall()
-    print(data[0])
+    cursor.execute("SELECT * FROM users WHERE is_admin = 1 ORDER BY age, id LIMIT 500")
+    searilized = [{col[0]: row[idx] for idx, col in enumerate(cursor.description)}
+                  for row in cursor.fetchall()]
+    
+    assert len(searilized) == 500 and isinstance(searilized[0], dict) and searilized[0]['age'] == 10 \
+        and searilized[0]['first_name'] == 'John12'
     
     cursor.close()
     conn.close()

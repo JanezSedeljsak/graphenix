@@ -5,6 +5,8 @@ import mysql.connector
 import time
 import sys
 import os
+import random
+random.seed(12)
 
 Base = declarative_base()
 
@@ -34,7 +36,8 @@ def main():
     Session = sessionmaker(bind=engine)
     start_time = time.perf_counter()
 
-    users = [User(**{**user_data, "is_admin": i%2 == 0}) for i in range(num_users)]
+    users = [User(**{**user_data, "first_name": user_data['first_name'] + str(i),
+                     "is_admin": i%2 == 0, "age": random.randint(10, 80)}) for i in range(num_users)]
 
     session = Session()
     session.bulk_save_objects(users)

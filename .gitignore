@@ -3,6 +3,7 @@
 /build/*
 /dist/*
 *.pyc
+*.txt
 *.egg*/
 /graphenix_db/*
 main.py

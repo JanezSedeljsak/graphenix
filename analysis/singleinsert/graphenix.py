@@ -2,6 +2,8 @@ from graphenix import Field, Schema, Model
 from .data import user_data
 import sys
 import time
+import random
+random.seed(12)
 
 class User(Model):
     first_name = Field.String(size=50)
@@ -21,7 +23,8 @@ def main():
 
     start_time = time.perf_counter()
     for i in range(num_users):
-        current_user = {**user_data, "is_admin": i%2 == 0}
+        current_user = {**user_data, "first_name": user_data['first_name'] + str(i),
+                        "is_admin": i%2 == 0, "age": random.randint(10, 80)}
         user = User(**current_user)
         user.save()
 
