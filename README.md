@@ -226,7 +226,7 @@ count, data = User\
 
 ## License
 
-Graphenix is released under the MIT license. See the `LICENSE` file for more details.
+Graphenix is released under the GNU license. See the `LICENSE` file for more details.
 
 ## Authors
 - [Janez Sedeljšak](https://github.com/JanezSedeljsak)
