@@ -45,6 +45,12 @@ _insert_a:
 	./analysis_runner.sh singleinsert 5000 10000 50000 100000 150000 200000
 	@echo "[graphenix] Finished single insert analysis!"
 
+_iinsert_a:
+	@echo "[graphenix] Running indexed insert analysis..."
+	chmod +x analysis_runner.sh
+	./analysis_runner.sh indexinsert 5000 10000 50000 100000 150000 200000
+	@echo "[graphenix] Finished indexed insert analysis!"
+
 _read_a:
 	@echo "[graphenix] Running single read analysis..."
 	chmod +x analysis_runner.sh
@@ -57,13 +63,26 @@ _qread_a:
 	./analysis_runner.sh queryread 10000 50000 100000 150000 200000
 	@echo "[graphenix] Finished query read analysis!"
 
+_find_make_base:
+	@echo "[graphenix] Creating large DBs for find analysis..."
+	# create DBs with 500K rows
+	python3 -m analysis.find.mysql_make 500000
+	python3 -m analysis.find.sqlite_make 500000
+	python3 -m analysis.find.graphenix_make 500000
+
+	# create DBs with 1M rows
+	python3 -m analysis.find.mysql_make 1000000
+	python3 -m analysis.find.sqlite_make 1000000
+	python3 -m analysis.find.graphenix_make 1000000
+	@echo "[graphenix] Finished creating large DBs!"
+
 _find_a:
 	@echo "[graphenix] Running find without index analysis..."
 	chmod +x analysis_runner.sh
 	./analysis_runner.sh find_no_index 100000 500000 1000000
 	@echo "[graphenix] Finished find without index analysis!"
 
-_findi_a:
+_ifind_a:
 	@echo "[graphenix] Running find with index analysis..."
 	chmod +x analysis_runner.sh
 	./analysis_runner.sh find_index 100000 500000 1000000
@@ -74,3 +93,10 @@ _join_a:
 	chmod +x analysis_runner.sh
 	./analysis_runner.sh join 5000 10000 50000 100000
 	@echo "[graphenix] Finished find with index analysis!"
+
+_sizes_a:
+	@echo "[graphenix] Running size analysis..."
+	chmod +x ./analysis/singleinsert/file_sizes.sh
+	./analysis/singleinsert/file_sizes.sh 200000
+	python3 -m analysis.singleinsert.sizes_analysis 200000
+	@echo "[graphenix] Finished size analysis!"

@@ -9,9 +9,9 @@ random.seed(12)
 create_table = """
     CREATE TABLE `users` (
         `id` INTEGER NOT NULL AUTO_INCREMENT,
-        `first_name` varchar(50) DEFAULT NULL,
-        `last_name` varchar(50) DEFAULT NULL,
-        `email` varchar(50) DEFAULT NULL,
+        `first_name` varchar(15) DEFAULT NULL,
+        `last_name` varchar(15) DEFAULT NULL,
+        `email` varchar(30) DEFAULT NULL,
         `age` int(11) DEFAULT NULL,
         `is_admin` tinyint(1) DEFAULT NULL,
         `created_at` datetime DEFAULT NULL,

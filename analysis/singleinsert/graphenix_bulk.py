@@ -6,9 +6,9 @@ import random
 random.seed(12)
 
 class User(Model):
-    first_name = Field.String(size=50)
-    last_name = Field.String(size=50)
-    email = Field.String(size=50)
+    first_name = Field.String(size=15)
+    last_name = Field.String(size=15)
+    email = Field.String(size=30)
     age = Field.Int()
     is_admin = Field.Bool()
     created_at = Field.DateTime()
