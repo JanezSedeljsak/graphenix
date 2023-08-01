@@ -2,6 +2,12 @@
 
 Graphenix is an embedded database system for Python that allows you to easily store and retrieve data within your Python application. The core of the Graphenix library is written in C++, making it a high-performance solution for managing data.
 
+### Disclaimer
+
+**This project is intended for the fulfillment of a computer science university diploma and should not be used for any production or critical applications.**
+
+The code and content provided in this GitHub repository were developed as part of a academic project and may contain various bugs, errors, or limitations. It is not intended for deployment in real-world scenarios, and using it in production environments may lead to unexpected results or vulnerabilities.
+
 ## Requirements
 
 Graphenix requires Python 3.10 or higher to be installed.
