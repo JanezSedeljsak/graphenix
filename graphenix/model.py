@@ -195,15 +195,3 @@ class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
             self._id = ge2.model_add_record(self._mdef, values_as_list)
         else:
             ge2.model_update_record(self._mdef, values_as_list, self.id)
-
-
-
-class IXModel(Model):
-    """
-    Subclass of Model with B-tree index on primary key (PK).
-
-    This class represents a specialized graphenix Model that inherits from the base Model class.
-    It extends the functionality by adding a B-tree index on the primary key for efficient lookups.
-    """
-
-    pk_index = True

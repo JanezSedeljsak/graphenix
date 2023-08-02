@@ -45,4 +45,4 @@ class DeepUserSearilizer(ViewSearilizer):
     tasks = TaskSearilizer
     city = CitySearilizer
 
-mock_schema = Schema('test_school', models=[User, City, Task, SubTask])
+mock_schema = Schema('mock_schema', models=[User, City, Task, SubTask])

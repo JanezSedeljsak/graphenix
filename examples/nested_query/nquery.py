@@ -26,7 +26,7 @@ class Laboratory(Model):
     room_number = Field.Int()
     users = Field.VirtualLink('laboratory')
 
-mock_schema = Schema('test_school', models=[User, Laboratory, Task, SubTask])
+mock_schema = Schema('mock_schema', models=[User, Laboratory, Task, SubTask])
 mock_schema.create(delete_old=True)
 
 laboratory1 = Laboratory(name="AI", room_number=81751).make()

@@ -6,11 +6,9 @@ def _make_cond_object(model, operation, cmp_value):
     cond_obj.field_name = '' # empty string marks PK
     cond_obj.operation_index = operation
     cond_obj.value = cmp_value
-    is_indexed = model.pk_index and FilterOperationEnum.supports_index(operation)
-    return is_indexed, cond_obj
+    return False, cond_obj
 
 class ModelFilteringMixin:
-    pk_index: bool = False
 
     @classmethod
     def equals(cls, val):

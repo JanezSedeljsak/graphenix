@@ -162,7 +162,7 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
         qobject_editable.filter_root.btree_conditions.clear();
         offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
                                      [&](const std::pair<int64_t, int64_t> &p)
-                                     { return indexed_conditions.count(p.second) > 0; }),
+                                     { return indexed_conditions.count(p.second) == 0; }),
                       offsets.end());
     }
 
@@ -307,7 +307,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
         qobject_editable.filter_root.btree_conditions.clear();
         offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
                                      [&](const std::pair<int64_t, int64_t> &p)
-                                     { return indexed_conditions.count(p.second) > 0; }),
+                                     { return indexed_conditions.count(p.second) == 0; }),
                       offsets.end());
     }
 
@@ -319,7 +319,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
         // used for direct links
         offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
                                      [&](const std::pair<int64_t, int64_t> &p)
-                                     { return qobject.ix_constraints.count(p.second) > 0; }),
+                                     { return qobject.ix_constraints.count(p.second) == 0; }),
                       offsets.end());
     }
 
@@ -483,6 +483,7 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
     for (size_t i = 0; i < subquery_count; i++)
     {
         query_object subquery = qobject.link_vector[i];
+        const int field_index = qobject.links[i].child_link_field_index;
         if (subquery.has_ix_constraints)
             subquery.ix_constraints = ix_set[i];
         else if (qobject.link_vector[i].mdef.field_indexes[field_index])
@@ -490,10 +491,8 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
             py::list current_ixs;
             for (const auto &ix : ix_set[i])
                 current_ixs.append(ix);
-
-            const int field_index = qobject.links[i].child_link_field_index;
+            
             std::string fname = qobject.link_vector[i].mdef.field_names[field_index];
-
             query_object qobject_editable = const_cast<query_object &>(qobject);
             cond_object cobj{fname, IS_IN, current_ixs};
             qobject_editable.filter_root.btree_conditions.push_back(cobj);
