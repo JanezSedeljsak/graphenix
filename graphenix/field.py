@@ -66,6 +66,9 @@ class Field:
         
         def not_in(self, values):
             return self.make_cond_object(self.name, FilterOperationEnum.NOT_IN, values)
+        
+        def between(self, low, high):
+            return self.make_cond_object(self.name, FilterOperationEnum.BETWEEN, (low, high))
 
 
     class Int(BaseType):
@@ -166,6 +169,10 @@ class Field:
         def not_in(self, values):
             posix_values = [int(val.timestamp()) for val in values]
             return self.make_cond_object(self.name, FilterOperationEnum.IS_IN, posix_values)
+        
+        def between(self, low, high):
+            return self.make_cond_object(self.name, FilterOperationEnum.BETWEEN,
+                                         (int(low.timestamp()), int(high.timestamp())))
     
     class Link(BaseType):
         def __init__(self, default = -1):

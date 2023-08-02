@@ -20,3 +20,10 @@ class QueryView(list):
     
     def as_tuple(self) -> list[tuple]:
         return self.view_obj.as_tuple()
+    
+    def __repr__(self):
+        records_strs = "\n\t".join(str(self.view_obj.at(i)) for i in range(self.view_obj.size()))
+        return f'QueryView[\n\t{records_strs}\n]'
+    
+    def __str__(self):
+        return self.__repr__()

@@ -46,7 +46,8 @@ enum FILTER_OPERATION_TYPE
     LESS_OR_EQUAL = 5,
     REGEX = 6,
     IS_IN = 7,
-    NOT_IN = 8
+    NOT_IN = 8,
+    BETWEEN = 9
 };
 
 enum AGGREGATE_OPERATION
@@ -150,6 +151,49 @@ struct cond_object
             case VIRTUAL_LINK:
             case BOOL:
                 throw std::runtime_error("Cannot use VirtualLink or Boolean for checking IN condition!");
+                break;
+
+            default:
+                throw std::runtime_error("Invalid comperator type!");
+                break;
+            }
+
+            return false;
+        }
+
+        if (operation_index == BETWEEN)
+        {
+            py::tuple interval = py::cast<py::tuple>(value);
+            switch (type)
+            {
+            case INT:
+            case DATETIME:
+            case LINK:
+            {
+                const int64_t int_value = *reinterpret_cast<int64_t *>(cmp_field);
+                const int64_t low = py::cast<int64_t>(interval[0]);
+                const int64_t high = py::cast<int64_t>(interval[1]);
+                return low <= int_value && int_value <= high;
+            }
+            case STRING:
+            {
+                py::str py_low = py::cast<py::str>(interval[0]);
+                py::str py_high = py::cast<py::str>(interval[1]);
+                const std::string low = py_low;
+                const std::string high = py_high;
+
+                return 0 <= std::strcmp(cmp_field, low.c_str()) && std::strcmp(cmp_field, high.c_str()) <= 0;
+            }
+            case DOUBLE:
+            {
+                const double double_value = *reinterpret_cast<double *>(cmp_field);
+                const double low = py::cast<double>(interval[0]);
+                const double high = py::cast<double>(interval[1]);
+                return low <= double_value && double_value <= high;
+            }
+            case VIRTUAL_LINK:
+            case BOOL:
+                throw std::runtime_error("Cannot use VirtualLink or Boolean for checking BETWEEN!");
                 break;
 
             default:

@@ -44,3 +44,7 @@ class ModelFilteringMixin:
     @classmethod
     def not_in(cls, values):
         return _make_cond_object(FilterOperationEnum.NOT_IN, values)
+    
+    @classmethod
+    def between(cls, low, high):
+        return _make_cond_object(FilterOperationEnum.BETWEEN, (low, high))

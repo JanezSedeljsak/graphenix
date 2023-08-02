@@ -37,3 +37,4 @@ class FilterOperationEnum:
     REGEX = 6
     IS_IN = 7
     NOT_IN = 8
+    BETWEEN = 9

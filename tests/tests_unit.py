@@ -1,11 +1,12 @@
 import graphenix_engine2 as ge2
 import unittest
-from random import randint
+from random import randint, seed
 from datetime import datetime, timedelta
 from .tests_base import *
 from .tests_data import *
 from graphenix import AGG, some, every, QueryView
 
+seed(12)
 
 class GraphenixUnitTests(CommonTestBase):
     @classmethod
@@ -428,6 +429,74 @@ class GraphenixUnitTests(CommonTestBase):
         ).all()
 
         self.assertEqual(2, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_12(self):
+        """ test between filter for string """
+        self._make_subtasks()
+        bwtn = SubTask.name.between("SubTask 3", "SubTask 5")
+        _, data = SubTask\
+                .order(SubTask.name)\
+                .filter(bwtn)\
+                .all()
+
+        self.assertEqual(2, len(data))
+        self.assertEqual('SubTask 3', data[0].name)
+        self.assertEqual('SubTask 5', data[1].name)
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_13(self):
+        """ test between filter for string - get all """
+        self._make_subtasks()
+        bwtn = SubTask.name.between("SubTask 1", "SubTask 9")
+        _, data = SubTask.filter(bwtn).all()
+        self.assertEqual(4, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_14(self):
+        """ test between filter for string - get 3 """
+        self._make_subtasks()
+        bwtn = SubTask.name.between("SubTask 1", "SubTask 3")
+        _, data = SubTask.filter(bwtn).all()
+        self.assertEqual(3, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_15(self):
+        """ test between filter for string - get 1 """
+        self._make_subtasks()
+        bwtn = SubTask.name.between("SubTask 2", "SubTask 3")
+        _, data = SubTask.filter(bwtn).all()
+        self.assertEqual(1, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_16(self):
+        """ test between filter for int - get 1 """
+        for user in self._get_users():
+            user.save()
+
+        _, data = User.filter(User.age.between(10, 30)).all()
+        self.assertEqual(1, len(data))
+        self.assertEqual(18, data[0].age)
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_17(self):
+        """ test between filter for int - get all """
+        for user in self._get_users():
+            user.save()
+
+        _, data = User.filter(User.age.between(18, 90)).all()
+        self.assertEqual(10, len(data))
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_18(self):
+        """ test between filter for int - get some """
+        for user in self._get_users():
+            user.save()
+
+        _, data = User.filter(User.age.between(23, 47)).all()
+        self.assertEqual(4, len(data))
+        for usr in data:
+            self.assertTrue(23 <= usr.age and usr.age <= 47)
 
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_comlex_struct
