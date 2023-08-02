@@ -181,9 +181,6 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
     if (is_global_agg)
         hashmap[0] = agg_tuple;
 
-    if (is_instant_limit(qobject))
-        offsets.resize(qobject.limit + qobject.offset);
-
     std::sort(offsets.begin(), offsets.end());
     const auto &clusters = clusterify(offsets);
 
@@ -343,8 +340,6 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     std::priority_queue<char *, std::vector<char *>, query_object> pq(qobject);
 
     char *buffer = new char[MAX_CLUSTER_SIZE + mdef.record_size];
-    bool break_cluster_loop = false;
-
     for (const auto &cluster : clusters)
     {
         const int64_t first_offset = cluster.front().first;
@@ -378,19 +373,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
             else
             {
                 raw_rows.push_back(current_record);
-                if (!is_sorting && check_limit && raw_rows.size() > K)
-                {
-                    delete[] raw_rows[K];
-                    raw_rows.resize(K);
-                    break_cluster_loop = true;
-                    break;
-                }
             }
-        }
-
-        if (break_cluster_loop)
-        {
-            break;
         }
     }
 
