@@ -82,7 +82,7 @@ struct cond_object
     int operation_index;
     py::object value;
 
-    std::unordered_set<int64_t> validate_indexed(model_def &mdef, char *record)
+    std::unordered_set<int64_t> validate_indexed(const model_def &mdef)
     {
         int idx = -1;
         if (!field_name.empty())
@@ -94,6 +94,7 @@ struct cond_object
         const int offset = not_pk ? mdef.field_offsets[idx] : mdef.record_size;
         const int size = not_pk ? mdef.field_sizes[idx] : IX_SIZE;
         const FIELD_TYPE type = not_pk ? static_cast<FIELD_TYPE>(mdef.field_types[idx]) : INT;
+        std::unordered_set<int64_t> result = std::unordered_set<int64_t>();
 
         switch (operation_index)
         {
@@ -102,27 +103,27 @@ struct cond_object
             if (!py::isinstance<py::list>(value))
             {
                 throw std::runtime_error("You did not provide a list as the IN/NOT_IN argument");
-                return std::unordered_set<int64_t>();
+                return result;
             }
 
             // TODO run multiple finds in btree
-            return std::unordered_set<int64_t>();
+            return result;
         }
         case EQUAL:
         {
             // TODO run find in btree
-            return std::unordered_set<int64_t>();
+            return result;
         }
         case BETWEEN:
         {
             // TODO run between search in btree
-            return std::unordered_set<int64_t>();
+            return result;
         }
         default:
             throw std::runtime_error("Invalid index operation");
         }
 
-        return std::unordered_set<int64_t>();
+        return result;
     }
 
     bool validate(model_def &mdef, char *record)
@@ -379,18 +380,21 @@ struct query_object
     // single field select
     int picked_index;
 
-    bool validate_conditions(char *record)
+    bool validate_conditions(const int64_t record_id, char *record)
     {
         auto &current_node = filter_root;
         const bool valid = current_node.is_and
-                               ? validate_conditions_every(record, current_node)
-                               : validate_conditions_some(record, current_node);
+                               ? validate_conditions_every(record_id, record, current_node)
+                               : validate_conditions_some(record_id, record, current_node);
 
         return valid;
     }
 
-    bool validate_conditions_every(char *record, cond_node &cnode)
+    bool validate_conditions_every(const int64_t record_id, char *record, cond_node &cnode)
     {
+        if (cnode.btree_conditions.size() > 0 && cnode.tree_ixs.count(record_id) == 0)
+            return false;
+
         for (auto &cond : cnode.conditions)
         {
             const bool valid = cond.validate(mdef, record);
@@ -401,8 +405,8 @@ struct query_object
         for (auto &child : cnode.children)
         {
             const bool valid = child.is_and
-                                   ? validate_conditions_every(record, child)
-                                   : validate_conditions_some(record, child);
+                                   ? validate_conditions_every(record_id, record, child)
+                                   : validate_conditions_some(record_id, record, child);
 
             if (!valid)
                 return false;
@@ -411,8 +415,11 @@ struct query_object
         return true;
     }
 
-    bool validate_conditions_some(char *record, cond_node &cnode)
+    bool validate_conditions_some(const int64_t record_id, char *record, cond_node &cnode)
     {
+        if (cnode.btree_conditions.size() > 0 && cnode.tree_ixs.count(record_id) > 0)
+            return true;
+
         for (auto &cond : cnode.conditions)
         {
             const bool valid = cond.validate(mdef, record);
@@ -423,8 +430,8 @@ struct query_object
         for (auto &child : cnode.children)
         {
             const bool valid = child.is_and
-                                   ? validate_conditions_every(record, child)
-                                   : validate_conditions_some(record, child);
+                                   ? validate_conditions_every(record_id, record, child)
+                                   : validate_conditions_some(record_id, record, child);
 
             if (valid)
                 return true;

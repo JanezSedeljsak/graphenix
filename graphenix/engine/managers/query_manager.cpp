@@ -86,6 +86,61 @@ inline py::tuple build_record(const model_def &mdef, const py::bytes raw_record)
     return record;
 }
 
+inline std::unordered_set<int64_t> evaluate_btree_conditions_every(const model_def &mdef, cond_node &cnode)
+{
+    std::unordered_set<int64_t> every_result;
+    bool first_set_initialized = false;
+
+    for (auto &cobject : cnode.btree_conditions)
+    {
+        std::unordered_set<int64_t> current_result = cobject.validate_indexed(mdef);
+        if (!first_set_initialized)
+        {
+            every_result = current_result;
+            first_set_initialized = true;
+        }
+        else
+            every_result = make_set_intersection(every_result, current_result);
+    }
+
+    return every_result;
+}
+
+inline std::unordered_set<int64_t> evaluate_btree_conditions_some(const model_def &mdef, cond_node &cnode)
+{
+    std::unordered_set<int64_t> some_result = std::unordered_set<int64_t>();
+    for (auto cobject : cnode.btree_conditions)
+    {
+        // make set union
+        std::unordered_set<int64_t> current_result = cobject.validate_indexed(mdef);
+        some_result.insert(current_result.begin(), current_result.end());
+    }
+
+    return some_result;
+}
+
+inline void visit_and_evaluate(const model_def &mdef, cond_node &cnode, const int depth)
+{
+    // root is evaluated seperately
+    if (cnode.btree_conditions.size() > 0 && depth != 0)
+        cnode.tree_ixs = cnode.is_and
+                             ? evaluate_btree_conditions_every(mdef, cnode)
+                             : evaluate_btree_conditions_some(mdef, cnode);
+
+    for (auto &child : cnode.children)
+        visit_and_evaluate(mdef, child, depth + 1);
+}
+
+inline bool is_instant_limit(const query_object &qobject)
+{
+    // instant limit if limit is defined and no ordering or conditions
+    return (
+        qobject.limit > 0 &&
+        qobject.field_indexes.size() == 0 &&
+        qobject.filter_root.conditions.size() == 0 &&
+        qobject.filter_root.children.size() == 0);
+}
+
 std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobject)
 {
     const auto &mdef = qobject.mdef;
@@ -94,21 +149,40 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
 
     std::fstream file(file_name, std::ios::binary | std::ios::in | std::ios::out);
     std::fstream ix_file(ix_file_name, std::ios::binary | std::ios::in | std::ios::out);
+    query_object qobject_editable = const_cast<query_object &>(qobject);
     std::vector<std::pair<int64_t, int64_t>> offsets;
 
     ix_read_all(ix_file, offsets);
     ix_file.close();
 
+    // chech for indexed conditions in condition root and update offsets
+    if (qobject.filter_root.btree_conditions.size() > 0)
+    {
+        std::unordered_set<int64_t> indexed_conditions = evaluate_btree_conditions_every(mdef, qobject_editable.filter_root);
+        qobject_editable.filter_root.btree_conditions.clear();
+        offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
+                                     [&](const std::pair<int64_t, int64_t> &p)
+                                     { return indexed_conditions.count(p.second) > 0; }),
+                      offsets.end());
+    }
+
+    if (!offsets.size())
+        return std::vector<py::tuple>();
+
+    // evaluate condition tree
+    visit_and_evaluate(mdef, qobject_editable.filter_root, 0);
     const bool is_global_agg = qobject.agg_field_index == -1;
     const FIELD_TYPE field_type = static_cast<FIELD_TYPE>(mdef.field_types[qobject.agg_field_index]);
     const int64_t key_field_offset = mdef.field_offsets[qobject.agg_field_index];
 
     std::unordered_map<std::variant<std::string, double, int64_t>, std::vector<py::object>> hashmap;
-    query_object qobject_temp = const_cast<query_object &>(qobject);
-    std::vector<py::object> agg_tuple = qobject_temp.make_agg_tuple();
+    std::vector<py::object> agg_tuple = qobject_editable.make_agg_tuple();
 
     if (is_global_agg)
         hashmap[0] = agg_tuple;
+
+    if (is_instant_limit(qobject))
+        offsets.resize(qobject.limit + qobject.offset);
 
     std::sort(offsets.begin(), offsets.end());
     const auto &clusters = clusterify(offsets);
@@ -125,7 +199,7 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
             char *current_record = new char[mdef.record_size + IX_SIZE];
             memcpy(current_record, buffer + offset.first - first_offset, mdef.record_size);
             memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset.second), IX_SIZE);
-            const bool valid = qobject_temp.validate_conditions(current_record);
+            const bool valid = qobject_editable.validate_conditions(offset.second, current_record);
             if (!valid)
             {
                 delete[] current_record;
@@ -134,7 +208,7 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
 
             if (is_global_agg)
             {
-                qobject_temp.compare_and_swap(current_record, hashmap[0]);
+                qobject_editable.compare_and_swap(current_record, hashmap[0]);
             }
             else
             {
@@ -170,11 +244,11 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
                 if (it == hashmap.end())
                 {
                     // add new object to hashmap
-                    std::vector<py::object> temp_tuple = qobject_temp.make_agg_tuple();
+                    std::vector<py::object> temp_tuple = qobject_editable.make_agg_tuple();
                     hashmap[key] = temp_tuple;
                 }
 
-                qobject_temp.compare_and_swap(current_record, hashmap[key]);
+                qobject_editable.compare_and_swap(current_record, hashmap[key]);
             }
         }
     }
@@ -220,36 +294,49 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     std::fstream file(file_name, std::ios::binary | std::ios::in | std::ios::out);
     std::fstream ix_file(ix_file_name, std::ios::binary | std::ios::in | std::ios::out);
 
-    // TODO: if any field is defined that has a index tree find those records - only if conidtions on thoose fields are set
-    // if there are multiple read all of them and then make a set intersection between them
-    // later it will also need to handle OR/AND operators
-    // if there are no filters and no order fields that don't have index trees and a limit is defined take only <qobject.limit> amount of records
-    // hashmap_ii ix2offset;
-    // hashmap_ii offset2ix;
+    query_object qobject_editable = const_cast<query_object &>(qobject);
     std::vector<std::pair<int64_t, int64_t>> offsets;
 
     ix_read_all(ix_file, offsets);
     ix_file.close();
+
+    // chech for indexed conditions in condition root and update offsets
+    if (qobject.filter_root.btree_conditions.size() > 0)
+    {
+        std::unordered_set<int64_t> indexed_conditions = evaluate_btree_conditions_every(mdef, qobject_editable.filter_root);
+        qobject_editable.filter_root.btree_conditions.clear();
+        offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
+                                     [&](const std::pair<int64_t, int64_t> &p)
+                                     { return indexed_conditions.count(p.second) > 0; }),
+                      offsets.end());
+    }
+
+    // evaluate condition tree
+    visit_and_evaluate(mdef, qobject_editable.filter_root, 0);
 
     if (qobject.is_subquery && qobject.has_ix_constraints)
     {
         // used for direct links
         offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
                                      [&](const std::pair<int64_t, int64_t> &p)
-                                     {
-                                         return qobject.ix_constraints.find(p.second) == qobject.ix_constraints.end();
-                                     }),
+                                     { return qobject.ix_constraints.count(p.second) > 0; }),
                       offsets.end());
     }
+
+    if (!offsets.size())
+        return std::vector<py::tuple>();
+
+    const size_t K = qobject.limit + qobject.offset;
+    if (is_instant_limit(qobject))
+        offsets.resize(K);
 
     const size_t ix_amount = offsets.size();
     std::sort(offsets.begin(), offsets.end());
     const auto &clusters = clusterify(offsets);
 
     // check limit is implemented this way so that if limit is >= 1000 it sorts at the end
-    const bool check_limit = 0 < qobject.limit;
+    const bool check_limit = qobject.limit > 0;
     const bool is_sorting = qobject.field_indexes.size() > 0;
-    const size_t K = qobject.limit + qobject.offset;
 
     std::vector<char *> raw_rows;
     raw_rows.reserve(!check_limit ? ix_amount : K);
@@ -269,7 +356,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
             char *current_record = new char[mdef.record_size + IX_SIZE];
             memcpy(current_record, buffer + offset.first - first_offset, mdef.record_size);
             memcpy(current_record + mdef.record_size, reinterpret_cast<const char *>(&offset.second), IX_SIZE);
-            const bool valid = const_cast<query_object &>(qobject).validate_conditions(current_record);
+            const bool valid = qobject_editable.validate_conditions(offset.second, current_record);
             if (!valid)
             {
                 delete[] current_record;
@@ -356,12 +443,13 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
 View QueryManager::execute_query(const query_object &qobject, const int depth)
 {
     // execute main query
+    const auto &mdef = qobject.mdef;
     std::vector<py::tuple> root_result = QueryManager::execute_entity_query(qobject);
     const size_t subquery_count = qobject.link_vector.size();
     const size_t result_size = root_result.size();
     if (subquery_count == 0 || result_size == 0)
-        return View::make_view(qobject.mdef.field_names, root_result,
-                               qobject.mdef.field_date_indexes, qobject.mdef.model_name);
+        return View::make_view(mdef.field_names, root_result,
+                               mdef.field_date_indexes, mdef.model_name);
 
     // preapre ix constraints for subquery execution
     std::vector<std::unordered_map<int64_t, View>> subquery_result_maps(subquery_count);
@@ -472,6 +560,6 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
         }
     }
 
-    return View::make_view(qobject.mdef.field_names, root_result,
-                           qobject.mdef.field_date_indexes, qobject.mdef.model_name);
+    return View::make_view(mdef.field_names, root_result,
+                           mdef.field_date_indexes, mdef.model_name);
 }

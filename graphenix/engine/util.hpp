@@ -102,14 +102,6 @@ inline vector<vector<pair<int64_t, int64_t>>> clusterify(vector<pair<int64_t, in
 }
 
 template <typename T>
-unordered_set<T> make_set_union(const unordered_set<T> &set1, const unordered_set<T> &set2)
-{
-    unordered_set<T> union_set(set1);
-    union_set.insert(set2.begin(), set2.end());
-    return union_set;
-}
-
-template <typename T>
 unordered_set<T> make_set_intersection(const unordered_set<T> &set1, const unordered_set<T> &set2)
 {
     unordered_set<T> intersection_set;
