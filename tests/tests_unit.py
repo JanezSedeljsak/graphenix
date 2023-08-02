@@ -1,27 +1,24 @@
 import graphenix_engine2 as ge2
 import unittest
-from random import randint, seed
 from datetime import datetime, timedelta
 from .tests_base import *
 from .tests_data import *
 from graphenix import AGG, some, every, QueryView
 
-seed(12)
-
 class GraphenixUnitTests(CommonTestBase):
     @classmethod
     def _get_users(cls):
         users = [
-            User(first_name="John", last_name="Doe", email="john.doe@example.com", age=randint(18, 60)),
-            User(first_name="Jane", last_name="Doe", email="jane.doe@example.com", age=randint(18, 60)),
-            User(first_name="Alice", last_name="Smith", email="alice.smith@example.com", age=randint(18, 60)),
-            User(first_name="Bob", last_name="Johnson", email="bob.johnson@example.com", age=randint(18, 60)),
-            User(first_name="Emily", last_name="Williams", email="emily.williams@example.com", age=randint(18, 60)),
-            User(first_name="Daniel", last_name="Brown", email="daniel.brown@example.com", age=randint(18, 60)),
-            User(first_name="Olivia", last_name="Jones", email="olivia.jones@example.com", age=randint(18, 60)),
-            User(first_name="David", last_name="Garcia", email="david.garcia@example.com", age=randint(18, 60)),
-            User(first_name="Isabella", last_name="Martinez", email="isabella.martinez@example.com", age=randint(18, 60)),
-            User(first_name="Jonhhny", last_name="Brave", email="jb@gmail.com", age=randint(8, 60)),
+            User(first_name="John", last_name="Doe", email="john.doe@example.com", age=23),
+            User(first_name="Jane", last_name="Doe", email="jane.doe@example.com", age=45),
+            User(first_name="Alice", last_name="Smith", email="alice.smith@example.com", age=32),
+            User(first_name="Bob", last_name="Johnson", email="bob.johnson@example.com", age=18),
+            User(first_name="Emily", last_name="Williams", email="emily.williams@example.com", age=50),
+            User(first_name="Daniel", last_name="Brown", email="daniel.brown@example.com", age=60),
+            User(first_name="Olivia", last_name="Jones", email="olivia.jones@example.com", age=73),
+            User(first_name="David", last_name="Garcia", email="david.garcia@example.com", age=54),
+            User(first_name="Isabella", last_name="Martinez", email="isabella.martinez@example.com", age=41),
+            User(first_name="Jonhhny", last_name="Brave", email="jb@gmail.com", age=35),
         ]
         return users
     
@@ -474,9 +471,9 @@ class GraphenixUnitTests(CommonTestBase):
         for user in self._get_users():
             user.save()
 
-        _, data = User.filter(User.age.between(10, 30)).all()
+        _, data = User.filter(User.age.between(19, 30)).all()
         self.assertEqual(1, len(data))
-        self.assertEqual(18, data[0].age)
+        self.assertEqual(23, data[0].age)
 
     @CommonTestBase().prepare_and_destroy
     def test_filter_17(self):
@@ -494,7 +491,7 @@ class GraphenixUnitTests(CommonTestBase):
             user.save()
 
         _, data = User.filter(User.age.between(23, 47)).all()
-        self.assertEqual(4, len(data))
+        self.assertEqual(5, len(data))
         for usr in data:
             self.assertTrue(23 <= usr.age and usr.age <= 47)
 
