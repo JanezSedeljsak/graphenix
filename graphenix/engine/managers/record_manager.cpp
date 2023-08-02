@@ -24,9 +24,7 @@ int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> 
     fstream ix_file(ix_file_name, ios::binary | ios::in | ios::out);
 
     if (!file.is_open())
-    {
         throw runtime_error("Failed to open the data file!");
-    }
 
     int num_values = values.size();
 

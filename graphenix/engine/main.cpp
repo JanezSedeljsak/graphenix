@@ -95,6 +95,7 @@ PYBIND11_MODULE(graphenix_engine2, m)
 
     py::class_<cond_node>(m, "cond_node")
         .def(py::init<>())
+        .def_readwrite("btree_conditions", &cond_node::btree_conditions)
         .def_readwrite("conditions", &cond_node::conditions)
         .def_readwrite("children", &cond_node::children)
         .def_readwrite("is_and", &cond_node::is_and);

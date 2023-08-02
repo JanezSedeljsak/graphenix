@@ -1,37 +1,40 @@
 import graphenix_engine2 as ge2
-from .mixin_field_order import FilterOperationEnum
+from .enums import FilterOperationEnum
 
-def _make_cond_object(operation, cmp_value):
-        cond_obj = ge2.cond_object()
-        cond_obj.field_name = '' # empty string marks PK
-        cond_obj.operation_index = operation
-        cond_obj.value = cmp_value
-        return cond_obj
+def _make_cond_object(model, operation, cmp_value):
+    cond_obj = ge2.cond_object()
+    cond_obj.field_name = '' # empty string marks PK
+    cond_obj.operation_index = operation
+    cond_obj.value = cmp_value
+    is_indexed = model.pk_index and FilterOperationEnum.supports_index(operation)
+    return is_indexed, cond_obj
 
 class ModelFilteringMixin:
+    pk_index: bool = False
+
     @classmethod
     def equals(cls, val):
-        return _make_cond_object(FilterOperationEnum.EQUAL, val)
+        return _make_cond_object(cls, FilterOperationEnum.EQUAL, val)
     
     @classmethod
     def is_not(cls, val):
-        return _make_cond_object(FilterOperationEnum.NOTEQUAL, val)
+        return _make_cond_object(cls, FilterOperationEnum.NOTEQUAL, val)
 
     @classmethod
     def greater(cls, val):
-        return _make_cond_object(FilterOperationEnum.GREATER, val)
+        return _make_cond_object(cls, FilterOperationEnum.GREATER, val)
 
     @classmethod
     def greater_or_equal(cls, val):
-        return _make_cond_object(FilterOperationEnum.GREATER_OR_EQUAL, val)
+        return _make_cond_object(cls, FilterOperationEnum.GREATER_OR_EQUAL, val)
 
     @classmethod
     def less(cls, val):
-        return _make_cond_object(FilterOperationEnum.LESS, val)
+        return _make_cond_object(cls, FilterOperationEnum.LESS, val)
     
     @classmethod
     def less_or_equal(cls, val):
-        return _make_cond_object(FilterOperationEnum.LESS_OR_EQUAL, val)
+        return _make_cond_object(cls, FilterOperationEnum.LESS_OR_EQUAL, val)
     
     @classmethod
     def regex(cls, val):
@@ -39,12 +42,12 @@ class ModelFilteringMixin:
     
     @classmethod
     def is_in(cls, values):
-        return _make_cond_object(FilterOperationEnum.IS_IN, values)
+        return _make_cond_object(cls, FilterOperationEnum.IS_IN, values)
     
     @classmethod
     def not_in(cls, values):
-        return _make_cond_object(FilterOperationEnum.NOT_IN, values)
+        return _make_cond_object(cls, FilterOperationEnum.NOT_IN, values)
     
     @classmethod
     def between(cls, low, high):
-        return _make_cond_object(FilterOperationEnum.BETWEEN, (low, high))
+        return _make_cond_object(cls, FilterOperationEnum.BETWEEN, (low, high))

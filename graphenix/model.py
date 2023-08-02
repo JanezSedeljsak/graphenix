@@ -1,11 +1,11 @@
 import graphenix_engine2 as ge2
 
-from typing import Type, NamedTuple
-from collections import namedtuple
 from .mixins.mixin_model_base import ModelBaseMixin, T
 from .mixins.mixin_model_filtering import ModelFilteringMixin
+from .mixins.enums import FieldTypeEnum
 from .query import ModelQueryMixin
-from .field import Field, FieldTypeEnum
+from .field import Field
+from typing import Type
 
 class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
     _db = None
@@ -45,6 +45,9 @@ class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
     
     @classmethod
     def from_view(cls: Type[T], record_view) -> T:
+        if not isinstance(record_view, ge2.Record):
+            raise TypeError(f"Record should be of type Record - got {type(record_view)}")
+        
         view_dict = record_view.as_dict()
         record_id = view_dict.pop('id')
         rec = cls(**view_dict)
@@ -194,3 +197,13 @@ class Model(ModelBaseMixin, ModelQueryMixin, ModelFilteringMixin):
             ge2.model_update_record(self._mdef, values_as_list, self.id)
 
 
+
+class IXModel(Model):
+    """
+    Subclass of Model with B-tree index on primary key (PK).
+
+    This class represents a specialized graphenix Model that inherits from the base Model class.
+    It extends the functionality by adding a B-tree index on the primary key for efficient lookups.
+    """
+
+    pk_index = True

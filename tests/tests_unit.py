@@ -531,26 +531,6 @@ class GraphenixUnitTests(CommonTestBase):
         self.assertEqual(rows[0][0], subtask_instance.name)
         self.assertIsNone(subtask_instance.parent_task)
 
-    @CommonTestBase().prepare_and_destroy
-    def test_bulk_create(self):
-        """ test bulk create function """
-        rows = [
-            ['SubTask 1', int(datetime.now().timestamp()), -1],
-            ['SubTask 2', int(datetime.now().timestamp()), -1],
-            ['SubTask 3', int(datetime.now().timestamp()), -1],
-            ['SubTask 4', int(datetime.now().timestamp()), -1],
-            ['SubTask 5', int(datetime.now().timestamp()), -1],
-        ]
-
-        SubTask.bulkcreate(rows)
-        _, data = SubTask.all()
-        self.assertEqual(len(rows), len(data))
-        self.assertEqual(rows[0][0], data[0].name)
-        self.assertEqual(-1, data[0].parent_task)
-        subtask_instance = SubTask.from_view(data[0])
-        self.assertEqual(rows[0][0], subtask_instance.name)
-        self.assertIsNone(subtask_instance.parent_task)
-
 
     @CommonTestBase().prepare_and_destroy
     def test_bulk_delete(self):

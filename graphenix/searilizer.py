@@ -52,7 +52,7 @@ class ViewSearilizer:
             fields = cls.fields if not isinstance(cls.fields, str) else (cls.fields,)
 
         if isinstance(data, ge2.View):
-            data = QueryView(data)
+            data = QueryView(cls.model, data)
         
         if isinstance(data, list):
             return [cls.jsonify(row) for row in data]

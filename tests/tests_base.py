@@ -6,11 +6,16 @@ from datetime import datetime
 class CommonTestBase(unittest.TestCase):
 
     @staticmethod
-    def perf(name, times=1, logger=False, test_id=None):
+    def perf(name, times=1, before_each: list = None, cleanup: list = None):
         def decorator(method):
             def wrapper(*args, **kwargs):
                 total_elapsed_time = 0
                 for _ in range(times):
+                    if before_each is not None:
+                        for action in before_each:
+                            decorated_method = action(lambda *args, **kwargs: None)
+                            decorated_method()
+
                     start_time = time.monotonic()
                     method(*args, **kwargs)
                     end_time = time.monotonic()
@@ -19,6 +24,11 @@ class CommonTestBase(unittest.TestCase):
 
                 avg_elapsed_time = total_elapsed_time / times
                 print(f"[Graphenix_PERF_TEST] Avg: {avg_elapsed_time:.3f} - {name} (executed {times} times)")
+                if cleanup is not None:
+                    for action in cleanup:
+                        decorated_method = action(lambda *args, **kwargs: None)
+                        decorated_method()
+                
                 return None
             return wrapper
         return decorator
@@ -32,7 +42,7 @@ class CommonTestBase(unittest.TestCase):
         return callable
     
     def prepare_and_destroy(self, method):
-        """ A decorator that calls prepares the db before the method call and deletes it after the call """
+        """ A decorator that prepares the db before the method call and deletes it after the call """
         def callable(*args, **kwargs):
             self.delete_if_exists_and_create()
             result = method(*args, **kwargs)
@@ -98,3 +108,21 @@ class CommonTestBase(unittest.TestCase):
         mock_schema.delete()
         exists = mock_schema.exists()
         self.assertFalse(exists)
+
+    def prepare(self, method):
+        """ A decorator that creates the db and deletes if exists """
+        def callable(*args, **kwargs):
+            self.delete_if_exists_and_create()
+            result = method(*args, **kwargs)
+            return result
+        
+        return callable
+    
+    def destroy(self, method):
+        """ A decorator that deletes the db """
+        def callable(*args, **kwargs):
+            result = method(*args, **kwargs)
+            self.cleanup_and_validate()
+            return result
+        
+        return callable

@@ -5,31 +5,34 @@ from typing import Type, Generator
 from collections import namedtuple
 import graphenix_engine2 as ge2
 
-def every(*conditions):
+def cond_node_from_conditions(*conditions) -> ge2.cond_node:
     condition_node = ge2.cond_node()
     f_children, f_conditions = [], []
+    btree_conditions = []
+
     for cond in conditions:
         if isinstance(cond, ge2.cond_node):
             f_children.append(cond)
-        else:
-            f_conditions.append(cond)
+            continue
 
+        indexed, current_cond = cond
+        if indexed:
+            btree_conditions.append(current_cond)
+        else:
+            f_conditions.append(current_cond)
+
+    condition_node.btree_conditions = btree_conditions
     condition_node.conditions = f_conditions
     condition_node.children = f_children
+    return condition_node
+
+def every(*conditions):
+    condition_node = cond_node_from_conditions(*conditions)
     condition_node.is_and = True
     return condition_node
 
 def some(*conditions):
-    condition_node = ge2.cond_node()
-    f_children, f_conditions = [], []
-    for cond in conditions:
-        if isinstance(cond, ge2.cond_node):
-            f_children.append(cond)
-        else:
-            f_conditions.append(cond)
-
-    condition_node.conditions = f_conditions
-    condition_node.children = f_children
+    condition_node = cond_node_from_conditions(*conditions)
     condition_node.is_and = False
     return condition_node
 
@@ -79,15 +82,9 @@ class Query:
         self.query_object.picked_index = -2
 
     def filter(self, *conditions) -> "Query":
-        f_children, f_conditions = [], []
-        for cond in conditions:
-            if isinstance(cond, ge2.cond_node):
-                f_children.append(cond)
-            else:
-                f_conditions.append(cond)
-
-        self.query_object.filter_root.conditions = f_conditions
-        self.query_object.filter_root.children = f_children
+        condition_node = cond_node_from_conditions(*conditions)
+        condition_node.is_and = True
+        self.query_object.filter_root = condition_node
         return self
 
     def limit(self, amount: int) -> "Query":
@@ -180,12 +177,12 @@ class Query:
     def all(self) -> tuple[int, Generator[T, None, None]]:
         self.base_model.make_cache()
         view = ge2.execute_query(self.query_object, 0)
-        return view.size(), QueryView(view)
+        return view.size(), QueryView(self.base_model, view)
 
     def first(self) -> T | None:
         self.query_object.limit = 1
         self.base_model.make_cache()
-        data = QueryView(ge2.execute_query(self.query_object, 0))
+        data = QueryView(self.base_model, ge2.execute_query(self.query_object, 0))
         if not data:
             return None
         

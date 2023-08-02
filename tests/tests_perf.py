@@ -8,7 +8,7 @@ from .tests_data import *
 class GraphenixPerfTests(CommonTestBase):
     
     # @CommonTestBase.ignore
-    @CommonTestBase.perf("Create 10K users and read them by IDs", times=5)
+    @CommonTestBase.perf("Create 10K records and read them by IDs", times=5)
     @CommonTestBase().prepare_and_destroy
     def test_create_10k_users_and_read(self):
         """ Create 10K users and read them by IDs """
@@ -61,7 +61,7 @@ class GraphenixPerfTests(CommonTestBase):
     # @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
-    @CommonTestBase.perf("Read 1M records at once", times=5)
+    @CommonTestBase.perf("Read 1M records at once (not bulk action)", times=5)
     def test_read_1M_records(self):
         AMOUNT = 1_000_000
         count, rows = City.all()
@@ -184,6 +184,23 @@ class GraphenixPerfTests(CommonTestBase):
         self.assertEqual(rec[0], last.name)
         self.assertEqual(AMOUNT - 1, last.id)
         self.assertEqual(rec[2], last.population_thousands)
+
+    @CommonTestBase.perf("Bulk delete 1M codelist records", times=5, 
+                         before_each=[CommonTestBase().prepare, CommonTestBase().prepare_1M_cities], 
+                         cleanup=[CommonTestBase().destroy])
+    def test_bulk_delete_1m_records(self):
+        first = City.get(0)
+        last = City.get(999_999)
+        self.assertIsInstance(first, City)
+        self.assertIsInstance(last, City)
+
+        ids = City.pick_id()
+        self.assertEqual(1_000_000, len(ids))
+        City.bulkdelete(ids)
+
+        after_delete_ids = City.pick_id()
+        self.assertEqual(0, len(after_delete_ids))
+
 
 
 

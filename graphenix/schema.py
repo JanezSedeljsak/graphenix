@@ -17,6 +17,10 @@ class Schema:
         mdefs = [model._mdef for _, model in self.models.items()]
         ge2.create_schema(self.name, mdefs, delete_old) # type: ignore
 
+    def make(self, delete_old=False):
+        self.create(delete_old=delete_old)
+        return self
+
     def delete(self):
         ge2.delete_schema(self.name) # type: ignore
 

@@ -1,18 +1,9 @@
 from datetime import datetime
-from .mixins.mixin_model_base import T
-from .mixins.mixin_field_order import FO, FieldOrderMixin, FilterOperationEnum
-from .mixins.mixin_model_base import ModelBaseMixin
+from .mixins.mixin_model_base import T, ModelBaseMixin
+from .mixins.mixin_field_order import FO, FieldOrderMixin
+from .mixins.enums import FilterOperationEnum
 
 import graphenix_engine2 as ge2
-
-class FieldTypeEnum:
-    INT = 0
-    STRING = 1
-    BOOL = 2
-    DATETIME = 3
-    LINK = 4
-    DOUBLE = 5
-    VIRTUAL_LINK = 6
 
 class Field:
 
@@ -32,43 +23,43 @@ class Field:
         def desc(self: FO) -> str:
             return self.name
         
-        @staticmethod
-        def make_cond_object(field_name, operation, cmp_value):
+        def make_cond_object(self, operation, cmp_value):
             cond_obj = ge2.cond_object()
-            cond_obj.field_name = field_name
+            cond_obj.field_name = self.name
             cond_obj.operation_index = operation
             cond_obj.value = cmp_value
-            return cond_obj
+            is_indexed = self.index and FilterOperationEnum.supports_index(operation)
+            return is_indexed, cond_obj
         
         def equals(self, val):
-            return self.make_cond_object(self.name, FilterOperationEnum.EQUAL, val)
+            return self.make_cond_object(FilterOperationEnum.EQUAL, val)
 
         def is_not(self, val):
-            return self.make_cond_object(self.name, FilterOperationEnum.NOTEQUAL, val)
+            return self.make_cond_object(FilterOperationEnum.NOTEQUAL, val)
 
         def greater(self, val):
-            return self.make_cond_object(self.name, FilterOperationEnum.GREATER, val)
+            return self.make_cond_object(FilterOperationEnum.GREATER, val)
 
         def greater_or_equal(self, val):
-            return self.make_cond_object(self.name, FilterOperationEnum.GREATER_OR_EQUAL, val)
+            return self.make_cond_object(FilterOperationEnum.GREATER_OR_EQUAL, val)
 
         def less(self, val):
-            return self.make_cond_object(self.name, FilterOperationEnum.LESS, val)
+            return self.make_cond_object(FilterOperationEnum.LESS, val)
 
         def less_or_equal(self, val):
-            return self.make_cond_object(self.name, FilterOperationEnum.LESS_OR_EQUAL, val)
+            return self.make_cond_object(FilterOperationEnum.LESS_OR_EQUAL, val)
         
         def regex(self, val):
             raise Exception("Regex is only allowed on type String")
         
         def is_in(self, values):
-            return self.make_cond_object(self.name, FilterOperationEnum.IS_IN, values)
+            return self.make_cond_object(FilterOperationEnum.IS_IN, values)
         
         def not_in(self, values):
-            return self.make_cond_object(self.name, FilterOperationEnum.NOT_IN, values)
+            return self.make_cond_object(FilterOperationEnum.NOT_IN, values)
         
         def between(self, low, high):
-            return self.make_cond_object(self.name, FilterOperationEnum.BETWEEN, (low, high))
+            return self.make_cond_object(FilterOperationEnum.BETWEEN, (low, high))
 
 
     class Int(BaseType):
@@ -100,7 +91,7 @@ class Field:
             setattr(instance, '_' + self.name, value)
         
         def regex(self, val):
-            return self.make_cond_object(self.name, FilterOperationEnum.REGEX, val)
+            return self.make_cond_object(FilterOperationEnum.REGEX, val)
 
     class Bool(BaseType):
         def __init__(self, default: bool = False):
@@ -140,38 +131,38 @@ class Field:
 
         def equals(self, val):
             posix = int(val.timestamp())
-            return self.make_cond_object(self.name, FilterOperationEnum.EQUAL, posix)
+            return self.make_cond_object(FilterOperationEnum.EQUAL, posix)
 
         def is_not(self, val):
             posix = int(val.timestamp())
-            return self.make_cond_object(self.name, FilterOperationEnum.NOTEQUAL, posix)
+            return self.make_cond_object(FilterOperationEnum.NOTEQUAL, posix)
 
         def greater(self, val):
             posix = int(val.timestamp())
-            return self.make_cond_object(self.name, FilterOperationEnum.GREATER, posix)
+            return self.make_cond_object(FilterOperationEnum.GREATER, posix)
 
         def greater_or_equal(self, val):
             posix = int(val.timestamp())
-            return self.make_cond_object(self.name, FilterOperationEnum.GREATER_OR_EQUAL, posix)
+            return self.make_cond_object(FilterOperationEnum.GREATER_OR_EQUAL, posix)
 
         def less(self, val):
             posix = int(val.timestamp())
-            return self.make_cond_object(self.name, FilterOperationEnum.LESS, posix)
+            return self.make_cond_object(FilterOperationEnum.LESS, posix)
 
         def less_or_equal(self, val):
             posix = int(val.timestamp())
-            return self.make_cond_object(self.name, FilterOperationEnum.LESS_OR_EQUAL, posix)
+            return self.make_cond_object(FilterOperationEnum.LESS_OR_EQUAL, posix)
         
         def is_in(self, values):
             posix_values = [int(val.timestamp()) for val in values]
-            return self.make_cond_object(self.name, FilterOperationEnum.IS_IN, posix_values)
+            return self.make_cond_object(FilterOperationEnum.IS_IN, posix_values)
     
         def not_in(self, values):
             posix_values = [int(val.timestamp()) for val in values]
-            return self.make_cond_object(self.name, FilterOperationEnum.IS_IN, posix_values)
+            return self.make_cond_object(FilterOperationEnum.IS_IN, posix_values)
         
         def between(self, low, high):
-            return self.make_cond_object(self.name, FilterOperationEnum.BETWEEN,
+            return self.make_cond_object(FilterOperationEnum.BETWEEN,
                                          (int(low.timestamp()), int(high.timestamp())))
     
     class Link(BaseType):

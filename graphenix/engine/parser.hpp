@@ -82,6 +82,49 @@ struct cond_object
     int operation_index;
     py::object value;
 
+    std::unordered_set<int64_t> validate_indexed(model_def &mdef, char *record)
+    {
+        int idx = -1;
+        if (!field_name.empty())
+            for (size_t i = 0; i < mdef.field_names.size(); ++i)
+                if (mdef.field_names[i] == field_name)
+                    idx = static_cast<int>(i);
+
+        const bool not_pk = idx != -1;
+        const int offset = not_pk ? mdef.field_offsets[idx] : mdef.record_size;
+        const int size = not_pk ? mdef.field_sizes[idx] : IX_SIZE;
+        const FIELD_TYPE type = not_pk ? static_cast<FIELD_TYPE>(mdef.field_types[idx]) : INT;
+
+        switch (operation_index)
+        {
+        case IS_IN:
+        {
+            if (!py::isinstance<py::list>(value))
+            {
+                throw std::runtime_error("You did not provide a list as the IN/NOT_IN argument");
+                return std::unordered_set<int64_t>();
+            }
+
+            // TODO run multiple finds in btree
+            return std::unordered_set<int64_t>();
+        }
+        case EQUAL:
+        {
+            // TODO run find in btree
+            return std::unordered_set<int64_t>();
+        }
+        case BETWEEN:
+        {
+            // TODO run between search in btree
+            return std::unordered_set<int64_t>();
+        }
+        default:
+            throw std::runtime_error("Invalid index operation");
+        }
+
+        return std::unordered_set<int64_t>();
+    }
+
     bool validate(model_def &mdef, char *record)
     {
         int idx = -1;
@@ -288,9 +331,14 @@ struct cond_object
 
 struct cond_node
 {
-    std::vector<cond_object> conditions;
+    std::vector<cond_object> btree_conditions, conditions;
     std::vector<cond_node> children;
     bool is_and;
+
+    // after evaluation of btree conditions we generate a IX vector
+    // if AND_NODE THEN -> if (IX not in vector) validaion = FALSE else continue validation
+    // if OR_NODE THEN -> if (IX in vector) validation = TRUE else continue validation
+    std::unordered_set<int64_t> tree_ixs;
 };
 
 struct link_object
