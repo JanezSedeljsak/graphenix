@@ -485,9 +485,18 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
         query_object subquery = qobject.link_vector[i];
         if (subquery.has_ix_constraints)
             subquery.ix_constraints = ix_set[i];
-        else
+        else if (qobject.link_vector[i].mdef.field_indexes[field_index])
         {
-            // TODO: add the ix_set[i] to subquery.filter_root.conditions
+            py::list current_ixs;
+            for (const auto &ix : ix_set[i])
+                current_ixs.append(ix);
+
+            const int field_index = qobject.links[i].child_link_field_index;
+            std::string fname = qobject.link_vector[i].mdef.field_names[field_index];
+
+            query_object qobject_editable = const_cast<query_object &>(qobject);
+            cond_object cobj{fname, IS_IN, current_ixs};
+            qobject_editable.filter_root.btree_conditions.push_back(cobj);
         }
 
         View subquery_result = QueryManager::execute_query(subquery, depth + 1);
