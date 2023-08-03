@@ -11,6 +11,8 @@
 
 #include <pybind11/pybind11.h>
 
+#include "bptree/bptreeindex.hpp"
+
 #define IX_SIZE 8 // size of 8 bytes <==> IX_SIZE
 #define PK_IX_HEAD_SIZE IX_SIZE * 2
 #define CHUNK_SIZE 10 * 1024 * 1024
@@ -96,31 +98,54 @@ struct cond_object
         const FIELD_TYPE type = not_pk ? static_cast<FIELD_TYPE>(mdef.field_types[idx]) : INT;
         std::unordered_set<int64_t> result = std::unordered_set<int64_t>();
 
-        switch (operation_index)
+        switch (type)
         {
-        case IS_IN:
+        case INT:
+        case DATETIME:
+        case LINK:
         {
-            if (!py::isinstance<py::list>(value))
+            BPTreeIndex<int64_t> bpt("user", "uuid");
+            switch (operation_index)
             {
-                throw std::runtime_error("You did not provide a list as the IN/NOT_IN argument");
+            case IS_IN:
+            {
+                if (!py::isinstance<py::list>(value))
+                {
+                    throw std::runtime_error("You did not provide a list as the IN/NOT_IN argument");
+                    return result;
+                }
+
+                for (py::handle item : value)
+                {
+                    const int64_t current_key = py::cast<int64_t>(item);
+                    const auto &found = bpt.find(current_key);
+                    const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                    result.insert(flatten.begin(), flatten.end());
+                }
                 return result;
             }
-
-            // TODO run multiple finds in btree
-            return result;
+            case EQUAL:
+            {
+                const int64_t current_key = py::cast<int64_t>(value);
+                const auto &found = bpt.find(current_key);
+                const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                result.insert(flatten.begin(), flatten.end());
+                return result;
+            }
+            case BETWEEN:
+            {
+                // TODO run between search in btree
+                return result;
+            }
+            default:
+                throw std::runtime_error("Invalid index operation");
+            }
         }
-        case EQUAL:
+        case STRING:
         {
-            // TODO run find in btree
-            return result;
-        }
-        case BETWEEN:
-        {
-            // TODO run between search in btree
-            return result;
         }
         default:
-            throw std::runtime_error("Invalid index operation");
+            throw std::runtime_error("Invalid type for indexing");
         }
 
         return result;

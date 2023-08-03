@@ -1,3 +1,6 @@
+#ifndef BPTREEINDEX_HPP
+#define BPTREEINDEX_HPP
+
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -200,13 +203,13 @@ public:
     inline LeafMatchInterval search_leaf(const T &search, shared_ptr<BPTreeNode<T>> node, fstream &ix_file)
     {
         less<T> generic_less;
-        int low = 0, high = node->keys.size();
+        size_t low = 0, high = node->keys.size();
         while (low < high)
         {
-            int mid = (low + high) / 2;
+            size_t mid = (low + high) / 2;
             if (generic_equal(node->keys[mid], search))
             {
-                int from = mid, to = mid;
+                size_t from = mid, to = mid;
                 while (from > 0 && generic_equal(node->keys[from - 1], search))
                     from--;
 
@@ -280,10 +283,10 @@ public:
         vector<LeafMatchInterval> nodes;
         less<T> generic_less;
         bool found_equal = false;
-        int low = 0, high = node->keys.size();
+        size_t low = 0, high = node->keys.size();
         while (low < high)
         {
-            int mid = (low + high) / 2;
+            size_t mid = (low + high) / 2;
             if (generic_equal(node->keys[mid], search))
             {
                 found_equal = true;
@@ -302,7 +305,7 @@ public:
             return nodes;
         }
 
-        int from = low, to = low;
+        size_t from = low, to = low;
         while (from > 0 && generic_equal(node->keys[from - 1], search))
             from--;
 
@@ -310,7 +313,7 @@ public:
             to++;
 
         // check from left to right + 1 (there are more ptrs than keys)
-        for (int i = from; i <= to + 1; i++)
+        for (size_t i = from; i <= to + 1; i++)
             extend_node_interval(nodes, search, node, ix_file, i);
 
         return nodes;
@@ -773,3 +776,5 @@ public:
                    : delete_from_internal(root, key, record_offset);
     }
 };
+
+#endif // BPTREEINDEX_HPP

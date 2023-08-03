@@ -1,3 +1,6 @@
+#ifndef BPTREENODE_HPP
+#define BPTREENODE_HPP
+
 #include <vector>
 #include <iostream>
 #include <cstring>
@@ -67,7 +70,7 @@ public:
 #endif
     }
 
-    BPTreeNode<T>(int64_t _offset, int size)
+    BPTreeNode(int64_t _offset, int size)
     {
         flush();
         key_size = size;
@@ -224,3 +227,5 @@ public:
             child->print(true);
     }
 };
+
+#endif // BPTREENODE_HPP

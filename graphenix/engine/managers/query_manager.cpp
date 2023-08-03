@@ -308,6 +308,10 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
                       offsets.end());
     }
 
+    // TODO: go through conditions in root qobject_editable.filter_root.conditions
+    // if condition is on PK make a intersection set of all these conditions
+    // apply the set intersection on the offsets for another query optimization
+
     // evaluate condition tree
     visit_and_evaluate(mdef, qobject_editable.filter_root, 0);
 
