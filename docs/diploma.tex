@@ -1034,19 +1034,45 @@ query = User.link(
     \newpage
     \subsection{Pohitritev poizvedb s pomočjo indeksiranja}
 
-    Na spodnji tabeli je prikazan faktor pohitritve, kadar izvajamo iskanje nad tabelo z 10 milijoni zapisov. Gre za iskanje, kjer preberemo $0.0125$ \% podatkov (v tem primeru 1308 zapisov).
+    V sklopu primerjave pohitritev s pristopom indeksiranja smo izmerili faktor pohitritve pri izvedbi naslednjega SQL stavka:
+
+\begin{minted}[breaklines]{SQL}
+SELECT * FROM users WHERE points = 32
+\end{minted}
+
+    \noindent
+    Torej izvedli smo filtriranje po atributu "points", kjer iščemo vse zapise, ki imajo vrednost 32. V prvem primeru smo kreirali milijon uporabnikov, kjer je zgornjemu kriteriju ustrezalo 14197 uporabnikov. Kar je pomenilo $\approx 1.25$\% uporabnikov.
+
+    Dodatno smo dodali še scenarij, kjer imamo enako milijon uporabnikov, vendar z razliko, da imamo v tem primeru bistveno manj uporabnikov, ki ustrezajo kriteriju (imamo jih 131). To je v omenjenem scenariju pomenilo $\approx 0.00125$\%.
     
     \begin{center}
-        \begin{tabular}{p{0.22\textwidth}|p{.2\textwidth}|p{.2\textwidth}|p{.2\textwidth}}
-          {\bf Podatkovni sistem} & {\bf Čas brez indeksiranja} & {\bf Čas z indeksiranjem} & {\bf Faktor pohitritve} \\ \hline
-          {\bf Graphenix} & \num{738} ms & \num{813} ms & \num{1}x \\
-          {\bf SQLite} & \num{700} ms & \num{8} ms & \num{57}x \\
-          {\bf MySQL} & \num{3948} ms & \num{38} ms & \num{94}x \\
+        \begin{tabular}{p{0.2\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}}
+          {\bf Podatkovni sistem} & {\bf 1/8000 (ms)} & {\bf Pohitritev} & {\bf 1/80 \newline (ms)} & {\bf Pohitritev} \\ \hline
+          {\bf Graphenix} & \num{69.93} & \num{1}x & \num{87.15} & \num{1.12}x \\
+          {\bf SQLite} & \num{0.83} & \num{66.01}x & \num{29.39} & \num{2.82}x \\
+          {\bf MySQL} & \num{1.96} & \num{126.18}x & \num{91.11} & \num{3.26}x \\
         \end{tabular}
     \end{center}
     
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{indexing_speedup.png}}
+        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{indexing_speedup_1000000.png}}
+        \caption{Preprost primer relacijske podatkovne baze.}
+        \label{vnospodatkov_index}
+    \end{figure}
+
+    V drugem scenariju, pa smo kreirali 10 milijonov uporabnikov z enako porazdelitvijo, kot v prvem scenariju. V prvi porazdelitvi je to pomenilo \num{140758} ($\approx 1.25$\%) uporabnikov. V drugi, pa \num{1308} ($\approx 0.00125$\%) uporabnikov.
+
+    \begin{center}
+        \begin{tabular}{p{0.2\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}}
+          {\bf Podatkovni sistem} & {\bf 1/8000 (ms)} & {\bf Pohitritev} & {\bf 1/80 \newline (ms)} & {\bf Pohitritev} \\ \hline
+          {\bf Graphenix} & \num{69.93} & \num{1}x & \num{87.15} & \num{1.12}x \\
+          {\bf SQLite} & \num{0.83} & \num{66.01}x & \num{29.39} & \num{2.82}x \\
+          {\bf MySQL} & \num{1.96} & \num{126.18}x & \num{91.11} & \num{3.26}x \\
+        \end{tabular}
+    \end{center}
+
+    \begin{figure}[H]
+        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{indexing_speedup_10000000.png}}
         \caption{Preprost primer relacijske podatkovne baze.}
         \label{vnospodatkov_index}
     \end{figure}
