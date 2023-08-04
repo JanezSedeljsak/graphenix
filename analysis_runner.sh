@@ -2,6 +2,7 @@
 
 # store first arg as group and shift args
 group=$1
+group_path=${group//./\/}
 shift
 
 # other args are sizes
@@ -24,13 +25,13 @@ calculate_average() {
 }
 
 for size in "${SIZES[@]}"; do
-    if [ -f "analysis/$group/result_$size.txt" ]; then
-        rm "analysis/$group/result_$size.txt"
+    if [ -f "analysis/$group_path/result_$size.txt" ]; then
+        rm "analysis/$group_path/result_$size.txt"
     fi
 
     echo "Running for size $size"
     for script_name in "${SCRIPTS[@]}"; do
-        if [ ! -f "analysis/$group/$script_name.py" ]; then
+        if [ ! -f "analysis/$group_path/$script_name.py" ]; then
             continue
         fi
 
@@ -44,7 +45,7 @@ for size in "${SIZES[@]}"; do
         
         calculate_average
         # average=$(bc <<< "scale=2; $sum / $COUNT")
-        echo "$average" >> "analysis/$group/result_$size.txt"
+        echo "$average" >> "analysis/$group_path/result_$size.txt"
         echo "  Average was: $average"
         echo ""
 

@@ -3,10 +3,9 @@ import sys
 import time
 
 sizes = {
-    10000: 1,
-    100000: 6,
-    1000000: 131,
-    10000000: 1308,
+    100000: 1_459,
+    1000000: 14_197,
+    10000000: 140_758,
 }
 
 class User(Model):
@@ -19,7 +18,7 @@ class User(Model):
 
 def main():
     num_users = int(sys.argv[1])
-    Schema(f'db_index_{num_users}', models=[User])
+    my_schema = Schema(f'singleinsert_bulk2_{num_users}', models=[User])
 
     start_time = time.perf_counter()
     

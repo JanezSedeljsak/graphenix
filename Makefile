@@ -94,6 +94,13 @@ _find_make_base:
 	./analysis/diffdistinsert/run_insert.sh 100000 1000000 10000000
 	@echo "[graphenix] Finished creating large DBs!"
 
+_find_diff_a:
+	@echo "[graphenix] Running find diff index analysis..."
+	chmod +x analysis_runner.sh
+	./analysis_runner.sh diffdistinsert.find_index 100000 1000000 10000000
+	./analysis_runner.sh diffdistinsert.find_no_index 100000 1000000 10000000
+	@echo "[graphenix] Finished find diff index analysis!"
+
 _find_a:
 	@echo "[graphenix] Running find without index analysis..."
 	chmod +x ./analysis/find_no_index/move_and_analyse.sh
