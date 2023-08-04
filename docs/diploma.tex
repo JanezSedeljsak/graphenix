@@ -1032,10 +1032,27 @@ query = User.link(
     \end{figure}
 
     \newpage
-    \subsection{Primerjava poizvedb z uporabo relaciji}
+    \subsection{Pohitritev poizvedb s pomočjo indeksiranja}
+
+    Na spodnji tabeli je prikazan faktor pohitritve, kadar izvajamo iskanje nad tabelo z 10 milijoni zapisov. Gre za iskanje, kjer preberemo $0.0125$ \% podatkov (v tem primeru 1308 zapisov).
     
+    \begin{center}
+        \begin{tabular}{p{0.22\textwidth}|p{.2\textwidth}|p{.2\textwidth}|p{.2\textwidth}}
+          {\bf Podatkovni sistem} & {\bf Čas brez indeksiranja} & {\bf Čas z indeksiranjem} & {\bf Faktor pohitritve} \\ \hline
+          {\bf Graphenix} & \num{738} ms & \num{813} ms & \num{1}x \\
+          {\bf SQLite} & \num{700} ms & \num{8} ms & \num{57}x \\
+          {\bf MySQL} & \num{3948} ms & \num{38} ms & \num{94}x \\
+        \end{tabular}
+    \end{center}
+    
+    \begin{figure}[H]
+        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{indexing_speedup.png}}
+        \caption{Preprost primer relacijske podatkovne baze.}
+        \label{vnospodatkov_index}
+    \end{figure}
+
     \newpage
-    \subsection{Filtriranje podatkov s pomočjo indeksiranja}
+    \subsection{Primerjava poizvedb z uporabo relaciji}
 
 
     
