@@ -21,7 +21,11 @@ struct Record
     py::str as_str() const;
     View get_view() const;
 
-    static Record make_record(View *view, const py::tuple &record);
+    Record() : view(nullptr), record(py::tuple()) {}
+    Record(View *view, const py::tuple &record)
+        : view(view), record(record)
+    {
+    }
 };
 
 struct View
@@ -29,6 +33,13 @@ struct View
     std::string model_name;
     std::vector<Record> records;
     std::vector<std::string> field_names;
+
+    View() {}
+    View(const std::vector<std::string> &fieldnames, const std::string &modelname)
+        : model_name(modelname), records(), field_names(fieldnames)
+    {
+        field_names.insert(field_names.begin(), "id");
+    }
 
     Record at(size_t idx) const
     {
@@ -73,15 +84,15 @@ struct View
     }
 
     static View make_view(const std::vector<std::string> &fieldnames,
-                          const std::vector<py::tuple> &rows,
-                          const std::vector<int> date_indexes,
-                          const std::string &modelname)
+                           const std::vector<py::tuple> &rows,
+                           const std::vector<int> date_indexes,
+                           const std::string &modelname)
     {
         View *view_instance = new View;
-        const size_t result_size = rows.size();
         view_instance->model_name = modelname;
         view_instance->field_names = std::vector<std::string>(fieldnames);
         view_instance->field_names.insert(view_instance->field_names.begin(), "id");
+        const size_t result_size = rows.size();
         view_instance->records.resize(result_size);
         py::module datetime_module = py::module::import("datetime");
 
@@ -91,20 +102,9 @@ struct View
             for (const auto &dindex : date_indexes)
                 rows[i][dindex + 1] = datetime_module.attr("datetime").attr("fromtimestamp")(rows[i][dindex + 1]);
 
-            Record record_instance = Record::make_record(view_instance, rows[i]);
-            view_instance->records[i] = record_instance;
+            view_instance->records[i] = Record(view_instance, rows[i]);
         }
 
-        return *view_instance;
-    }
-
-    static View make_empty(const std::vector<std::string> &fieldnames, const std::string &modelname)
-    {
-        View *view_instance = new View;
-        view_instance->model_name = modelname;
-        view_instance->field_names = std::vector<std::string>(fieldnames);
-        view_instance->field_names.insert(view_instance->field_names.begin(), "id");
-        view_instance->records = std::vector<Record>();
         return *view_instance;
     }
 };
@@ -120,7 +120,10 @@ struct RecordView
     py::dict as_dict() const;
     py::str as_str() const;
 
-    static RecordView from_view(const View &view);
+    RecordView(const View &view)
+        : model_name(view.model_name), field_names(view.field_names), record(view.records[0].record)
+    {
+    }
 };
 
 py::object Record::attr(const std::string &field_name) const
@@ -217,25 +220,6 @@ py::str RecordView::as_str() const
 View Record::get_view() const
 {
     return *view;
-}
-
-Record Record::make_record(View *view, const py::tuple &record)
-{
-    Record *record_instance = new Record;
-    record_instance->view = view;
-    record_instance->record = record;
-
-    return *record_instance;
-}
-
-RecordView RecordView::from_view(const View &view)
-{
-    RecordView *recordview_instance = new RecordView;
-    recordview_instance->model_name = view.model_name;
-    recordview_instance->field_names = std::vector<std::string>(view.field_names);
-    recordview_instance->record = view.records[0].record;
-
-    return *recordview_instance;
 }
 
 #endif // VIEW_HPP

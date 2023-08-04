@@ -460,7 +460,7 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
                 continue;
 
             ix_set[i].insert(link_key);
-            subquery_result_maps[i].emplace(link_key, View::make_empty(
+            subquery_result_maps[i].emplace(link_key, View(
                                                           qobject.link_vector[i].mdef.field_names,
                                                           qobject.link_vector[i].mdef.model_name));
         }
@@ -478,7 +478,7 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
             py::list current_ixs;
             for (const auto &ix : ix_set[i])
                 current_ixs.append(ix);
-            
+
             std::string fname = qobject.link_vector[i].mdef.field_names[field_index];
             query_object qobject_editable = const_cast<query_object &>(qobject);
             cond_object cobj{fname, IS_IN, current_ixs};
@@ -519,7 +519,7 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
             if (qobject.links[i].is_direct_link)
             {
                 if (groupped_records.size() > 0)
-                    current[field_index] = RecordView::from_view(groupped_records);
+                    current[field_index] = RecordView(groupped_records);
                 else
                     current[field_index] = py::cast(-1);
             }
@@ -529,8 +529,8 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
                 const int list_field_index = qobject.links[i].link_field_index + 1;
 
                 if (qobject.links[i].offset >= list_size)
-                    current[list_field_index] = View::make_empty(qobject.link_vector[i].mdef.field_names,
-                                                                 qobject.link_vector[i].mdef.model_name);
+                    current[list_field_index] = View(qobject.link_vector[i].mdef.field_names,
+                                                     qobject.link_vector[i].mdef.model_name);
 
                 else if (qobject.links[i].limit == 0 && qobject.links[i].offset == 0)
                     current[list_field_index] = groupped_records;
@@ -545,8 +545,8 @@ View QueryManager::execute_query(const query_object &qobject, const int depth)
                         groupped_records.records.begin() + qobject.links[i].offset,
                         groupped_records.records.begin() + end_idx);
 
-                    View view_instance = View::make_empty(qobject.link_vector[i].mdef.field_names,
-                                                          qobject.link_vector[i].mdef.model_name);
+                    View view_instance = View(qobject.link_vector[i].mdef.field_names,
+                                              qobject.link_vector[i].mdef.model_name);
 
                     view_instance.records = records_with_limit;
                     current[list_field_index] = view_instance;
