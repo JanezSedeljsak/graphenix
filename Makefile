@@ -39,6 +39,9 @@ _perf_test:
 # analysis section
 # --------------------------------
 
+_all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a
+	@echo "[graphenix] All analysis completed!"
+
 _insert_a:
 	@echo "[graphenix] Running single insert analysis..."
 	chmod +x analysis_runner.sh
@@ -85,20 +88,24 @@ _find_make_base:
 	python3 -m analysis.indexinsert.raw_sqlite 10000000
 	python3 -m analysis.indexinsert.graphenix_bulk 10000000
 	python3 -m analysis.indexinsert.mysql_bulk 10000000
+
+	#### Diff distribution of indexed data 100x smaller range
+	chmod +x ./analysis/diffdistinsert/run_insert.sh
+	./analysis/diffdistinsert/run_insert.sh 100000 1000000 10000000
 	@echo "[graphenix] Finished creating large DBs!"
 
 _find_a:
 	@echo "[graphenix] Running find without index analysis..."
 	chmod +x ./analysis/find_no_index/move_and_analyse.sh
-	./analysis/find_no_index/move_and_analyse.sh 10000 100000 1000000 10000000
+	./analysis/find_no_index/move_and_analyse.sh 100000 1000000 10000000
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh find_no_index 10000 100000 1000000 10000000
+	./analysis_runner.sh find_no_index 100000 1000000 10000000
 	@echo "[graphenix] Finished find without index analysis!"
 
 _ifind_a:
 	@echo "[graphenix] Running find with index analysis..."
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh find_index 10000 100000 1000000 10000000
+	./analysis_runner.sh find_index 100000 1000000 10000000
 	@echo "[graphenix] Finished find with index analysis!"
 
 _join_a:

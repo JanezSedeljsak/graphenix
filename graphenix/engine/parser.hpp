@@ -18,7 +18,7 @@
 #define CHUNK_SIZE 10 * 1024 * 1024
 #define ID_KEY "_id"
 
-#define MIN_CLUSTER_SIZE 10
+#define MIN_CLUSTER_SIZE 50
 #define MAX_CLUSTER_SIZE 1000000 // 1 MB
 
 typedef std::unordered_map<int64_t, int64_t> hashmap_ii;
