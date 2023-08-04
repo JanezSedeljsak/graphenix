@@ -42,60 +42,63 @@ _perf_test:
 _insert_a:
 	@echo "[graphenix] Running single insert analysis..."
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh singleinsert 5000 10000 50000 100000 150000 200000
+	./analysis_runner.sh singleinsert 5000 10000 50000 100000 150000
 	@echo "[graphenix] Finished single insert analysis!"
 
 _iinsert_a:
 	@echo "[graphenix] Running indexed insert analysis..."
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh indexinsert 5000 10000 50000 100000 150000 200000
+	./analysis_runner.sh indexinsert 5000 10000 50000 100000 150000
 	@echo "[graphenix] Finished indexed insert analysis!"
 
 _read_a:
 	@echo "[graphenix] Running single read analysis..."
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh singleread 10000 50000 100000 150000 200000
+	./analysis_runner.sh singleread 10000 50000 100000 150000
 	@echo "[graphenix] Finished single read analysis!"
 
 _qread_a:
 	@echo "[graphenix] Running query read analysis..."
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh queryread 10000 50000 100000 150000 200000
+	./analysis_runner.sh queryread 10000 50000 100000 150000
 	@echo "[graphenix] Finished query read analysis!"
 
 _find_make_base:
 	@echo "[graphenix] Creating large DBs for find analysis..."
-	# create DBs with 500K rows
-	python3 -m analysis.singleinsert.raw_sqlite 500000
-	python3 -m analysis.singleinsert.graphenix_bulk 500000
-	python3 -m analysis.singleinsert.mysql_bulk 500000
  
-	# # create DBs with 1M rows
+	# create DBs with 1M rows
 	python3 -m analysis.singleinsert.raw_sqlite 1000000
 	python3 -m analysis.singleinsert.graphenix_bulk 1000000
 	python3 -m analysis.singleinsert.mysql_bulk 1000000
 
-	# create indexed DBs with 500K rows
-	python3 -m analysis.indexinsert.raw_sqlite 500000
-	python3 -m analysis.indexinsert.graphenix_bulk 500000
-	python3 -m analysis.indexinsert.mysql_bulk 500000
+	# create DBs with 10M rows
+	python3 -m analysis.singleinsert.raw_sqlite 10000000
+	python3 -m analysis.singleinsert.graphenix_bulk 10000000
+	python3 -m analysis.singleinsert.mysql_bulk 10000000
 
 	# create indexed DBs with 1M rows
 	python3 -m analysis.indexinsert.raw_sqlite 1000000
 	python3 -m analysis.indexinsert.graphenix_bulk 1000000
 	python3 -m analysis.indexinsert.mysql_bulk 1000000
+
+	# create indexed DBs with 10M rows
+	python3 -m analysis.indexinsert.raw_sqlite 10000000
+	python3 -m analysis.indexinsert.graphenix_bulk 10000000
+	python3 -m analysis.indexinsert.mysql_bulk 10000000
 	@echo "[graphenix] Finished creating large DBs!"
 
 _find_a:
 	@echo "[graphenix] Running find without index analysis..."
+	chmod +x ./analysis/find_no_index/move_and_analyse.sh
+	./analysis/find_no_index/move_and_analyse.sh 10000 100000 1000000 10000000
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh find_no_index 100000 500000 1000000
+	./analysis_runner.sh find_no_index 10000 100000 1000000 10000000
 	@echo "[graphenix] Finished find without index analysis!"
 
 _ifind_a:
 	@echo "[graphenix] Running find with index analysis..."
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh find_index 100000 500000 1000000
+	./analysis_runner.sh find_index 10000 100000 1000000 10000000
 	@echo "[graphenix] Finished find with index analysis!"
 
 _join_a:
@@ -107,7 +110,7 @@ _join_a:
 _sizes_a:
 	@echo "[graphenix] Running size analysis..."
 	chmod +x ./analysis/singleinsert/file_sizes.sh
-	./analysis/singleinsert/file_sizes.sh 1000000
-	./analysis/singleinsert/file_sizes_indexed.sh 1000000
-	python3 -m analysis.singleinsert.sizes_analysis 1000000
+	./analysis/singleinsert/file_sizes.sh 10000000
+	./analysis/singleinsert/file_sizes_indexed.sh 10000000
+	python3 -m analysis.singleinsert.sizes_analysis 10000000
 	@echo "[graphenix] Finished size analysis!"

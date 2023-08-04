@@ -13,7 +13,7 @@ def read_nums(file_path):
     
 
 def main():
-    sizes = (5000, 10000, 50000, 100000, 150000, 200000)
+    sizes = (5000, 10000, 50000, 100000, 150000)
     files = (f'./analysis/singleinsert/result_{s}.txt' for s in sizes)
     matrix = np.zeros((6, len(sizes)))
 

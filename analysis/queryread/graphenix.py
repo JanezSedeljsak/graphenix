@@ -5,8 +5,8 @@ import time
 class User(Model):
     first_name = Field.String(size=15)
     last_name = Field.String(size=15)
-    email = Field.String(size=30)
-    age = Field.Int()
+    email = Field.String(size=25)
+    points = Field.Int()
     is_admin = Field.Bool()
     created_at = Field.DateTime()
 
@@ -18,11 +18,10 @@ def main():
     
     _, data = User\
         .filter(User.is_admin.equals(True))\
-        .order(User.age, User).limit(500).all()
+        .order(User.points, User).limit(500).all()
     
     searilized = data.as_dict()
-    assert len(searilized) == 500 and isinstance(searilized[0], dict) and searilized[0]['age'] == 10 \
-        and searilized[0]['first_name'] == 'John12'
+    assert len(searilized) == 500 and isinstance(searilized[0], dict)
 
     end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000

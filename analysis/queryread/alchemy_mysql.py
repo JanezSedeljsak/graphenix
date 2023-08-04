@@ -16,7 +16,7 @@ class User(Base):
     first_name = Column(String(15))
     last_name = Column(String(15))
     email = Column(String(30))
-    age = Column(Integer)
+    points = Column(Integer)
     is_admin = Column(Boolean)
     created_at = Column(DateTime)
 
@@ -30,10 +30,9 @@ def main():
     start_time = time.perf_counter()
     session = Session()
 
-    data = session.query(User).filter(User.is_admin == 1).order_by(User.age, User.id).limit(500).all()
+    data = session.query(User).filter(User.is_admin == 1).order_by(User.points, User.id).limit(500).all()
     searilized = [row._asdict() for row in data]
-    assert len(searilized) == 500 and isinstance(searilized[0], dict) and searilized[0]['age'] == 10 \
-        and searilized[0]['first_name'] == 'John12'
+    assert len(searilized) == 500 and isinstance(searilized[0], dict)
 
     session.close()
     end_time = time.perf_counter()

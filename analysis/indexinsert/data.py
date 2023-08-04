@@ -4,7 +4,7 @@ user_data = {
     "first_name": "John",
     "last_name": "Doe",
     "email": "john.doe@example.com",
-    "age": 35,
+    "points": 35,
     "is_admin": False,
     "created_at": datetime.now()
 }

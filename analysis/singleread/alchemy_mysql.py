@@ -16,7 +16,7 @@ class User(Base):
     first_name = Column(String(15))
     last_name = Column(String(15))
     email = Column(String(30))
-    age = Column(Integer)
+    points = Column(Integer)
     is_admin = Column(Boolean)
     created_at = Column(DateTime)
 

@@ -40,9 +40,18 @@ struct View
 
     std::vector<py::dict> as_dict() const
     {
-        std::vector<py::dict> result;
-        for (const auto &record : records)
-            result.push_back(record.as_dict());
+        std::vector<py::dict> result(records.size());
+        if (records.size() == 0)
+            return result;
+
+        const size_t rec_size = records[0].record.size();
+        std::vector<py::str> fnames(rec_size);
+        for (size_t i = 0; i < rec_size; ++i)
+            fnames[i] = py::cast(field_names[i]);
+
+        for (size_t i = 0, n = records.size(); i < n; ++i)
+            for (size_t j = 0; j < rec_size; ++j)
+                result[i][fnames[j]] = records[i].record[j];
 
         return result;
     }
@@ -50,8 +59,10 @@ struct View
     std::vector<py::tuple> as_tuple() const
     {
         std::vector<py::tuple> result;
-        for (const auto &record : records)
-            result.push_back(record.as_tuple());
+        result.reserve(records.size());
+
+        for (const auto &row : records)
+            result.push_back(row.record);
 
         return result;
     }
@@ -146,7 +157,7 @@ py::tuple RecordView::as_tuple() const
 py::dict Record::as_dict() const
 {
     py::dict result;
-    for (size_t i = 0; i < record.size(); ++i)
+    for (size_t i = 0, n = record.size(); i < n; ++i)
     {
         py::str key = py::cast(view->field_names[i]);
         result[key] = record[i];
@@ -158,7 +169,7 @@ py::dict Record::as_dict() const
 py::dict RecordView::as_dict() const
 {
     py::dict result;
-    for (size_t i = 0; i < record.size(); ++i)
+    for (size_t i = 0, n = record.size(); i < n; ++i)
     {
         py::str key = py::cast(field_names[i]);
         result[key] = record[i];

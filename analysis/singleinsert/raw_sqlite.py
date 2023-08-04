@@ -12,7 +12,7 @@ create_table = """
         first_name TEXT,
         last_name TEXT,
         email TEXT,
-        age INTEGER,
+        points INTEGER,
         is_admin INTEGER,
         created_at TIMESTAMP
     )
@@ -33,10 +33,10 @@ def main():
     start_time = time.perf_counter()
 
     for i in range(num_users):
-        cu = {**user_data, "is_admin": i%2 == 0, "age": random.randint(10, 80),
+        cu = {**user_data, "is_admin": i%2 == 0, "points": random.randint(10, 8000),
               "first_name": user_data['first_name'] + str(i)}
         cursor.execute(
-            "INSERT INTO users (first_name, last_name, email, age, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO users (first_name, last_name, email, points, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?)",
             tuple(cu.values())
         )
     

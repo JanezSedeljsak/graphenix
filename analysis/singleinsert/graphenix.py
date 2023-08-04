@@ -8,8 +8,8 @@ random.seed(12)
 class User(Model):
     first_name = Field.String(size=15)
     last_name = Field.String(size=15)
-    email = Field.String(size=30)
-    age = Field.Int()
+    email = Field.String(size=25)
+    points = Field.Int()
     is_admin = Field.Bool()
     created_at = Field.DateTime()
 
@@ -24,7 +24,7 @@ def main():
     start_time = time.perf_counter()
     for i in range(num_users):
         current_user = {**user_data, "first_name": user_data['first_name'] + str(i),
-                        "is_admin": i%2 == 0, "age": random.randint(10, 80)}
+                        "is_admin": i%2 == 0, "points": random.randint(10, 8000)}
         user = User(**current_user)
         user.save()
 

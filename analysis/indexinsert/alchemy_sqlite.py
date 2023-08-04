@@ -15,13 +15,13 @@ class User(Base):
     first_name = Column(String(15))
     last_name = Column(String(15))
     email = Column(String(30))
-    age = Column(Integer)
+    points = Column(Integer)
     is_admin = Column(Boolean)
     created_at = Column(DateTime)
 
 def main():
-    age_index = Index('idx_age', User.age)
-    User.__table__.append_constraint(age_index)
+    points_index = Index('idx_points', User.points)
+    User.__table__.append_constraint(points_index)
 
     num_users = int(sys.argv[1])
     if os.path.exists(f'graphenix_db/db_index_{num_users}.db'):
@@ -34,7 +34,7 @@ def main():
 
     session = Session()
     users = [User(**{**user_data, "first_name": user_data['first_name'] + str(i),
-                     "is_admin": i%2 == 0, "age": random.randint(10, 80)}) for i in range(num_users)]
+                     "is_admin": i%2 == 0, "points": random.randint(10, 8000)}) for i in range(num_users)]
     session.bulk_save_objects(users)
 
     session.commit()

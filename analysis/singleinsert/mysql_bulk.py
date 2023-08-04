@@ -11,8 +11,8 @@ create_table = """
         `id` INTEGER NOT NULL AUTO_INCREMENT,
         `first_name` varchar(15) DEFAULT NULL,
         `last_name` varchar(15) DEFAULT NULL,
-        `email` varchar(30) DEFAULT NULL,
-        `age` int(11) DEFAULT NULL,
+        `email` varchar(25) DEFAULT NULL,
+        `points` int(11) DEFAULT NULL,
         `is_admin` tinyint(1) DEFAULT NULL,
         `created_at` datetime DEFAULT NULL,
     PRIMARY KEY (`id`)
@@ -46,11 +46,11 @@ def main():
         for i in range(chunk_start, chunk_end):
             is_admin = i % 2 == 0
             user_tuple = (user_data['first_name'] + str(first_name_counter), user_data['last_name'], user_data['email'],
-                        random.randint(10, 80), int(is_admin), user_data['created_at'])
+                        random.randint(10, 8000), int(is_admin), user_data['created_at'])
             user_data_list.append(user_tuple)
 
         first_name_counter += 1
-        insert_query = f"INSERT INTO users (first_name, last_name, email, age, is_admin, created_at) " \
+        insert_query = f"INSERT INTO users (first_name, last_name, email, points, is_admin, created_at) " \
                     + "VALUES (%s, %s, %s, %s, %s, %s)"
         cursor.executemany(insert_query, user_data_list)
         conn.commit()

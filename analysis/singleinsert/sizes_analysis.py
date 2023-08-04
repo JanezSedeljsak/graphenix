@@ -37,7 +37,7 @@ def main():
     # Set labels and title
     ax.set_xlabel('Podatkovni sistem')
     ax.set_ylabel('Velikost (MB)')
-    ax.set_ylim(0, 120)
+    ax.set_ylim(0, 1200)
     ax.set_title('')
     ax.set_xticks(np.arange(3))
     ax.set_xticklabels(['Graphenix', 'SQLite', 'MySQL'], rotation=0)
