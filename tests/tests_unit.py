@@ -496,6 +496,39 @@ class GraphenixUnitTests(CommonTestBase):
             self.assertTrue(23 <= usr.age and usr.age <= 47)
 
     @CommonTestBase().prepare_and_destroy
+    def test_filter_19(self):
+        """ test instant pk filter with PK condition """
+        for user in self._get_users():
+            user.save()
+
+        _, data = User.filter(User.equals(3)).all()
+        self.assertEqual(1, len(data))
+        self.assertEqual(3, data[0].id)
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_20(self):
+        """ test instant pk filter with PK condition """
+        for user in self._get_users():
+            user.save()
+
+        _, data = User.filter(User.is_in([3,2])).order(User.desc()).all()
+        self.assertEqual(2, len(data))
+        self.assertEqual(3, data[0].id)
+        self.assertEqual(2, data[1].id)
+
+
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_21(self):
+        """ test instant pk filter with PK condition 2 """
+        for user in self._get_users():
+            user.save()
+
+        _, data = User.filter(User.is_in([3,2]), User.less(10)).order(User.desc()).all()
+        self.assertEqual(2, len(data))
+        self.assertEqual(3, data[0].id)
+        self.assertEqual(2, data[1].id)
+
+    @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_comlex_struct
     def test_join_0(self):
         """ test join 2 tables """

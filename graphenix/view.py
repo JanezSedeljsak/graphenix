@@ -25,6 +25,9 @@ class QueryView(list):
         return self.view_obj.as_tuple()
     
     def __repr__(self):
+        if not self.view_obj.size():
+            return ""
+        
         is_not_linkable = lambda field: not any(typ == self.model._field_types.get(field) 
                                                 for typ in [Field.Link, Field.VirtualLink])
 

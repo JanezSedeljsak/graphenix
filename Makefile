@@ -39,7 +39,7 @@ _perf_test:
 # analysis section
 # --------------------------------
 
-_all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a
+_all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a _find_diff_a
 	@echo "[graphenix] All analysis completed!"
 
 _insert_a:
@@ -97,14 +97,14 @@ _find_make_base:
 _find_diff_a:
 	@echo "[graphenix] Running find diff index analysis..."
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh diffdistinsert.find_index 100000 1000000 10000000
-	./analysis_runner.sh diffdistinsert.find_no_index 100000 1000000 10000000
+	./analysis_runner.sh diffdistinsert.find_index 1000000 10000000
+	./analysis_runner.sh diffdistinsert.find_no_index 1000000 10000000
+	python3 -m analysis.find_no_index.graph_size 1000000
+	python3 -m analysis.find_no_index.graph_size 10000000
 	@echo "[graphenix] Finished find diff index analysis!"
 
 _find_a:
 	@echo "[graphenix] Running find without index analysis..."
-	chmod +x ./analysis/find_no_index/move_and_analyse.sh
-	./analysis/find_no_index/move_and_analyse.sh 100000 1000000 10000000
 	chmod +x analysis_runner.sh
 	./analysis_runner.sh find_no_index 100000 1000000 10000000
 	@echo "[graphenix] Finished find without index analysis!"

@@ -9,6 +9,7 @@
 #include <limits>
 #include <filesystem>
 #include <cstring>
+#include <tuple>
 #include <algorithm>
 #include <variant>
 #include <pybind11/pybind11.h>
@@ -141,6 +142,92 @@ inline bool is_instant_limit(const query_object &qobject)
         qobject.filter_root.children.size() == 0);
 }
 
+inline std::tuple<bool, std::unordered_set<int64_t>>
+search_for_pk_conditions(const model_def &mdef, cond_node &cnode,
+                         const std::vector<std::pair<int64_t, int64_t>> &offsets)
+{
+    std::unordered_set<int64_t> condition_indexes;
+    std::vector<int> indexes_to_remove;
+
+    for (size_t i = 0; i < cnode.conditions.size(); ++i)
+    {
+        std::unordered_set<int64_t> current_condition_indexes;
+        auto &cond = cnode.conditions[i];
+        if (!cond.field_name.empty())
+            continue;
+
+        switch (cond.operation_index)
+        {
+        case EQUAL:
+        {
+            const int64_t int_val = py::cast<int64_t>(cond.value);
+            current_condition_indexes.insert(int_val);
+            indexes_to_remove.push_back(i);
+            break;
+        }
+        case IS_IN:
+        {
+            if (!py::isinstance<py::list>(cond.value))
+            {
+                throw std::runtime_error("You did not provide a list as the IN/NOT_IN argument");
+                break;
+            }
+
+            indexes_to_remove.push_back(i);
+            for (py::handle item : cond.value)
+            {
+                const int64_t current_key = py::cast<int64_t>(item);
+                current_condition_indexes.insert(current_key);
+            }
+            break;
+        }
+        case LESS:
+        case LESS_OR_EQUAL:
+        case GREATER:
+        case GREATER_OR_EQUAL:
+        {
+            const int64_t int_val = py::cast<int64_t>(cond.value);
+            indexes_to_remove.push_back(i);
+            for (const auto &pair : offsets)
+                if ((cond.operation_index == LESS && pair.second < int_val) ||
+                    (cond.operation_index == LESS_OR_EQUAL && pair.second <= int_val) ||
+                    (cond.operation_index == GREATER && pair.second > int_val) ||
+                    (cond.operation_index == GREATER_OR_EQUAL && pair.second >= int_val))
+                {
+                    current_condition_indexes.insert(pair.second);
+                }
+
+            break;
+        }
+        case BETWEEN:
+        {
+            py::tuple interval = py::cast<py::tuple>(cond.value);
+            const int64_t low = py::cast<int64_t>(interval[0]);
+            const int64_t high = py::cast<int64_t>(interval[1]);
+
+            indexes_to_remove.push_back(i);
+            for (const auto &pair : offsets)
+                if (low <= pair.second && pair.second <= high)
+                    current_condition_indexes.insert(pair.second);
+
+            break;
+        }
+
+        default:
+            break;
+        }
+
+        condition_indexes = indexes_to_remove.size() > 1
+                                ? make_set_intersection(condition_indexes, current_condition_indexes)
+                                : current_condition_indexes;
+    }
+
+    for (auto rit = indexes_to_remove.rbegin(); rit != indexes_to_remove.rend(); ++rit)
+        cnode.conditions.erase(cnode.conditions.begin() + *rit);
+
+    return make_tuple(indexes_to_remove.size() > 0, condition_indexes);
+}
+
 std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobject)
 {
     const auto &mdef = qobject.mdef;
@@ -155,14 +242,34 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
     ix_read_all(ix_file, offsets);
     ix_file.close();
 
+    std::unordered_set<int64_t> instant_pk_filter;
+    bool has_pk_filter = false;
+
     // chech for indexed conditions in condition root and update offsets
     if (qobject.filter_root.btree_conditions.size() > 0)
     {
         std::unordered_set<int64_t> indexed_conditions = evaluate_btree_conditions_every(mdef, qobject_editable.filter_root);
         qobject_editable.filter_root.btree_conditions.clear();
+
+        has_pk_filter = true;
+        instant_pk_filter.insert(indexed_conditions.begin(), indexed_conditions.end());
+    }
+
+    if (qobject.filter_root.conditions.size() > 0)
+    {
+        const auto [has_pk_conditions, indexed_conditions] = search_for_pk_conditions(mdef, qobject_editable.filter_root, offsets);
+        if (has_pk_conditions)
+        {
+            has_pk_filter = true;
+            instant_pk_filter.insert(indexed_conditions.begin(), indexed_conditions.end());
+        }
+    }
+
+    if (has_pk_filter)
+    {
         offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
                                      [&](const std::pair<int64_t, int64_t> &p)
-                                     { return indexed_conditions.count(p.second) == 0; }),
+                                     { return instant_pk_filter.count(p.second) == 0; }),
                       offsets.end());
     }
 
@@ -297,32 +404,46 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     ix_read_all(ix_file, offsets);
     ix_file.close();
 
+    std::unordered_set<int64_t> instant_pk_filter;
+    bool has_pk_filter = false;
+
     // chech for indexed conditions in condition root and update offsets
     if (qobject.filter_root.btree_conditions.size() > 0)
     {
         std::unordered_set<int64_t> indexed_conditions = evaluate_btree_conditions_every(mdef, qobject_editable.filter_root);
         qobject_editable.filter_root.btree_conditions.clear();
-        offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
-                                     [&](const std::pair<int64_t, int64_t> &p)
-                                     { return indexed_conditions.count(p.second) == 0; }),
-                      offsets.end());
+
+        has_pk_filter = true;
+        instant_pk_filter = indexed_conditions;
     }
 
-    // TODO: go through conditions in root qobject_editable.filter_root.conditions
-    // if condition is on PK make a intersection set of all these conditions
-    // apply the set intersection on the offsets for another query optimization
-
-    // evaluate condition tree
-    visit_and_evaluate(mdef, qobject_editable.filter_root, 0);
+    if (qobject.filter_root.conditions.size() > 0)
+    {
+        const auto [has_pk_conditions, indexed_conditions] = search_for_pk_conditions(mdef, qobject_editable.filter_root, offsets);
+        if (has_pk_conditions)
+        {
+            has_pk_filter = true;
+            instant_pk_filter.insert(indexed_conditions.begin(), indexed_conditions.end());
+        }
+    }
 
     if (qobject.is_subquery && qobject.has_ix_constraints)
     {
         // used for direct links
+        has_pk_filter = true;
+        instant_pk_filter.insert(qobject.ix_constraints.begin(), qobject.ix_constraints.end());
+    }
+
+    if (has_pk_filter)
+    {
         offsets.erase(std::remove_if(offsets.begin(), offsets.end(),
                                      [&](const std::pair<int64_t, int64_t> &p)
-                                     { return qobject.ix_constraints.count(p.second) == 0; }),
+                                     { return instant_pk_filter.count(p.second) == 0; }),
                       offsets.end());
     }
+
+    // evaluate condition tree
+    visit_and_evaluate(mdef, qobject_editable.filter_root, 0);
 
     if (!offsets.size())
         return std::vector<py::tuple>();
