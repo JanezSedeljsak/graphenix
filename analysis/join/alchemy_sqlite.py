@@ -20,16 +20,26 @@ class User(Base):
     is_admin = Column(Boolean)
     created_at = Column(DateTime)
 
+class Task(Base):
+    __tablename__ = 'tasks'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String(15))
+    created_at = Column(DateTime)
+    is_completed = Column(Boolean)
+    user_id = Column(Integer)
+
 def main():
     num_users = int(sys.argv[1])
-    engine = create_engine(f'sqlite:///graphenix_db/sqlite_singleinsert_alchemy_{num_users}.db')
+    engine = create_engine(f'sqlite:///graphenix_db/join_db_{num_users}.db')
     Session = sessionmaker(bind=engine)
-    start_time = time.perf_counter()
-
     session = Session()
 
-    session.close()
+    start_time = time.perf_counter()
+    users_with_tasks = session.query(User).join(Task, User.id == Task.user_id).all()
     end_time = time.perf_counter()
+
+    session.close()
     elapsed_time = (end_time - start_time) * 1000
     print(f"{elapsed_time:.2f}")
 

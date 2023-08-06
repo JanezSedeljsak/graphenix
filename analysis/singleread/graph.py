@@ -49,7 +49,7 @@ def main():
     ax.set_xticks(x_values)
     ax.set_xticklabels([str(s) for s in sizes])
     ax.legend()
-    plt.savefig(f'./analysis/singleread/singleread.png', bbox_inches='tight')
+    plt.savefig(f'./analysis/graphs/singleread.png', bbox_inches='tight')
     plt.close()
 
 if __name__ == '__main__':

@@ -39,7 +39,7 @@ _perf_test:
 # analysis section
 # --------------------------------
 
-_all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a _find_diff_a
+_all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a _find_diff_a _join_a
 	@echo "[graphenix] All analysis completed!"
 
 _insert_a:
@@ -116,10 +116,12 @@ _ifind_a:
 	@echo "[graphenix] Finished find with index analysis!"
 
 _join_a:
-	@echo "[graphenix] Running find with index analysis..."
+	@echo "[graphenix] Running join analysis..."
+	chmod +x ./analysis/join/run_insert.sh
+	./analysis/join/run_insert.sh 1000 5000 10000 20000
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh join 5000 10000 50000 100000
-	@echo "[graphenix] Finished find with index analysis!"
+	./analysis_runner.sh "join" 1000 5000 10000 20000
+	@echo "[graphenix] Finished join analysis!"
 
 _sizes_a:
 	@echo "[graphenix] Running size analysis..."

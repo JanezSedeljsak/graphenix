@@ -41,7 +41,7 @@ def main():
     ax.set_xticks(x_values)
     ax.set_xticklabels([str(s) for s in sizes], rotation=0)
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), ncol=3)
-    plt.savefig(f'./analysis/singleinsert/singleinsert.png', bbox_inches='tight')
+    plt.savefig(f'./analysis/graphs/singleinsert.png', bbox_inches='tight')
     plt.close()
 
 

@@ -4,17 +4,17 @@ import sys
 
 def main():
     num_users = int(sys.argv[1])
-    dbname = f'sqlite_singleinsert_raw_{num_users}'
+    dbname = f'join_db_{num_users}'
     conn = sqlite3.connect(f'graphenix_db/{dbname}.db')
+    cursor = conn.cursor()
     
     start_time = time.perf_counter()
-    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users INNER JOIN tasks ON tasks.user_id = users.id")
+    data = cursor.fetchall()
+    end_time = time.perf_counter()
 
-    
-    
     cursor.close()
     conn.close()
-    end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000
     print(f"{elapsed_time:.2f}")
 

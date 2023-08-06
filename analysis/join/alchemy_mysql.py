@@ -20,19 +20,28 @@ class User(Base):
     is_admin = Column(Boolean)
     created_at = Column(DateTime)
 
+class Task(Base):
+    __tablename__ = 'tasks'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(15), nullable=True)
+    created_at = Column(DateTime, nullable=True)
+    is_completed = Column(Boolean, nullable=True)
+    user_id = Column(Integer, nullable=True)
+
 def main():
     num_users = int(sys.argv[1])
-    dbname = f'singleselect_{num_users}'
+    dbname = f'join_db_{num_users}'
     
     engine = create_engine(f'mysql+mysqlconnector://root:root@localhost:3307/{dbname}')
     Session = sessionmaker(bind=engine)
-
-    start_time = time.perf_counter()
     session = Session()
 
+    start_time = time.perf_counter()
+    users_with_tasks = session.query(User).join(Task, User.id == Task.user_id).all()
+    end_time = time.perf_counter()
     
     session.close()
-    end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000
     print(f"{elapsed_time:.2f}")
 

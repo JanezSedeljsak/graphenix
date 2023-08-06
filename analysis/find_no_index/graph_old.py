@@ -45,7 +45,7 @@ def main():
     ax.set_xticks(x_values)
     ax.set_xticklabels([str(s) for s in sizes])
     ax.legend()
-    plt.savefig(f'./analysis/find_no_index/indexing.png', bbox_inches='tight')
+    plt.savefig(f'./analysis/graphs/indexing.png', bbox_inches='tight')
     plt.close()
     
 

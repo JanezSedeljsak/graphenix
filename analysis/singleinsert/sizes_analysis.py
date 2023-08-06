@@ -51,7 +51,7 @@ def main():
         ax.text(totals.get_x() + totals.get_width() / 2, iheight + bottom_offset, f'{(iheight):.2f} MB', 
                 ha='center', va='bottom', fontweight='normal')
 
-    plt.savefig(f'./analysis/singleinsert/sizes.png', bbox_inches='tight')
+    plt.savefig(f'./analysis/graphs/sizes.png', bbox_inches='tight')
     plt.close()
 
 

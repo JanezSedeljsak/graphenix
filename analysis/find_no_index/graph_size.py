@@ -57,7 +57,7 @@ def main():
                 ha='center', va='bottom', fontweight='normal')
         
     ax.legend(loc='upper left')
-    plt.savefig(f'./analysis/find_no_index/indexing_speedup_{num_users}.png', bbox_inches='tight')
+    plt.savefig(f'./analysis/graphs/indexing_speedup_{num_users}.png', bbox_inches='tight')
     plt.close()
     
 

@@ -41,7 +41,7 @@ def main():
     ax.set_xticks(x_values)
     ax.set_xticklabels([str(s) for s in sizes], rotation=0)
     ax.legend()
-    plt.savefig(f'./analysis/queryread/queryread.png', bbox_inches='tight')
+    plt.savefig(f'./analysis/graphs/queryread.png', bbox_inches='tight')
     plt.close()
 
 
