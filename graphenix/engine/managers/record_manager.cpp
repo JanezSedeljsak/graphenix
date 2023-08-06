@@ -15,23 +15,12 @@
 
 using namespace std;
 
-int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> &values)
+tuple<int64_t, int64_t> RecordManager::make_pk(fstream &file, fstream &ix_file)
 {
-    string file_name = get_file_name(mdef.db_name, mdef.model_name);
-    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
-
-    fstream file(file_name, ios::binary | ios::in | ios::out);
-    fstream ix_file(ix_file_name, ios::binary | ios::in | ios::out);
-
-    if (!file.is_open())
-        throw runtime_error("Failed to open the data file!");
-
-    int num_values = values.size();
-
+    int64_t ix_offset, offset, ix;
     int64_t head_ptr;
     ix_file.seekg(0, ios::beg);
-    ix_file.read(reinterpret_cast<char*>(&head_ptr), IX_SIZE);
-    int64_t ix_offset, offset, ix;
+    ix_file.read(reinterpret_cast<char *>(&head_ptr), IX_SIZE);
 
     if (head_ptr == -1)
     {
@@ -46,13 +35,13 @@ int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> 
     {
         offset = head_ptr;
         file.seekg(offset, ios::beg);
-        file.read(reinterpret_cast<char*>(&ix), IX_SIZE); // read next ptr (this will be the new head)
+        file.read(reinterpret_cast<char *>(&ix), IX_SIZE); // read next ptr (this will be the new head)
         ix_file.seekg(0, ios::beg);
-        ix_file.write(reinterpret_cast<char*>(&ix), IX_SIZE);
+        ix_file.write(reinterpret_cast<char *>(&ix), IX_SIZE);
         if (ix == -1)
         {
             // if head is deleted so needs to be the tail...
-            ix_file.write(reinterpret_cast<char*>(&ix), IX_SIZE); 
+            ix_file.write(reinterpret_cast<char *>(&ix), IX_SIZE);
         }
 
         ix_file.seekg(0, ios::end);
@@ -60,9 +49,18 @@ int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> 
         ix_file.write(reinterpret_cast<char *>(&offset), IX_SIZE);
     }
 
+    return make_tuple(offset, (ix_offset - PK_IX_HEAD_SIZE) / IX_SIZE);
+}
+
+bool RecordManager::create_record(fstream &file, fstream &ix_file,
+                                  const model_def &mdef, const vector<char *> &values,
+                                  tuple<int64_t, int64_t> ixdata)
+{
+    const auto [offset, record_id] = ixdata;
+    int num_values = values.size();
     char *record = new char[mdef.record_size + IX_SIZE];
-    ix = -1;
-    memcpy(record, reinterpret_cast<const char*>(&ix), IX_SIZE);
+    int64_t ix = -1;
+    memcpy(record, reinterpret_cast<const char *>(&ix), IX_SIZE);
     int field_offset = IX_SIZE;
 
     for (int i = 0; i < num_values; i++)
@@ -70,7 +68,7 @@ int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> 
         // skip virtual links can only be created through queries
         if (mdef.field_types[i] == VIRTUAL_LINK)
             continue;
-            
+
         int field_size = mdef.field_sizes[i];
         memcpy(record + field_offset, values[i], field_size);
         field_offset += field_size;
@@ -78,17 +76,14 @@ int64_t RecordManager::create_record(const model_def& mdef, const vector<char*> 
 
     file.seekg(offset, ios::beg);
     file.write(record, mdef.record_size + IX_SIZE);
-    file.close();
     delete[] record;
 
-    ix_file.close();
-    // return the record index
-    return (ix_offset - PK_IX_HEAD_SIZE) / IX_SIZE;
+    return true;
 }
 
 // return record_id, old_record and new_record
-tuple<shared_ptr<char>, shared_ptr<char>> 
-RecordManager::update_record(const model_def& mdef, const vector<char*> &values, const int64_t record_id)
+tuple<shared_ptr<char>, shared_ptr<char>>
+RecordManager::update_record(const model_def &mdef, const vector<char *> &values, const int64_t record_id)
 {
     string file_name = get_file_name(mdef.db_name, mdef.model_name);
     string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
@@ -131,13 +126,13 @@ RecordManager::update_record(const model_def& mdef, const vector<char*> &values,
     file.close();
 
     ix_file.close();
-    //delete[] record;
-    shared_ptr<char> new_rec = shared_ptr<char>(record); 
+    // delete[] record;
+    shared_ptr<char> new_rec = shared_ptr<char>(record);
     shared_ptr<char> old_rec = new_rec; // this should be updated
     return make_tuple(old_rec, old_rec);
 }
 
-void RecordManager::delete_record(const model_def& mdef, const int64_t record_id)
+void RecordManager::delete_record(const model_def &mdef, const int64_t record_id)
 {
     string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
     fstream ix_file(ix_file_name, ios::binary | ios::in | ios::out);
@@ -151,10 +146,10 @@ void RecordManager::delete_record(const model_def& mdef, const int64_t record_id
     // read head offset
     ix_file.seekg(0, ios::beg);
     int64_t ix;
-    ix_file.read(reinterpret_cast<char*>(&ix), IX_SIZE);
-    char* rec_offset_ptr = new char[IX_SIZE];
-    memcpy(rec_offset_ptr, reinterpret_cast<const char*>(&record_offset), IX_SIZE);
-    
+    ix_file.read(reinterpret_cast<char *>(&ix), IX_SIZE);
+    char *rec_offset_ptr = new char[IX_SIZE];
+    memcpy(rec_offset_ptr, reinterpret_cast<const char *>(&record_offset), IX_SIZE);
+
     if (ix == -1)
     {
         // if no deletd records yet => set head and tail to deleted offset
@@ -166,7 +161,7 @@ void RecordManager::delete_record(const model_def& mdef, const int64_t record_id
     {
         // read tail offset
         ix_file.seekg(IX_SIZE, ios::beg);
-        ix_file.read(reinterpret_cast<char*>(&ix), IX_SIZE);
+        ix_file.read(reinterpret_cast<char *>(&ix), IX_SIZE);
 
         file.seekg(ix, ios::beg);
         file.write(rec_offset_ptr, IX_SIZE);
@@ -177,7 +172,7 @@ void RecordManager::delete_record(const model_def& mdef, const int64_t record_id
     ix_file.close();
 }
 
-vector<char*> RecordManager::get_record(const model_def& mdef, const int64_t record_id)
+vector<char *> RecordManager::get_record(const model_def &mdef, const int64_t record_id)
 {
     string file_name = get_file_name(mdef.db_name, mdef.model_name);
     string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
@@ -200,10 +195,10 @@ vector<char*> RecordManager::get_record(const model_def& mdef, const int64_t rec
 
     file.seekg(record_offset + IX_SIZE, ios::beg);
     const size_t fields_count = mdef.field_sizes.size();
-    char* buffer = new char[mdef.record_size];
+    char *buffer = new char[mdef.record_size];
     file.read(buffer, mdef.record_size);
 
-    vector<char*> bin_values(fields_count);
+    vector<char *> bin_values(fields_count);
     size_t offset = 0;
     for (size_t i = 0; i < fields_count; i++)
     {

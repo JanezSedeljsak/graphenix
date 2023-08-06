@@ -60,6 +60,13 @@ enum AGGREGATE_OPERATION
     COUNT = 3
 };
 
+enum INDEX_ACTION
+{
+    SKIP = 0,
+    DO_INSERT = 1,
+    DO_UPDATE = 2
+};
+
 struct aggregate_object
 {
     int option, field_index;
@@ -722,10 +729,12 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def &mdef, const std
     return record;
 }
 
-inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &py_values)
+inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &py_values,
+                                        const INDEX_ACTION ixaction, const int64_t record_id)
 {
     const auto &field_types = mdef.field_types;
     const auto &field_sizes = mdef.field_sizes;
+    const auto &field_indexes = mdef.field_indexes;
 
     const size_t fields_count = field_types.size();
     std::vector<char *> parsed_values(fields_count);
@@ -742,10 +751,16 @@ inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &p
         case INT:
         case DATETIME:
         case LINK:
+        {
             int_val = py::cast<int64_t>(py_values[i]);
             memcpy(parsed_values[i], &int_val, sizeof(int64_t));
+            if (ixaction == DO_INSERT && field_indexes[i])
+            {
+                BPTreeIndex<int64_t> bpt("user", "uuid");
+                bpt.insert(int_val, record_id);
+            }
             break;
-
+        }
         case STRING:
             str_val = py::cast<std::string>(py_values[i]);
             if (static_cast<int>(str_val.length()) > field_sizes[i])
@@ -754,6 +769,11 @@ inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &p
                 throw std::runtime_error(msg);
             }
             strncpy(parsed_values[i], str_val.c_str(), field_sizes[i]);
+            if (ixaction == DO_INSERT && field_indexes[i])
+            {
+                BPTreeIndex<std::string> bpt("user", "uuid");
+                bpt.insert(str_val, record_id);
+            }
             break;
 
         case BOOL:

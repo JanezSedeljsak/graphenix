@@ -20,9 +20,17 @@ public:
 
 class RecordManager {
 public:
-    static int64_t create_record(
+    static tuple<int64_t, int64_t> make_pk(
+        fstream &file,
+        fstream &ix_file
+    );
+    
+    static bool create_record(
+        fstream &file,
+        fstream &ix_file,
         const model_def& mdef,
-        const vector<char*> &values
+        const vector<char*> &values,
+        tuple<int64_t, int64_t> ixdata
     );
 
     static tuple<shared_ptr<char>, shared_ptr<char>> update_record(

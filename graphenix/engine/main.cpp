@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 #include <tuple>
 #include "parser.hpp"
+#include "util.hpp"
 #include "managers/managers.h"
 #include "managers/schema_manager.cpp"
 #include "managers/record_manager.cpp"
@@ -15,24 +16,37 @@ int64_t heartbeat()
     return 12l;
 }
 
-int64_t model_add_record(const model_def& mdef, const py::list &py_values)
+int64_t model_add_record(const model_def &mdef, const py::list &py_values)
 {
-    vector<char *> parsed_values = PARSE_RECORD(mdef, py_values);
-    int64_t record_id = RecordManager::create_record(mdef, parsed_values);
-    // todo insert into all the bptrees
+    string file_name = get_file_name(mdef.db_name, mdef.model_name);
+    string ix_file_name = get_ix_file_name(mdef.db_name, mdef.model_name);
+
+    fstream file(file_name, ios::binary | ios::in | ios::out);
+    fstream ix_file(ix_file_name, ios::binary | ios::in | ios::out);
+    tuple<int64_t, int64_t> ixdata = RecordManager::make_pk(file, ix_file);
+    const auto [offset, record_id] = ixdata;
+
+    if (!file.is_open())
+        throw runtime_error("Failed to open the data file!");
+
+    vector<char *> parsed_values = PARSE_RECORD(mdef, py_values, DO_INSERT, record_id);
+    RecordManager::create_record(file, ix_file, mdef, parsed_values, ixdata);
+
+    file.close();
+    ix_file.close();
     DEALLOCATE_RECORD(parsed_values);
     return record_id;
 }
 
-void model_update_record(const model_def& mdef, const py::list &py_values, const int64_t id)
+void model_update_record(const model_def &mdef, const py::list &py_values, const int64_t id)
 {
-    vector<char *> parsed_values = PARSE_RECORD(mdef, py_values);
+    vector<char *> parsed_values = PARSE_RECORD(mdef, py_values, SKIP, id);
     const auto [old_rec, new_rec] = RecordManager::update_record(mdef, parsed_values, id);
     // todo update the records in the bptrees
     DEALLOCATE_RECORD(parsed_values);
 }
 
-py::list model_get_record(const model_def& mdef, const int64_t id)
+py::list model_get_record(const model_def &mdef, const int64_t id)
 {
     vector<char *> parsed_values = RecordManager::get_record(mdef, id);
     vector<py::object> record = PYTHNOIZE_RECORD(mdef, parsed_values);
@@ -44,11 +58,11 @@ py::list model_get_record(const model_def& mdef, const int64_t id)
 PYBIND11_MODULE(graphenix_engine2, m)
 {
     m.def("heartbeat", &heartbeat, "Validate library is installed");
-    
+
     m.def("create_schema", &SchemaManager::create_schema, "Create a schema with the given name");
     m.def("delete_schema", &SchemaManager::delete_schema, "Delete the schema with the given name");
     m.def("schema_exists", &SchemaManager::schema_exists, "Check if the schema with the given name exists");
-    
+
     m.def("model_add_record", &model_add_record, "Add a record to the given table");
     m.def("model_update_record", &model_update_record, "Update a record in the given table");
     m.def("model_get_record", &model_get_record, "Get a record from the given table");
@@ -99,7 +113,7 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def_readwrite("conditions", &cond_node::conditions)
         .def_readwrite("children", &cond_node::children)
         .def_readwrite("is_and", &cond_node::is_and);
-    
+
     py::class_<aggregate_object>(m, "aggregate_object")
         .def(py::init<>())
         .def_readwrite("option", &aggregate_object::option)
@@ -118,30 +132,24 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def("as_tuple", &Record::as_tuple)
         .def("as_dict", &Record::as_dict)
         .def("as_str", &Record::as_str)
-        .def("__getattr__", [](const Record& self, const std::string& name) {
-            return self.attr(name);
-        })
-        .def("__str__", [](const Record& self) {
-            return self.as_str();
-        })
-        .def("__repr__", [](const Record& self) {
-            return self.as_str();
-        });
+        .def("__getattr__", [](const Record &self, const std::string &name)
+             { return self.attr(name); })
+        .def("__str__", [](const Record &self)
+             { return self.as_str(); })
+        .def("__repr__", [](const Record &self)
+             { return self.as_str(); });
 
     py::class_<RecordView>(m, "RecordView")
         .def("attr", &RecordView::attr)
         .def("as_tuple", &RecordView::as_tuple)
         .def("as_dict", &RecordView::as_dict)
         .def("as_str", &RecordView::as_str)
-        .def("__getattr__", [](const RecordView& self, const std::string& name) {
-            return self.attr(name);
-        })
-        .def("__str__", [](const RecordView& self) {
-            return self.as_str();
-        })
-        .def("__repr__", [](const RecordView& self) {
-            return self.as_str();
-        });
+        .def("__getattr__", [](const RecordView &self, const std::string &name)
+             { return self.attr(name); })
+        .def("__str__", [](const RecordView &self)
+             { return self.as_str(); })
+        .def("__repr__", [](const RecordView &self)
+             { return self.as_str(); });
 
     py::class_<View>(m, "View")
         .def(py::init<>())
@@ -151,9 +159,8 @@ PYBIND11_MODULE(graphenix_engine2, m)
         .def("size", &View::size)
         .def("as_dict", &View::as_dict)
         .def("as_tuple", &View::as_tuple)
-        .def("__getitem__", [](const View& self, const int& index) {
-            return self.at(index);
-        });
+        .def("__getitem__", [](const View &self, const int &index)
+             { return self.at(index); });
 
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

@@ -548,7 +548,7 @@ public:
             shared_ptr<BPTreeNode<T>> new_internal_node = shared_ptr<BPTreeNode<T>>(new_internal_ptr);
 
             int max_capacity = parent->get_capacity();
-            int64_t new_keys[max_capacity + 1];
+            T new_keys[max_capacity + 1];
             int64_t new_offsets[max_capacity + 2];
 
             for (int i = 0; i < parent->keys.size(); i++)
