@@ -162,9 +162,21 @@ public:
 
     void read()
     {
+        if (root == nullptr)
+        {
+            BPTreeNode<T> *node_ptr = new BPTreeNode<T>(2 * IX_SIZE, key_size);
+            root = shared_ptr<BPTreeNode<T>>(node_ptr);
+            root->is_leaf = true;
+        }
+
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
-        root->offset = get_head_ptr(ix_file);
-        root->read(ix_file);
+        int64_t offset = get_head_ptr(ix_file);
+        if (offset != -1)
+        {
+            root->offset = offset;
+            root->read(ix_file);
+        }
+        
         ix_file.close();
     }
 
@@ -326,7 +338,7 @@ public:
     vector<LeafMatchInterval> find(const T &search)
     {
         if (root == nullptr)
-            return {};
+            read();
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         if (!root->is_cached)
