@@ -141,16 +141,23 @@ struct cond_object
             }
             case BETWEEN:
             {
-                // TODO run between search in btree
+                py::tuple interval = py::cast<py::tuple>(value);
+                const int64_t low = py::cast<int64_t>(interval[0]);
+                const int64_t high = py::cast<int64_t>(interval[1]);
+
+                auto found = bpt.find(low);
+                bpt.load_up_to_right(found, high);
+                const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                result.insert(flatten.begin(), flatten.end());
                 return result;
             }
             default:
                 throw std::runtime_error("Invalid index operation");
             }
         }
-        case STRING:
-        {
-        }
+        // case STRING:
+        // {
+        // }
         default:
             throw std::runtime_error("Invalid type for indexing");
         }
@@ -411,6 +418,12 @@ struct query_object
 
     // single field select
     int picked_index;
+
+    bool is_indexed_instant_limit() const
+    {
+        return !has_ix_constraints && filter_root.btree_conditions.size() == 1 &&
+               filter_root.children.size() == 0 && filter_root.conditions.size() == 0;
+    }
 
     bool validate_conditions(const int64_t record_id, char *record)
     {

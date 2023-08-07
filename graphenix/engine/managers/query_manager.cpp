@@ -400,6 +400,9 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
 
     query_object qobject_editable = const_cast<query_object &>(qobject);
     std::vector<std::pair<int64_t, int64_t>> offsets;
+    const bool check_limit = qobject.limit > 0;
+    const bool is_sorting = qobject.field_indexes.size() > 0;
+    const size_t K = qobject.limit + qobject.offset;
 
     ix_read_all(ix_file, offsets);
     ix_file.close();
@@ -407,8 +410,15 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     std::unordered_set<int64_t> instant_pk_filter;
     bool has_pk_filter = false;
 
+    // check for instaint limiting through an index condition
+    if (is_sorting && check_limit && qobject.is_indexed_instant_limit() && false)
+    {
+        // todo get first K elements with qobject.filter_root.btree_conditions[0]
+        has_pk_filter = true;
+    }
+
     // chech for indexed conditions in condition root and update offsets
-    if (qobject.filter_root.btree_conditions.size() > 0)
+    else if (qobject.filter_root.btree_conditions.size() > 0)
     {
         std::unordered_set<int64_t> indexed_conditions = evaluate_btree_conditions_every(mdef, qobject_editable.filter_root);
         qobject_editable.filter_root.btree_conditions.clear();
@@ -417,6 +427,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
         instant_pk_filter = indexed_conditions;
     }
 
+    // check for PK conditions
     if (qobject.filter_root.conditions.size() > 0)
     {
         const auto [has_pk_conditions, indexed_conditions] = search_for_pk_conditions(mdef, qobject_editable.filter_root, offsets);
@@ -427,6 +438,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
         }
     }
 
+    // check for subquery conditions
     if (qobject.is_subquery && qobject.has_ix_constraints)
     {
         // used for direct links
@@ -448,17 +460,12 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     if (!offsets.size())
         return std::vector<py::tuple>();
 
-    const size_t K = qobject.limit + qobject.offset;
     if (is_instant_limit(qobject))
         offsets.resize(K);
 
     const size_t ix_amount = offsets.size();
     std::sort(offsets.begin(), offsets.end());
     const auto &clusters = clusterify(offsets);
-
-    // check limit is implemented this way so that if limit is >= 1000 it sorts at the end
-    const bool check_limit = qobject.limit > 0;
-    const bool is_sorting = qobject.field_indexes.size() > 0;
 
     std::vector<char *> raw_rows;
     raw_rows.reserve(!check_limit ? ix_amount : K);

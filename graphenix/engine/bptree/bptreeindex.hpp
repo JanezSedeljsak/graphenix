@@ -20,6 +20,7 @@ class BPTreeIndex
 
 public:
     typedef pair<pair<int, int>, shared_ptr<BPTreeNode<T>>> LeafMatchInterval;
+    less<T> generic_less;
     string ix_filename;
     shared_ptr<BPTreeNode<T>> root;
     int key_size;
@@ -176,7 +177,7 @@ public:
             root->offset = offset;
             root->read(ix_file);
         }
-        
+
         ix_file.close();
     }
 
@@ -185,6 +186,36 @@ public:
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         root->offset = get_head_ptr(ix_file);
         root->read_recursive(ix_file);
+        ix_file.close();
+    }
+
+    void load_up_to_right(vector<LeafMatchInterval> &nodes, const T right_limit)
+    {
+        fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        LeafMatchInterval &last = nodes.back();
+        shared_ptr<BPTreeNode<T>> &node = last.second;
+        int right_idx = last.first.second;
+
+        while (true)
+        {
+            if (!generic_less(right_limit, node->keys.back()))
+            {
+                while (!generic_less(right_limit, node->keys[right_idx]))
+                    right_idx++;
+
+                nodes.back().first.second = right_idx;
+                break;
+            }
+            else
+            {
+                node = node->get_next(ix_file);
+                nodes.push_back(make_pair(make_pair(0, 0), node));
+                right_idx = 0;
+                if (node == nullptr)
+                    break;
+            }
+        }
+
         ix_file.close();
     }
 
@@ -218,7 +249,6 @@ public:
      */
     inline LeafMatchInterval search_leaf(const T &search, shared_ptr<BPTreeNode<T>> node, fstream &ix_file)
     {
-        less<T> generic_less;
         size_t low = 0, high = node->keys.size();
         while (low < high)
         {
@@ -297,7 +327,6 @@ public:
     inline vector<LeafMatchInterval> search_internal(const T &search, shared_ptr<BPTreeNode<T>> node, fstream &ix_file)
     {
         vector<LeafMatchInterval> nodes;
-        less<T> generic_less;
         bool found_equal = false;
         size_t low = 0, high = node->keys.size();
         while (low < high)
@@ -373,7 +402,6 @@ public:
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         shared_ptr<BPTreeNode<T>> current = root;
         shared_ptr<BPTreeNode<T>> parent;
-        less<T> generic_less;
         int keys_count = current->keys.size();
 
         //  cout << "Search for leaf" << endl;
