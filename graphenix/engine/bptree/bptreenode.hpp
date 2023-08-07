@@ -160,6 +160,7 @@ public:
             {
                 BPTreeNode<T> *temp = get_from_offset(ix_file, offset);
                 actual_children.push_back(shared_ptr<BPTreeNode<T>>(temp));
+                temp->read_recursive(ix_file);
             }
         }
     }
@@ -205,14 +206,17 @@ public:
         delete[] buffer;
     }
 
-    void print(bool is_recursive)
+    void print(bool is_recursive, const size_t depth)
     {
-        cout << "Is leaf: " << is_leaf << endl;
-        cout << "Offset: " << offset << endl;
-        cout << "Children: " << children.size() << endl;
+        const std::string prefix(depth, '\t');
+        cout << prefix << "Is leaf: " << is_leaf << endl;
+        cout << prefix << "Offset: " << offset << endl;
+        cout << prefix << "Children: " << children.size() << endl;
+        cout << prefix << "Prev: " << prev << endl;
+        cout << prefix << "Next: " << next << endl;
         for (size_t i = 0; i < keys.size(); i++)
         {
-            cout << "Key: " << keys[i];
+            cout << prefix << "Key: " << keys[i];
             if (is_leaf)
             {
                 cout << ", " << data[i];
@@ -220,11 +224,14 @@ public:
             cout << endl;
         }
 
+        
+
+        cout << prefix << "-----------------" << endl;
         if (!is_recursive)
             return;
 
         for (auto &child : actual_children)
-            child->print(true);
+            child->print(true, depth + 1);
     }
 };
 

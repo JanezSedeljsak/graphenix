@@ -222,7 +222,7 @@ public:
     void print_index(bool is_recursive)
     {
         if (root != nullptr)
-            root->print(is_recursive);
+            root->print(is_recursive, 0);
     }
 
     void delete_index()
@@ -522,6 +522,8 @@ public:
             }
             else
             {
+                new_leaf->set_prev(current);
+                current->set_next(new_leaf);
                 current->write(ix_file);
                 new_leaf->write(ix_file);
                 shift_tree_level(new_leaf->keys[0], parent, new_leaf, ix_file);
@@ -595,14 +597,14 @@ public:
             T new_keys[max_capacity + 1];
             int64_t new_offsets[max_capacity + 2];
 
-            for (int i = 0; i < parent->keys.size(); i++)
+            for (int i = 0; i < max_capacity; i++)
                 new_keys[i] = parent->keys[i];
 
             for (int i = 0; i < max_capacity + 1; i++)
                 new_offsets[i] = parent->children[i];
 
             int i = 0;
-            while (i < max_capacity && key > new_keys[i])
+            while (i < max_capacity && generic_less(new_keys[i], key))
                 i++;
 
             for (int j = max_capacity + 1; j > i; j--)
@@ -615,20 +617,20 @@ public:
 
             new_internal_node->is_leaf = false;
             int child_size = (max_capacity + 1) / 2;
-            int new_internal_size = max_capacity - (max_capacity + 1) / 2;
+            int new_internal_size = max_capacity - child_size;
 
-            child->keys.resize(child_size);
-            child->children.resize(child_size + 1);
+            parent->keys.resize(child_size);
+            parent->children.resize(child_size + 1);
             new_internal_node->keys.resize(new_internal_size);
             new_internal_node->children.resize(new_internal_size + 1);
 
-            for (int i = 0; i < new_internal_size; i++)
+            for (int i = 0; i < child_size; i++)
                 new_internal_node->keys[i] = new_keys[i + child_size + 1];
 
-            for (int i = 0; i < new_internal_size + 1; i++)
+            for (int i = 0; i < child_size + 1; i++)
                 new_internal_node->children[i] = new_offsets[i + child_size + 1];
 
-            child->write(ix_file);
+            parent->write(ix_file);
             new_internal_node->offset = get_and_set_next_free(ix_file);
             new_internal_node->write(ix_file);
 
