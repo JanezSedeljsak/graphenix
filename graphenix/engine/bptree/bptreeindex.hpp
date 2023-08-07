@@ -24,22 +24,26 @@ public:
     shared_ptr<BPTreeNode<T>> root;
     int key_size;
 
-    inline void init(const string &model_name, const string &field_name)
+    inline void init(const string &schema_name, const string &model_name,
+                     const string &field_name)
     {
-        // when stable should use -> get_field_ix_file_name;
-        ix_filename = "bpt_ix_" + model_name + "_" + field_name + ".bin";
+#ifdef IS_TESTING
+        ix_filename = "fix_" + model_name + "_" + field_name + ".bin";
+#else
+        ix_filename = "graphenix_db/" + schema_name + "/fix_" + model_name + "_" + field_name + ".bin";
+#endif
         root = nullptr;
     }
 
-    BPTreeIndex(string model_name, string field_name)
+    BPTreeIndex(string schema_name, string model_name, string field_name)
     {
-        init(model_name, field_name);
+        init(schema_name, model_name, field_name);
         key_size = IX_SIZE;
     }
 
-    BPTreeIndex(string model_name, string field_name, int size)
+    BPTreeIndex(string schema_name, string model_name, string field_name, int size)
     {
-        init(model_name, field_name);
+        init(schema_name, model_name, field_name);
         key_size = size;
     }
 

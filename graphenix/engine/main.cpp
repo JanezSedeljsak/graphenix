@@ -1,12 +1,15 @@
+#define FIXED_CAPACITY 3LL
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <tuple>
+#include <queue>
 #include "parser.hpp"
 #include "util.hpp"
 #include "managers/managers.h"
 #include "managers/schema_manager.cpp"
 #include "managers/record_manager.cpp"
 #include "managers/query_manager.cpp"
+#include "bptree/bptreeindex.hpp"
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
@@ -55,9 +58,44 @@ py::list model_get_record(const model_def &mdef, const int64_t id)
     return py_record;
 }
 
+void display_index(BPTreeIndex<int64_t> &bpt)
+{
+    shared_ptr<BPTreeNode<int64_t>> current = bpt.root;
+    queue<shared_ptr<BPTreeNode<int64_t>>> q;
+    q.push(current);
+    while (!q.empty())
+    {
+        int l;
+        l = q.size();
+
+        for (int i = 0; i < l; i++)
+        {
+            shared_ptr<BPTreeNode<int64_t>> tNode = q.front();
+            q.pop();
+
+            for (const auto &key : tNode->keys)
+                cout << key << " ";
+
+            for (const auto &child : tNode->actual_children)
+                q.push(child);
+
+            cout << "\t";
+        }
+        cout << endl;
+    }
+}
+
+void print_index(string s, string m, string f)
+{
+    BPTreeIndex<int64_t> bpt(s, m, f);
+    bpt.load_full_tree();
+    display_index(bpt);
+}
+
 PYBIND11_MODULE(graphenix_engine2, m)
 {
     m.def("heartbeat", &heartbeat, "Validate library is installed");
+    m.def("print_index", &print_index, "Print index");
 
     m.def("create_schema", &SchemaManager::create_schema, "Create a schema with the given name");
     m.def("delete_schema", &SchemaManager::delete_schema, "Delete the schema with the given name");
