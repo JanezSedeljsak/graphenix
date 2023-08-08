@@ -178,6 +178,7 @@ public:
             root->read(ix_file);
         }
 
+        root->is_cached = true;
         ix_file.close();
     }
 
@@ -370,6 +371,9 @@ public:
             read();
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        if (!root->is_cached)
+            root->read(ix_file);
+
         vector<LeafMatchInterval> nodes;
         if (root->is_leaf)
         {
