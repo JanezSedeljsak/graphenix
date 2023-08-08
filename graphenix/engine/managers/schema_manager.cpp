@@ -7,13 +7,14 @@
 #include <omp.h>
 #include "../util.hpp"
 #include "../parser.hpp"
+#include "../bptree/bptreeindex.hpp"
 
 using namespace std;
 
 void SchemaManager::create_schema(const string &db_name, const vector<model_def> &models, bool delete_old)
 {
     MAKE_GRAPHENIX_DB_DIR();
-    if (delete_old && SchemaManager::schema_exists(db_name)) 
+    if (delete_old && SchemaManager::schema_exists(db_name))
     {
         SchemaManager::delete_schema(db_name);
     }
@@ -25,7 +26,7 @@ void SchemaManager::create_schema(const string &db_name, const vector<model_def>
         throw runtime_error("Failed to create schema folder");
     }
 
-    #pragma omp parallel for schedule(static) 
+#pragma omp parallel for schedule(static)
     for (const auto &model : models)
     {
         // create model file
@@ -47,23 +48,18 @@ void SchemaManager::create_schema(const string &db_name, const vector<model_def>
         }
 
         int64_t deleted_head = -1;
-        ix_outfile.write(reinterpret_cast<const char*>(&deleted_head), IX_SIZE); // head pointer
-        ix_outfile.write(reinterpret_cast<const char*>(&deleted_head), IX_SIZE); // tail pointer
+        ix_outfile.write(reinterpret_cast<const char *>(&deleted_head), IX_SIZE); // head pointer
+        ix_outfile.write(reinterpret_cast<const char *>(&deleted_head), IX_SIZE); // tail pointer
         ix_outfile.close();
 
         // loop through the fields to check if any index files need to be created
-        for (size_t i = 0; i < model.field_indexes.size(); i++) 
+        for (size_t i = 0; i < model.field_indexes.size(); i++)
         {
             if (model.field_indexes[i])
             {
-                const string fix_file_name = get_field_ix_file_name(db_name, model.model_name, model.field_names[i]);
-                ofstream fix_file(fix_file_name, ios::out | ios::binary);
-                if (!fix_file)
-                {
-                    throw runtime_error("Failed to create binary file for field index!");
-                }
-
-                fix_file.close();
+                // when creating the index the type doesn't matter (this is why we hava fixed int64_t)
+                BPTreeIndex<int64_t> bpt(db_name, model.model_name, model.field_names[i]);
+                bpt.create();
             }
         }
     }

@@ -12,7 +12,7 @@
 
 TEST_CASE("Crete index, insert with create subtree")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     bpt.insert(1, 100);
@@ -44,7 +44,7 @@ TEST_CASE("Crete index, insert with create subtree")
 
 TEST_CASE("Crete index, insert with create subtree 2")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     bpt.insert(1, 500);
@@ -76,7 +76,7 @@ TEST_CASE("Crete index, insert with create subtree 2")
 
 TEST_CASE("Crete index, insert with create subtree and search")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     bpt.insert(1, 170);
@@ -95,7 +95,7 @@ TEST_CASE("Crete index, insert with create subtree and search")
 
 TEST_CASE("Crete index, insert same + create subtree and search")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     bpt.insert(1, 170);
@@ -115,7 +115,7 @@ TEST_CASE("Crete index, insert same + create subtree and search")
 
 TEST_CASE("Crete index, insert same + create subtree and search")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     bpt.insert(1, 170);
@@ -139,7 +139,7 @@ TEST_CASE("Crete index, insert same + create subtree and search")
 
 TEST_CASE("Crete index, insert + create subtree with internal and search")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
@@ -163,7 +163,7 @@ TEST_CASE("Crete index, insert + create subtree with internal and search")
 
 TEST_CASE("Crete index, with range and find each")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
@@ -189,7 +189,7 @@ TEST_CASE("Crete index, with range and find each")
 
 TEST_CASE("Crete index, with range (reversed) and find each")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
@@ -216,7 +216,7 @@ TEST_CASE("Crete index, with range (reversed) and find each")
 
 TEST_CASE("Crete index, with range (shuffled) and find each")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(2, 400), make_pair(3, 300),
@@ -243,7 +243,7 @@ TEST_CASE("Crete index, with range (shuffled) and find each")
 
 TEST_CASE("Crete index, insert same + create subtree with internal and search")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> items{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300),
@@ -265,7 +265,7 @@ TEST_CASE("Crete index, insert same + create subtree with internal and search")
 
 TEST_CASE("Crete index, insert partially same + create subtree with internal and search")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> ones{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300)};
@@ -285,7 +285,7 @@ TEST_CASE("Crete index, insert partially same + create subtree with internal and
 
 TEST_CASE("Crete index, insert partially same + create subtree with internal and search - order 2")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> ones{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300)};
@@ -305,7 +305,7 @@ TEST_CASE("Crete index, insert partially same + create subtree with internal and
 
 TEST_CASE("Crete index, insert partially same + create subtree with internal and search - order 3")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> ones{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300)};
@@ -325,7 +325,7 @@ TEST_CASE("Crete index, insert partially same + create subtree with internal and
 
 TEST_CASE("Crete index, insert partially same + create subtree with internal and search - order 4")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     vector<pair<int64_t, int64_t>> ones{make_pair(1, 500), make_pair(1, 400), make_pair(1, 300)};

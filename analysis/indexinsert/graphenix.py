@@ -9,7 +9,7 @@ class User(Model):
     first_name = Field.String(size=15)
     last_name = Field.String(size=15)
     email = Field.String(size=25)
-    points = Field.Int().as_index()
+    points = Field.Int()
     is_admin = Field.Bool()
     created_at = Field.DateTime()
 
