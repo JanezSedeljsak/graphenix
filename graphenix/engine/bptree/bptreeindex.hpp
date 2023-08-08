@@ -370,9 +370,6 @@ public:
             read();
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
-        if (!root->is_cached)
-            root->read(ix_file);
-
         vector<LeafMatchInterval> nodes;
         if (root->is_leaf)
         {
@@ -607,11 +604,11 @@ public:
             while (i < max_capacity && generic_less(new_keys[i], key))
                 i++;
 
-            for (int j = max_capacity + 1; j > i; j--)
+            for (int j = max_capacity; j > i; j--)
                 new_keys[j] = new_keys[j - 1];
             new_keys[i] = key;
 
-            for (int j = max_capacity + 2; j > i + 1; j--)
+            for (int j = max_capacity + 1; j > i + 1; j--)
                 new_offsets[j] = new_offsets[j - 1];
             new_offsets[i + 1] = child->offset;
 
@@ -670,7 +667,7 @@ public:
 
         for (int i = 0; i < current->keys.size() + 1; i++)
         {
-            BPTreeNode<T> *tmp_child_ptr = new BPTreeNode<T>(current->children[0], key_size);
+            BPTreeNode<T> *tmp_child_ptr = new BPTreeNode<T>(current->children[i], key_size);
             shared_ptr<BPTreeNode<T>> tmp_child = shared_ptr<BPTreeNode<T>>(tmp_child_ptr);
             tmp_child->read(ix_file);
 

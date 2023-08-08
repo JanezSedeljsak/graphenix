@@ -1,4 +1,3 @@
-#define FIXED_CAPACITY 3LL
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <tuple>
