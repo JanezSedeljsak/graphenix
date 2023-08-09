@@ -61,7 +61,7 @@ class GraphenixPerfTests(CommonTestBase):
     # @CommonTestBase.ignore
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_1M_cities
-    @CommonTestBase.perf("Read 1M records at once (not bulk action)", times=5)
+    @CommonTestBase.perf("Read 1M records at once", times=5)
     def test_read_1M_records(self):
         AMOUNT = 1_000_000
         count, rows = City.all()
