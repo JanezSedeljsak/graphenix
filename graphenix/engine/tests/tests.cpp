@@ -11,7 +11,7 @@
 
 TEST_CASE("Crete integer index and search")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     bpt.root->keys = {2, 4, 6, 8, 8, 10};
@@ -33,7 +33,7 @@ TEST_CASE("Crete integer index and search")
 
 TEST_CASE("Crete string index and search")
 {
-    BPTreeIndex<string> bpt("user", "uuid", 10);
+    BPTreeIndex<string> bpt("__test", "user", "uuid", 10);
     bpt.delete_index();
     bpt.create();
     bpt.root->keys = {"a", "a", "a", "ad", "fdsada", "fzaaaa"};
@@ -55,7 +55,7 @@ TEST_CASE("Crete string index and search")
 
 TEST_CASE("Crete index, insert and do basic search")
 {
-    BPTreeIndex<int64_t> bpt("user", "uuid");
+    BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
     bpt.delete_index();
     bpt.create();
     bpt.root->keys = {2, 4, 6, 8, 8, 10};

@@ -20,26 +20,31 @@ class BPTreeIndex
 
 public:
     typedef pair<pair<int, int>, shared_ptr<BPTreeNode<T>>> LeafMatchInterval;
+    less<T> generic_less;
     string ix_filename;
     shared_ptr<BPTreeNode<T>> root;
     int key_size;
 
-    inline void init(const string &model_name, const string &field_name)
+    inline void init(const string &schema_name, const string &model_name,
+                     const string &field_name)
     {
-        // when stable should use -> get_field_ix_file_name;
-        ix_filename = "bpt_ix_" + model_name + "_" + field_name + ".bin";
+#ifdef IS_TESTING
+        ix_filename = "fix_" + model_name + "_" + field_name + ".bin";
+#else
+        ix_filename = "graphenix_db/" + schema_name + "/fix_" + model_name + "_" + field_name + ".bin";
+#endif
         root = nullptr;
     }
 
-    BPTreeIndex(string model_name, string field_name)
+    BPTreeIndex(string schema_name, string model_name, string field_name)
     {
-        init(model_name, field_name);
+        init(schema_name, model_name, field_name);
         key_size = IX_SIZE;
     }
 
-    BPTreeIndex(string model_name, string field_name, int size)
+    BPTreeIndex(string schema_name, string model_name, string field_name, int size)
     {
-        init(model_name, field_name);
+        init(schema_name, model_name, field_name);
         key_size = size;
     }
 
@@ -158,9 +163,22 @@ public:
 
     void read()
     {
+        if (root == nullptr)
+        {
+            BPTreeNode<T> *node_ptr = new BPTreeNode<T>(2 * IX_SIZE, key_size);
+            root = shared_ptr<BPTreeNode<T>>(node_ptr);
+            root->is_leaf = true;
+        }
+
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
-        root->offset = get_head_ptr(ix_file);
-        root->read(ix_file);
+        int64_t offset = get_head_ptr(ix_file);
+        if (offset != -1)
+        {
+            root->offset = offset;
+            root->read(ix_file);
+        }
+
+        root->is_cached = true;
         ix_file.close();
     }
 
@@ -172,10 +190,40 @@ public:
         ix_file.close();
     }
 
+    void load_up_to_right(vector<LeafMatchInterval> &nodes, const T right_limit)
+    {
+        fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        LeafMatchInterval &last = nodes.back();
+        shared_ptr<BPTreeNode<T>> &node = last.second;
+        int right_idx = last.first.second;
+
+        while (true)
+        {
+            if (!generic_less(right_limit, node->keys.back()))
+            {
+                while (!generic_less(right_limit, node->keys[right_idx]))
+                    right_idx++;
+
+                nodes.back().first.second = right_idx;
+                break;
+            }
+            else
+            {
+                node = node->get_next(ix_file);
+                nodes.push_back(make_pair(make_pair(0, 0), node));
+                right_idx = 0;
+                if (node == nullptr)
+                    break;
+            }
+        }
+
+        ix_file.close();
+    }
+
     void print_index(bool is_recursive)
     {
         if (root != nullptr)
-            root->print(is_recursive);
+            root->print(is_recursive, 0);
     }
 
     void delete_index()
@@ -202,7 +250,6 @@ public:
      */
     inline LeafMatchInterval search_leaf(const T &search, shared_ptr<BPTreeNode<T>> node, fstream &ix_file)
     {
-        less<T> generic_less;
         size_t low = 0, high = node->keys.size();
         while (low < high)
         {
@@ -281,7 +328,6 @@ public:
     inline vector<LeafMatchInterval> search_internal(const T &search, shared_ptr<BPTreeNode<T>> node, fstream &ix_file)
     {
         vector<LeafMatchInterval> nodes;
-        less<T> generic_less;
         bool found_equal = false;
         size_t low = 0, high = node->keys.size();
         while (low < high)
@@ -322,7 +368,7 @@ public:
     vector<LeafMatchInterval> find(const T &search)
     {
         if (root == nullptr)
-            return {};
+            read();
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         if (!root->is_cached)
@@ -357,7 +403,6 @@ public:
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         shared_ptr<BPTreeNode<T>> current = root;
         shared_ptr<BPTreeNode<T>> parent;
-        less<T> generic_less;
         int keys_count = current->keys.size();
 
         //  cout << "Search for leaf" << endl;
@@ -478,6 +523,8 @@ public:
             }
             else
             {
+                new_leaf->set_prev(current);
+                current->set_next(new_leaf);
                 current->write(ix_file);
                 new_leaf->write(ix_file);
                 shift_tree_level(new_leaf->keys[0], parent, new_leaf, ix_file);
@@ -551,40 +598,40 @@ public:
             T new_keys[max_capacity + 1];
             int64_t new_offsets[max_capacity + 2];
 
-            for (int i = 0; i < parent->keys.size(); i++)
+            for (int i = 0; i < max_capacity; i++)
                 new_keys[i] = parent->keys[i];
 
             for (int i = 0; i < max_capacity + 1; i++)
                 new_offsets[i] = parent->children[i];
 
             int i = 0;
-            while (i < max_capacity && key > new_keys[i])
+            while (i < max_capacity && generic_less(new_keys[i], key))
                 i++;
 
-            for (int j = max_capacity + 1; j > i; j--)
+            for (int j = max_capacity; j > i; j--)
                 new_keys[j] = new_keys[j - 1];
             new_keys[i] = key;
 
-            for (int j = max_capacity + 2; j > i + 1; j--)
+            for (int j = max_capacity + 1; j > i + 1; j--)
                 new_offsets[j] = new_offsets[j - 1];
             new_offsets[i + 1] = child->offset;
 
             new_internal_node->is_leaf = false;
             int child_size = (max_capacity + 1) / 2;
-            int new_internal_size = max_capacity - (max_capacity + 1) / 2;
+            int new_internal_size = max_capacity - child_size;
 
-            child->keys.resize(child_size);
-            child->children.resize(child_size + 1);
+            parent->keys.resize(child_size);
+            parent->children.resize(child_size + 1);
             new_internal_node->keys.resize(new_internal_size);
             new_internal_node->children.resize(new_internal_size + 1);
 
-            for (int i = 0; i < new_internal_size; i++)
+            for (int i = 0; i < child_size; i++)
                 new_internal_node->keys[i] = new_keys[i + child_size + 1];
 
-            for (int i = 0; i < new_internal_size + 1; i++)
+            for (int i = 0; i < child_size + 1; i++)
                 new_internal_node->children[i] = new_offsets[i + child_size + 1];
 
-            child->write(ix_file);
+            parent->write(ix_file);
             new_internal_node->offset = get_and_set_next_free(ix_file);
             new_internal_node->write(ix_file);
 
@@ -624,7 +671,7 @@ public:
 
         for (int i = 0; i < current->keys.size() + 1; i++)
         {
-            BPTreeNode<T> *tmp_child_ptr = new BPTreeNode<T>(current->children[0], key_size);
+            BPTreeNode<T> *tmp_child_ptr = new BPTreeNode<T>(current->children[i], key_size);
             shared_ptr<BPTreeNode<T>> tmp_child = shared_ptr<BPTreeNode<T>>(tmp_child_ptr);
             tmp_child->read(ix_file);
 

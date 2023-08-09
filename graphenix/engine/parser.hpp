@@ -111,7 +111,7 @@ struct cond_object
         case DATETIME:
         case LINK:
         {
-            BPTreeIndex<int64_t> bpt("user", "uuid");
+            BPTreeIndex<int64_t> bpt(mdef.db_name, mdef.model_name, field_name);
             switch (operation_index)
             {
             case IS_IN:
@@ -141,16 +141,23 @@ struct cond_object
             }
             case BETWEEN:
             {
-                // TODO run between search in btree
+                py::tuple interval = py::cast<py::tuple>(value);
+                const int64_t low = py::cast<int64_t>(interval[0]);
+                const int64_t high = py::cast<int64_t>(interval[1]);
+
+                auto found = bpt.find(low);
+                bpt.load_up_to_right(found, high);
+                const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                result.insert(flatten.begin(), flatten.end());
                 return result;
             }
             default:
                 throw std::runtime_error("Invalid index operation");
             }
         }
-        case STRING:
-        {
-        }
+        // case STRING:
+        // {
+        // }
         default:
             throw std::runtime_error("Invalid type for indexing");
         }
@@ -412,6 +419,12 @@ struct query_object
     // single field select
     int picked_index;
 
+    bool is_indexed_instant_limit() const
+    {
+        return !has_ix_constraints && filter_root.btree_conditions.size() == 1 &&
+               filter_root.children.size() == 0 && filter_root.conditions.size() == 0;
+    }
+
     bool validate_conditions(const int64_t record_id, char *record)
     {
         auto &current_node = filter_root;
@@ -474,7 +487,7 @@ struct query_object
 
     void compare_and_swap(char *record, std::vector<py::object> &current)
     {
-        size_t len = agg_vector.size();
+        const size_t len = agg_vector.size();
         for (size_t i = 0; i < len; i++)
         {
             const AGGREGATE_OPERATION agg_func = static_cast<AGGREGATE_OPERATION>(agg_vector[i].option);
@@ -596,7 +609,7 @@ struct query_object
 
     bool operator()(char *a, char *b) const
     {
-        size_t len = field_indexes.size();
+        const size_t len = field_indexes.size();
         for (size_t i = 0; i < len; i++)
         {
             const int idx = field_indexes[i];
@@ -730,11 +743,12 @@ inline std::vector<py::object> PYTHNOIZE_RECORD(const model_def &mdef, const std
 }
 
 inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &py_values,
-                                        const INDEX_ACTION ixaction, const int64_t record_id)
+                                        const INDEX_ACTION ixaction, int64_t record_id)
 {
     const auto &field_types = mdef.field_types;
     const auto &field_sizes = mdef.field_sizes;
     const auto &field_indexes = mdef.field_indexes;
+    const auto &field_names = mdef.field_names;
 
     const size_t fields_count = field_types.size();
     std::vector<char *> parsed_values(fields_count);
@@ -756,7 +770,7 @@ inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &p
             memcpy(parsed_values[i], &int_val, sizeof(int64_t));
             if (ixaction == DO_INSERT && field_indexes[i])
             {
-                BPTreeIndex<int64_t> bpt("user", "uuid");
+                BPTreeIndex<int64_t> bpt(mdef.db_name, mdef.model_name, field_names[i]);
                 bpt.insert(int_val, record_id);
             }
             break;
@@ -771,7 +785,7 @@ inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &p
             strncpy(parsed_values[i], str_val.c_str(), field_sizes[i]);
             if (ixaction == DO_INSERT && field_indexes[i])
             {
-                BPTreeIndex<std::string> bpt("user", "uuid");
+                BPTreeIndex<std::string> bpt(mdef.db_name, mdef.model_name, field_names[i]);
                 bpt.insert(str_val, record_id);
             }
             break;

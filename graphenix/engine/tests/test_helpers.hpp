@@ -133,7 +133,7 @@ inline void PERMUTATIONS_TEST(vector<pair<int64_t, int64_t>> &vec)
             else
                 swap(vec[indices[i]], vec[i]);
 
-            BPTreeIndex<int64_t> bpt("user", "uuid");
+            BPTreeIndex<int64_t> bpt("__test", "user", "uuid");
             bpt.delete_index();
             bpt.create();
             INSERT_PAIRS_AND_VALIDATE(bpt, vec);
