@@ -337,6 +337,7 @@ opis diplome v angleščini
 \noindent\begin{tabular}{p{0.2\textwidth}|p{.35\textwidth}|p{.35\textwidth}}    % po potrebi razširi prvo kolono tabele na račun drugih dveh!
   {\bf kratica} & {\bf angleško}                              & {\bf slovensko} \\ \hline
   {\bf DBMS} & database management system & sistem za upravljanje podatkovnih baz \\
+  {\bf BCNF} & Boyce-Codd normal form & normalna oblika, ki se uporablja pri normalizaciji podatkovne baze \\
   {\bf API} & application programming interface & aplikacijski programski vmesnik \\
   {\bf SQL} & structured query language & strukturiran jezik poizvedb \\
   {\bf NoSQL} & nerelacijske podatkovne baze & nonrelational databases \\
@@ -368,7 +369,7 @@ opis diplome v angleščini
 \bigskip
 
 %\noindent\textbf{Povzetek:} 
-\noindent V diplomskem delu je predstavljenih trenutno nekaj najbolj uporabljenih relacijskih podatkovnih sistemov (DMBS). V veliki meri so standard podatkovnih baz še vedno relacijske podatkovne baze. V ta namen je tekom dela predstavljen razvoj vgrajenega relacijskega sistema za programski jezik Python.
+\noindent V diplomskem delu je predstavljenih trenutno nekaj najbolj uporabljenih sistemov za upravljanje podatkovnih baz (DMBS). V veliki meri so standard podatkovnih baz še vedno relacijske podatkovne baze. V ta namen je tekom dela predstavljen razvoj vgrajenega relacijskega sistema za programski jezik Python.
 
 Sam razvoj namenske knjižnice je pripravljen v programskem jeziku C++, saj gre za nizko nivojski jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilniku. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba dobrih podatkovnih struktur in algoritmov, ki dobro izkoristijo I/O operacije, ki jih ponuja operacijski sistem in posledično pripeljejo do dobro pripravljenega podatkovnega sistema.
 
@@ -418,41 +419,70 @@ In the final part of the thesis, a performance analysis of the implemented data 
 % 3. relacijske in depth
 
 \chapter{Uvod}
-    Živimo v obdobju, kjer velepodatkov. Gre za ogromne količine podatkov, ki so shranjeni na različnih strežniških storitvah. Kadar gre za trajno shranjevanje podatkov govorimo o podatkovnih bazah. Trenutno se omenjeno področje deli na dve večji skupini – relacijske in neralcijske podatkovne baze.
-    \section{Različni tipi podatkovnih baz}
+    Živimo v dobi, kjer se spopadamo z izzivom obdelave izjemnih količin podatkov, ki jih poznamo kot velike podatke (velepodatki). Ti podatki so razpršeni po različnih platformah in predstavljajo dragocen vir informacij. Ko razmišljamo o dolgoročnem shranjevanju teh podatkov, se osredotočamo na uporabo podatkovnih baz. Na tem področju prepoznavamo dve osnovni skupini – relacijske in nerelacijske podatkovne baze.
+    \section{Paradigme v svetu podatkovnih baz}
         \subsection{Relacijske podatkovne baze}
-        Trenutno so standard na trgu še vedno relacijske podatkovne baze. Gre za striktno strukturo entitet, ki vsebujejo smiselne povezave – relacije z implementacijo tujih ključev. Gre za standard, ki se je prvič pojavil leta 1970, ko ga je razvil IBM \cite{IBM_DMBS_1970}. Razvita je bila prva družina relacijskih podatkovnih baz DB2, katero je razvil Edgar F. Codd – matematik izobražen na univerzi Oxford.
-        \colorbox{BurntOrange}{Razširi zgodovino relacijskih podatkovnih baz}
+        Trenutno na trgu še vedno prevladujejo relacijske podatkovne baze, ki predstavljajo standardno izbiro. Te baze temeljijo na striktni strukturi entitet, kjer so podatki organizirani v smiselne entitete, ki vključujejo stolpce (atribute) in vrstice (zapiske). Posebej pomembne so logične povezave med posameznimi zapisi, ki omogočajo boljšo organizacijo in interpretacijo podatkov. Te povezave se uresničujejo s pomočjo tujih ključev, kar omogoča vzpostavitev trdnih relacij med različnimi entitetami.
+        \newline
+        \newline
+        \noindent
+        Gre za standard, ki se je prvič pojavil leta 1970, ko ga je razvil IBM \cite{IBM_DMBS_1970}. Razvita je bila prva družina relacijskih podatkovnih baz DB2, katero je razvil Edgar F. Codd – matematik izobražen na univerzi Oxford.
+        \textbf{TODO}
+        
         \subsection{Nerelacijske podatkovne baze}
-        Gre za novo skupino podatkovnih baz, ki temeljijo na čist drugačni osnovi kot relacijske podatkovne baze. Pojavile so se kot odgovor na težave, s katerimi se srečujemo pri relacijskih podatkovnih bazah. Kot je zapisal viš. pred. Aljaž Zrnec "Podatkovne baze NoSQL niso bile razvite z namenom popolne zamenjave relacijskih baz" \cite{zrnec2011podatkovne}. Glavna težava pri relacijskih podatkovnih bazah je striktna struktura, ki se je moramo držati. V novi skupini podatkovnih baz (NoSQL) je prioriteta fleksibilnost. Sama struktura podatkov je bistveno drugačne, saj entitete in relacije med zapisi zamenjajo objekti in dedovanje. Vse skupaj prinese še eno veliko prednost, ki jo imajo nerelacijske podatkovne baze – zaradi enkapsulacije posameznih zapisov lahko celotno bazo porazdelimo na več računalnikov (tako imenovana horizontalna skalibilnost, ki je relacijske podatkovne baze ne podpirajo).
-        \colorbox{BurntOrange}{Najdi boljše članke}
+        Nerelacijske podatkovne baze predstavljajo novo kategorijo baz, ki temeljijo na bistveno drugačnih osnovah kot tradicionalne relacijske podatkovne baze. Te nove baze so se razvile kot odziv na izzive, s katerimi se srečujejo relacijske podatkovne baze. Kot je poudaril višji predavatelj Aljaž Zrnec, "Podatkovne baze NoSQL niso bile ustvarjene z namenom popolne zamenjave relacijskih baz" \cite{zrnec2011podatkovne}. Glavna ovira pri relacijskih podatkovnih bazah izvira iz njihove stroge strukture. V novi kategoriji podatkovnih baz, znanih kot NoSQL, je ključna lastnost prilagodljivost. Sama organizacija podatkov se bistveno razlikuje, pri čemer tradicionalne entitete in relacije med zapisi ustvarjalno nadomeščajo objekti in koncept dedovanja. Ta pristop prinaša tudi eno od glavnih prednosti, ki jih imajo nerelacijske podatkovne baze – sposobnost enkapsulacije posameznih zapisov omogoča učinkovito razporeditev celotne baze na več strežnikov (horizontalno skaliranje podatkov), ki ga tradicionalne relacijske podatkovne baze težje dosežejo.
     
-    \section{Kje uporabljamo relacijske podatkovne baze in kako delujejo?}
+    \section{Kje se danes uporabljajo relacijske podatkovne baze?}
 
-    Relacijske podatkovne baze se uporabljajo povsod, kjer imamo velike količine strukturiranih podatkov, ki jih želimo obdržati za trajno shranjevanje. Preprost primer relacijske podatkovne baze:
-    
+    Relacijske podatkovne baze so že desetletja temeljna komponenta informacijskih sistemov in njihova uporaba se je v današnjem sodobnem poslovnem okolju še povečala. Kljub pojavu novejših tehnologij in podatkovnih modelov imajo relacijske podatkovne baze številne aplikacije, kjer izstopajo zaradi svoje strukture, zanesljivosti in možnosti za kompleksno analizo.
+
+    \newpage
+    \subsection{Vloga DBMS v informacijskih sistemih}
+
+    Spodnja slika predstavlja standardno arhitekturno zasnovo za večino modernih spletnih aplikaciji:
     \begin{figure}[h]
-        \centerline{\includegraphics[height=0.5\textwidth, angle=0]{what-is-a-relational-database.jpg}}
-        \caption{Preprost primer relacijske podatkovne baze.}
-        \label{relacijskabaza}
+        \centerline{\includegraphics[height=0.5\textwidth, angle=0]{webarchitecture.png}}
+        \caption{Struktura sodobnega informacijskega sistema}
+        \label{infsistem}
     \end{figure}
 
-    \colorbox{BurntOrange}{Zamenjaj sliko z lastno verzijo - sprememba sheme na User, Messages, Tasks}
+    \noindent
+    Na sliki \ref{infsistem} je predstavljena struktura odjemalec - strežnik, katero sestavljajo tri ključne komponente. Na eni strani so odjemalci, ki vključujejo mobilne aplikacije, spletne vmesnike ... Ti odjemalci z strežniškim delom aplikacije komunicirajo preko standardiziranih metod na nivoju API komponente.
 
-    Na primeru je prikazana struktura, kjer shranjujemo zapise uporabnikov in , ki se jih udeležujejo. Vsak zapis v relacijski podatkovni bazi ima svoj primarni ključ, preko katerega potekajo vse relacije znotraj podatkovne baze. Entiteti "Students" in "Courses" sta starševski entiteti. "StudentCourses", pa predstavlja povezovalno entiteto med prej omenjenima. Namreč vsak študent je lahko v več predmetih in enako velja za predmete (lahko vključujejo več študentov).
+    Večji del informacijskega sistema oz. spletne aplikacije se nahaja v ozadju, kjer je realizirana poslovna logika in upravljanje s podatki – podatkovno bazo. V sodobnih informacijskih sistemih za dodaten nivo varnosti in lažjo manipulacijo podatkov pogosto uporabimo še ORM. Gre za objektno predstavitev posameznih entitet znotraj podatkovne baze in predstavitev zapisov, kot instance objektov. ORM predstavlja dodaten nivo abstrakcije, ki programerju med drugim omogoči tudi avtomatske migracije podatkovne baze, kot tudi lažjo integracijo podatkovne baze znotraj uporabljenega programskega jezika.
 
-    \section{Motivacija za razvoj lastnega relacijskega sistema}
-    Koncept shranjevanja podatkov je v osnovi dokaj preprost. Različni sistemi za shranjevanje podatkov bodisi relacijski ali nerelacijski sistemi za shranjevanje podatkov s seboj prinesejo ogromno abstrakcije.
+    \section{Motivacija za razvoj lastnega DBMS in ORM vmesnika}
+    Glavna motivacija za razvoj izhaja iz želje po boljšem razumevanju notranjega delovanja podatkovnih baz, ter njihovega vpliva na delovanje modernih aplikaciji. Kot programerji se pogosto osredotočamo le na izgradnjo funkcionalnosti, pri čemer podatkovno bazo pogosto spregledamo oz. spregledamo vpliv podatkovnega sloja na delovanje celotne aplikacije.
+    
+    Podatkovna baza s seboj prinese visoko raven abstrakcije, ki je podprta z obsežno množico algoritmov in konceptov, ki omogočijo zanesljivo, hitro in varno izvajanje operaciji nad podatki. Tekom raziskave je cilj spoznati tudi te koncepte, ki sicer ostajajo skriti v abstrakciji, ki jo prinašata DBMS in jezik SQL.
+    \newline
+    \newline
+    \noindent
+    Pomembnost podatkovnega sloja postane očitna, predvsem ko se aplikacija začne odzivati počasneje. Pogost razlog je obsežna količina podatkov v posamezni entiteti, kar za uporabnika hitro pomeni nesprejemljiv čas odzivnosti celotnega sistema.
 
-    Uporabniki podatkovnih baz se zares začnejo zavedati težav, ko sistem za shranjevanje podatkov ni več odziven kot bi si želeli. Tekom razvoja lastnih aplikaciji in preprostih API-jev, se le redko posvetimo optimalnemu delovanju naše podatkovne baze. Težave se začnejo pojavljati, kadar v posamezni entiteti pride do velike količine podatkov in poizvedbe nad podatki in samo iskanje posameznih zapisov postane zakasnjeno.
+    Ob iskanju pristopov za optimizacijo podatkovnega sloja, hitro naletimo na koncept indeksiranja podatkov.
+    Ta pristop ni omejen zgolj na relacijske podatkovne baze, temveč se pojavlja širom računalniške znanosti. Osnovna ideja za optimizacijo je ustvarjanje iskalne strukture, ki omogoča izrazito hitrejše iskanje podatkov z izrabo učinkovite podatkovne organizacije.
+    
+    Dve bolj pogosti podatkovni strukturi za izvedbo indeksiranja predstavljajo zgoščevalne tabele in drevesa. Na področju relacijskih podatkovnih baz se najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B-drevesa). Drevo, je sestavljeno iz vozlišč, kjer ima vsako največ $M$ zapisov in $M+1$ kazalcev na nadaljnja vozlišča. S pomočjo dodajanja indeksov lahko linearno iskanje – $O(N)$ bistveno pohitrimo, kar z uporabo B-drevesa pomeni časovno zahtevnost $O(log_M(N))$.
+    \newline
+    \newline
+    \noindent
+    Pomembno je poudariti, da cilj implementacije lastne rešitve ne vključuje razvoja kompleksnega in dovršenega DBMS, ki bi se primerjal z naprednimi in vzpostavljenimi rešitvami. Naš cilj je razviti knjižnico, ki bo vsebovala temeljne funkcionalnosti in bo primerna za uporabo v manjših aplikacijah. Osredotočili se bomo predvsem na izgradnjo preprostega in intuitivnega načina za upravljanja s podatki.
 
-    Na tej točki so potrebne optimizacije same strukture naše podatkovne baze. Eden najpomembnejših konceptov za hitro iskanje po posameznih atributov je postavitev indeksov. Indeksiranje podatkov je koncept, ki se pojavlja povsod v računalništvu in ne le v relacijskih podatkovnih bazah. Gre za pripravo iskalne strukture, ki nam omogoča bistveno hitrejše iskanje podatkov s pomočjo dobre podatkovne strukture. V praksi se izkaže, da sta nekako najbolj pogosta pristopa indeksiranje z zgoščevalnimi strukturami in drevesnimi strukturami. V smislu relacijskih podatkovnih baz so najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B drevesa). Gre za skupino dreves, kjer ima vsako vozlišče lahko $M$ zapisov in $M+1$ kazalcev na nova vozlišča. S pomočjo postavitve indeksov lahko linearno iskanje skozi zapise spremenimo v binarno iskanje (oz. iz aproksimacijske notacije $O(N)$ v $O(log(N))$).
+\chapter{Sorodna dela}
 
-    \subsection{Težava s katero se srečujemo pri uporabi modernih ORM knjižnic}
+    Prve podatkovne baze so se razvile že pred petdesetimi leti in ob tem tudi ogromno različnih pristopov za komunikacijo med programskimi jeziki in DBMS. V računalništvu je izbor orodja ključnega pomena in izbor tehnologij znotraj podatkovnega sloja nikakor ne predstavlja izjeme.
 
-    \subsubsection{Statističen pregled Python ORM knjižnic}
+    \section{Izbor DBMS}
+    Pri izbiri relacijske podatkovne baze se soočimo z različnimi možnostmi, med katerimi izstopajo standardi, kot sta DB2, Oracle, ter Microsoft SQL Server (MSSQL), ki predstavljajo največje in najbolj skalabilne DBMS-je. Kljub temu je izbor DBMS-ja, podobno kot pri večini področij v računalništvu, odvisen od zahtev naše aplikacije in narave podatkov, ki jih bomo shranjevali.
 
-    V spodnji tabeli je predstavljena kratka statistična analiza najpogosteje uporabljenih ORM knjižnic, ki so na voljo v programskem jeziku Python. Podatke za število mesečnih in tedenskih prenosov smo pridobili iz spletne platforme PYPI Stats \cite{pypistats}, kjer imamo sledenje prenosov posameznih paketov znotraj Python ekosistema. Podatki za število GitHub zvezd, pa so pridobljeni direktno iz repositorijev posameznih knjižnic, ki so dostopne direktno na GitHub platformi.
+    Za mnoge primere morda zadostujeta bolj preprosta DBMS-ja, kot sta PostgreSQL ali MySQL, ki ponujata enostavno upravljanje in predstavljata dobro izbiro tudi za shranjevanje obsežnih količin podatkov. 
+    
+    V določenih scenarijih, ko imamo opravka z bolj preprosto in manj obsežno strukturo podatkov (npr. pri razvoju mobilnih aplikaciji), se za najprimernejšo izbiro izkaže SQLite. Gre za minimalističen DBMS, ki za razliko od prej omenjenih izbir za potrebe shranjevanja podatkov uporablja zgolj datoteko, ki jo zlahka enkapsuliramo v izolirano okolje, kot je mobilna naprava. V področje manjših podatkovnih baz, pa lahko uvrstimo tudi razvit DBMS – Graphenix\cite{GRAPHENIX_GITHUB}.
+    
+    \section{Statističen pregled Python ORM knjižnic}
+
+    V spodnji tabeli je predstavljena kratka statistična analiza najpogosteje uporabljenih ORM knjižnic, ki so na voljo v programskem jeziku Python. Podatke za število mesečnih in tedenskih prenosov smo pridobili iz spletne platforme PYPI Stats \cite{pypistats}, kjer se nahaja sledenje prenosov posameznih paketov znotraj Python ekosistema. Podatki za število GitHub zvezd, pa so pridobljeni direktno iz repositorijev posameznih knjižnic, ki so dostopne na GitHub platformi.
     
     \noindent
     \begin{center}
@@ -475,8 +505,9 @@ In the final part of the thesis, a performance analysis of the implemented data 
     \end{itemize}
 
     \noindent
-    Vsem omenjenim knjižnicam je skupna ciljna ideja – pospešiti postopek razvoja aplikacije, ki bo upravljala s podatki in zagotoviti dodatno varnost nad poizvedbami, ki se izvajajo nad posameznimi entitetami, ter dodatne potrebne validacije na nivoju vnašanja podatkov, ki jih sicer klasični DMBS sistemi ne omogočajo.
+    Cilj vseh teh knjižnic je pospešiti proces razvoja aplikacij in zagotoviti dodatno varnost pri delu s podatkovno bazo. Omeniti velja, da te knjižnice omogočajo tudi druge koristne funkcionalnosti, kot je lažja manipulacija s podatki, poenostavljeno vzdrževanje in enostavna migracija strukture. S svojo abstrakcijo in intuitivnimi vmesniki odpravljajo potrebo po neposrednem rokovanju z zapletenimi SQL poizvedbami ter s tem razbremenjujejo razvijalce in omogočajo hitrejši razvoj aplikacij.
 
+    \subsection{Slabost uporabe ORM knjižnic na nivoju poizvedb}
     Kljub vsem dobrim lastnostim omenjenih knjižnic, pa tudi vsaka izmed njih prinaša dodaten nivo abstrakcije in razvijalcu skrije veliko možnosti za optimizacijo delovanja relacijskega podatkovnega sistema. V algoritmih je pogost kompromis med hitrostjo in porabo prostora, ko pa govorimo o ORM knjižnicah in programskih jezikih, pa višji nivo abstrakcije pomeni kompromis hitrosti delovanja.
 
     Narava relacijskih podatkovnih baz in združevanja tabel je usmerjena v skupen rezultat v obliki ene matrike, kjer imamo kartezičen produkt zapisov različnih entitet, katerega filtriramo glede na povezava, ki so realizirane s pomočjo tujih ključev. Pogosto, pa kot ciljni uporabniki ne želimo tega, temveč želimo drugačno strukturo podatkov, ki pa ni v skladu z osnovno idejo relacijskih baz. V ta namen ORM knjižnice izvedejo več različnih poizvedb in potem znotraj jedra knjižnice združujejo zapise in kreirajo ciljno strukturo ali pa izvedejo eno kompleksnejšo poizvedbo in pridobljene podatke nato pretvorijo v končno strukturo. Primer, take preproste naloge je: "Za vse uporabnike pridobi njihove naloge in zadnjih pet sporočil, ki jih je vsak izmed teh uporabnikov poslal".
@@ -517,81 +548,17 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
 
     Ozko grlo, pa se pojavi še v enem segmentu, namreč pripravljanje končne strukture, ki jo vrne ORM je v vseh treh omenjenih knjižnicah izvedeno na nivoju programskega jezika Python, ki sam po sebi ni optimiziran za filtriranje in združevanje zapisov oz. ne omogoča pristopov, ki jih lahko uporabimo znotraj prevedenih jezikov in tako bistveno pohitrimo kreiranje končne strukture, ki predstavlja glavni rezultat poizvedbe.
 
-\chapter{Sodoben pristop razvoja knjižnice za programski jezik Python}
-\label{ch1}
-
-    \section{Kako pohitriti izvajanje v programskem jeziku Python}
-   Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike, strežniških aplikaciji in preprostih aplikaciji. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede direktno v strojni jezik. Python ima za zagon kode, še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku.
-
-   Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od pravih prevedenih jezikov. Poleg tega jezik tudi nima striktnih tipov, kar pomeni, da je za vsako spremenljivko v jeziku najprej potrebno preveriti za kateri tip gre, kar ponovno prinese časovne zakasnitve.
-
-    Področji umetne inteligence in podatkovne analitike, pa temeljita na obdelavi masovnih podatkov. Kar pa posledično pomeni, da Python ni najbolj optimalen jezik za izvedbo teh nalog. Zaradi teh omejitev so nastale knjižnice, ki so v osnovi napisane v jezikih, ki so bistveno hitrejši. Tako se funkcije in strukture, ki jih potem lahko uporabljamo na nivoju programskega jezika Python prevedejo že v strojno kodo in jih potem lahko kličemo direktno iz programskega jezika Python. Med temi knjižnicami so pogosteje uporabljene:
-    \begin{itemize}
-        \item \textbf{Numpy \cite{NUMPY_GITHUB}} – odprto kodna knjižnica, ki v Python prinese podatkovni tip polja (ang. array), in veliko vgrajenih funkciji, ki bistveno pospešijo operacije delo s polji, kot tudi matrikami, ki v področju podatkovne analitike in umetne inteligence predstavljajo enega izmed glavnih temeljev. Veliko je tudi knjižnic, ki za delovanje uporabljajo ravno Numpy. Tak primer je npr. Pandas \cite{PANDAS_GITHUB} – gre za eno izmed najpogosteje uporabljenih knjižnic za podatkovno analitiko, ki s seboj prinese še nekaj dodatnih abstrakciji za lažje delo s podatkovnimi okviri (ang. data frame).
-        \item \textbf{Tensorflow \cite{TENSORFLOW_GITHUB}} –  odprto kodna knjižnica za strojno učenje, v osnovi je celoten produkt Tensorflow namenjen širšemu spektru programskih jezikov in ni implementiran le za Python. Gre za splošno namensko knjižnico z že pripravljenimi metodami za kreiranje modelov za strojno učenje, kar bistveno olajša delo programerju, saj je velikosti postopkov avtomatiziranih.
-        \item \textbf{UltraJSON \cite{UJSON_GITHUB}} – gre za manj poznano knjižnico, ki dela z JSON strukturami. Glavni funkcionalnosti knjižnice sta pretvorba Python strukture v JSON in obratno. JSON je v zadnjih letih postal glavni standard za prenos podatkov preko HTTP zahtevkov, posledično je vsaka optimizacija na nivoju obdelave JSON strukture zelo dobrodošla. 
-    \end{itemize}
-
-    \noindent
-    Vse te knjižnice so v osnovi napisane s pomočjo Python.h API vmesnika. Gre za vmesnik med programskima jezikoma Python in C. Na nivoju jezika C lahko vsak tip predstavimo z vgrajeno PyObject strukturo, katerega lahko neposredno uporabljamo na nivoju programskega jezika C. 
-
-    \subsection{Primer uporabe Python.h API vmesnika}
-    Primer preproste funkcije na nivoju programskega jezika C, ki vrne seštevek dveh celih števil:
-\begin{minted}{c}
-#include <Python.h>
-
-static PyObject* add_nums(PyObject* self, PyObject* args) {
-    int64_t a, b;
-    if (!PyArg_ParseTuple(args, "ii", &a, &b)) {
-        return NULL;
-    }
-
-    int64_t sum = a + b;
-    return PyLong_FromLong(sum);
-}
-\end{minted}
-
-    \noindent
-    Funkcija je sestavljena tako, da v prvi fazi argumente shrani na naslove spremenljivk, ki so deklarirane na nivoju programskega jezika C (to sta v zgornjem primeru $int64_t a, b;$). Argumenti so poslani kot terka, za katero moramo najprej povedati strukturo, v zgornjem primeru je to $ii$, kar pomeni dve celi števili. Seveda, lahko kot argumente beremo tudi ostale strukture vendar branje postane bistveno bolj kompleksno, ko želimo brati sestavljene tipe. V tem primeru je v večini primerov lažje preprosto pretvoriti vse v primitivne tipe in na nivoju programskega jezika C operirati direktno s temi.
-
-    \section{Naprednejša knjižnica z dodatnimi strukturami za lažji prehod med jezikoma}
-
-    Izdelava knjižnic s pomočjo Python.h API vmesnika pomeni uporabo programskega jezika C, kar pomeni, da je velik del implementaciji prepuščen razvijalcu, da si tukaj delo malo olajšamo smo se odločili za razvoj knjižnice s pomočjo C++ jezika in knjižnice, ki dela nivo višje, kot Python.h API - PyBind11 \cite{PYBIND11_GITHUB}. Gre za knjižnico, ki bistveno olajša pretvorbe podatkovnih struktur med jezikoma npr. kadar želimo, kot parameter poslati strukturo seznama v C++ lahko to preprosto definiramo, kot tip vector in pretvorba iz seznama v vektor bo avtomatska. Knjižnica deluje s pomočjo C++ verzije 11, ki je izšla septembra 2011.
-
-    Poleg avtomatskih pretvorb, pa imamo že vseeno možnost uporabe vseh tipov, ki so vključeni v Python.h API vmesnik.
-
-    \subsection{Primer uporabe PyBind11 knjižnice}
-    Spodaj imamo še preprost primer vse potrebne kode na nivoju C++ za izdelavo preproste knjižnice, ki vsebuje funkcijo za seštevek dveh celih števil (main.cpp):
-\begin{minted}{c++}
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-int64_t add_nums(int64_t a, int64_t b)
-{
-    return a + b;
-}
-
-PYBIND11_MODULE(my_math_module, m)
-{
-    m.def("custom_sum", &add_nums, "Add 2 ints");
-}
-\end{minted}
-
-    \noindent
-    Pod pogojem, da je knjižnica pravilno vključena v projekt, lahko iz programskega jezika Python uporabimo funkcijo "custom\_sum", kot:
-\begin{minted}{python}
-import my_math_module
-total = my_math_module.custom_sum(5, 10)
-print(total) # prints 15
-\end{minted}
-
-\chapter{Razvoj jedra podatkovnega sistema}
+\chapter{Razvoj jedra DBMS}
 \label{ch0}
-    V poglavju predstavimo razvoj jedra za relacijski podatkovni sistem. V prvi fazi je predstavljena celotna strukturiranje podatkov in način shranjevanja na disk. Za tem predstavimo razvoj B+ drevesne strukture za optimalno indeksiranje podatkov. Nato, pa je predstavljena še optimizacija posameznih segmentov in sama strukture kode na nivoju jedra podatkovnega sistema. Vsa izvorna koda je dostopna na GitHub repozitoriju \cite{GRAPHENIX_GITHUB}.
+    V poglavju predstavimo razvoj jedra DBMS s pomočjo programskega jezika C++. V prvi fazi je predstavljena celotna struktura podatkov in način shranjevanja na disk. Za tem predstavimo razvoj B+ drevesne strukture za optimalno indeksiranje podatkov. Nato se spustimo v predstavitev optimizaciji oz. algoritmov, ki omogočajo hitrejše branje podatkov in za zaključek še predstavitev funkcionalnosti, ki jih naš DBMS podpira.
+    \newline
+    \newline
+    \noindent
+    Vsa izvorna koda je dostopna na GitHub repozitoriju \cite{GRAPHENIX_GITHUB}.
 
     \newpage
     \noindent
-    Skozi poglavje bodo vsi primeri dela s podatkovnim sistemom na nivoju programskega jezika Python uporabljali preprost ER model z uporabniki, nalogami in sporočili. Uporabnik lahko ima več nalog in sporočil – pri sporočilih, pa imamo še dodatno vlogo, saj je lahko uporabnik pošiljatelj/prejemnik.
+    Skozi poglavje bodo vsi primeri dela z DBMS na nivoju programskega jezika Python uporabljali preprost ER model z uporabniki, nalogami in sporočili. Uporabnik lahko ima več nalog in sporočil – pri sporočilih, pa imamo še dodatno vlogo, saj je lahko uporabnik pošiljatelj/prejemnik.
 \begin{minted}{python}
 class User(Model):
     name = Field.String()
@@ -637,7 +604,7 @@ class Message(Model):
             \item Cela števila (ang. Int) – v tem primeru gre za vrednost, ki je na nivoju C++ jezika shranjena kot int64\_t oziroma predznačeno celo število. Velikost za posamezno vrednost je 8B. Sam razpon vrednosti, ki jih lahko shranimo v posamezen zapis je $[-2^{63}, 2^{63} - 1]$.
             \item Realna števila (ang. Float) – zaradi lažje implementacije je velikost realnih števil enaka, kot velikost celih števil – torej 64 bitov. Vrednost je na nivoju podatkov realizirana, kot dvojni "float" oz. "double". Gre za zaporedje bitov, ki so po standardu IEEE 754 \cite{kahan1996ieee} ločeni v predznak, eksponent in mantiso.
             \item Nizi (ang. String) – Gre za zaporedje znakov, kjer na nivoju posamezne entitete določimo maksimalno dovoljeno dolžino posameznega zapisa. Torej velikost posameznega zapisa je $N * 1B$, kjer je $N$ maksimalna dolžina podatka. 
-            \item Logične vrednosti (ang. Bool) – je najmanjši podatkovni tip, ki ga vsebuje naš podatkovni sistem in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot to definira Python programski jezik.
+            \item Logične vrednosti (ang. Bool) – je najmanjši podatkovni tip, ki ga vsebuje naš DBMS in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot to definira Python programski jezik.
             \item Datumi (ang. Datetime) – gre za podatkovni tip, ki ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970 \cite{EPOCH_FORMAT}. 
             \item Povezava (ang. Link) – gre za vgrajen tip relacije, kjer je podatek kazalec na drug zapis v določeni entiteti. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
             \item Virtualna povezava (ang. VirtualLink) – gre za navidezno polje v entiteti, ki ne zavzame nobenega dodatnega prostora za shranjevanje podatkov. Polje je pomembno za kreiranje povezave, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
@@ -734,11 +701,11 @@ child {node (E){29\nodepart{two}31}}
         
         \subsection{Slabosti uporabe indeksov}
 
-        Sama raba indeksov je koristna, saj bistveno pohitri postopek iskanja posameznih zapisov glede na določen atribut. Ko govorimo v časovni zahtevnosti to pomeni pohitritev iz $O(N)$ na $O(log(N))$.
+        Sama raba indeksov je koristna, saj bistveno pohitri postopek iskanja posameznih zapisov glede na določen atribut. Ko govorimo v časovni zahtevnosti to pomeni pohitritev iz $O(N)$ na $O(log_M(N))$.
 
         Na drugi strani pa se skriva kar nekaj lastnosti B+ dreves, ki jih moramo imeti v mislih ob dodajanju nepotrebnih indeksov v našo podatkovno bazo.
         \begin{itemize}
-            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezno entiteto se poveča iz $O(1)$ na $O(log(N) * X)$, kjer je $X$ število postavljenih indeksov. $N$ pa predstavlja število že obstoječih zapisov v posamezni entiteti.
+            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezno entiteto se poveča iz $O(1)$ na $O(log_M(N) * X)$, kjer je $X$ število postavljenih indeksov. $N$ pa predstavlja število že obstoječih zapisov v posamezni entiteti.
             \item Za vsak postavljen indeks se bistveno poveča poraba prostora na disku, saj shranjevanje drevesne strukture s seboj prinese podvajanje atributa, kot tudi dodatek kazalca na glavo entitete.
         \end{itemize}
 
@@ -750,7 +717,7 @@ child {node (E){29\nodepart{two}31}}
         \colorbox{BurntOrange}{Iskanje zapisov glede na strukturo pogoja in kako sestavimo drevsno strukturo}
         
         \subsection{Izvedba poizvedb na več entitetah hkrati}
-            Podatkovni sistem nima klasičnega načina združevanja entitet, kot nam je to poznano iz ostalih relacijskih podatkovnih sistemov, kjer je to realizirano s pomočjo kartezičnega produkta nad entitetami in potem dodatna povezava s pomočjo tujih ključev.
+            DBMS nima klasičnega načina združevanja entitet, kot nam je to poznano iz ostalih relacijskih podatkovnih sistemov, kjer je to realizirano s pomočjo kartezičnega produkta nad entitetami in potem dodatna povezava s pomočjo tujih ključev.
             
 \begin{minted}{python}
 query = User.link(
@@ -891,9 +858,9 @@ end function
         Tekom razvoja smo preizkusili 3 različne pristope za iskanje $K$ najmanjših elementov v seznamu.
 
         \begin{enumerate}
-            \item Klasično vstavljanje v seznam in ureditev elementov ob koncu vnašanja, ter rezanje elementov od indeksa $O$, do vključno $O+L$. Časovna zahtevnost tega pristopa je $O(N \cdot log(N))$, prostorska zahtevnost, pa je tukaj $O(N)$, saj moramo v pomnilniku držati vse potencialne elemente.
-            \item Postopno vstavljanje v urejen seznam, v tem primeru uporabimo vgrajeno std::vector \cite{CPP_VECTOR} strukturo, kjer vstavljanje izvajamo s pomočjo binarnega iskanja. Težava pristopa se skriva v vstavljanju v začetni del seznama, saj moramo potem vse elemente zamikati za eno mesto v desno. Posledično, čeprav je časovna zahtevnost binarnega iskanja $O(log(N))$ zaradi premikanja elementov časovna zahtevnost postane $O(N)$. Tako je časovna zahtevnost celotnega postopka vstavljanja $O(N^2)$ v najboljšem primeru pa $O(N \cdot log(K))$. Glavna prednost algoritma pred pristopom urejanja na koncu se nahaja v prostorski zahtevnosti. Ta je namreč le $O(K)$, saj v pomnilniku ohranjamo maksimalno $K$ vrstic in jih po potrebi zamenjujemo ob iteraciji skozi vrstice matrike.
-            \item Za daleč najboljši pristop se je izkazalo vstavljanje v prioritetno vrsto, ki je realizirana, kot kopica. Za podatkovno strukturo uporabimo vgrajeno C++ std::priority\_queue \cite{CPP_PQUEUE}. V tem primeru je časovna zahtevnost posameznega vstavljanja $O(log(K))$, kar pomeni za $N$ vstavljanj $O(N \cdot log(K))$. Prostorska zahtevnost, pa je enako kot v zgornjem primeru $O(K)$. Problem je zastavljen, tako da $K$ ne more nikoli biti večji od $N$ in je posledično časovna zahtevnost tega pristopa najbolj optimalna. Pomemben segment pri uporabi vgrajene prioritetne vrste je tudi izbor podatkovne strukture, ki jo vrsta uporablja za shranjevanje podatkov. Za najbolj optimalen pristop se je izkazal vgrajeni std::vector \cite{CPP_VECTOR}, ki je na nivoju pomnilnika shranjen v enem kosu, kar omogoči prevajalniku in procesorju, da izrabita še optimizacijo z lokalnostjo.
+            \item Klasično vstavljanje v seznam in ureditev elementov ob koncu vnašanja, ter rezanje elementov od indeksa $O$, do vključno $O+L$. Časovna zahtevnost tega pristopa je $O(N \cdot log_2(N))$, prostorska zahtevnost, pa je tukaj $O(N)$, saj moramo v pomnilniku držati vse potencialne elemente.
+            \item Postopno vstavljanje v urejen seznam, v tem primeru uporabimo vgrajeno std::vector \cite{CPP_VECTOR} strukturo, kjer vstavljanje izvajamo s pomočjo binarnega iskanja. Težava pristopa se skriva v vstavljanju v začetni del seznama, saj moramo potem vse elemente zamikati za eno mesto v desno. Posledično, čeprav je časovna zahtevnost binarnega iskanja $O(log_2(N))$ zaradi premikanja elementov časovna zahtevnost postane $O(N)$. Tako je časovna zahtevnost celotnega postopka vstavljanja $O(N^2)$ v najboljšem primeru pa $O(N \cdot log_2(K))$. Glavna prednost algoritma pred pristopom urejanja na koncu se nahaja v prostorski zahtevnosti. Ta je namreč le $O(K)$, saj v pomnilniku ohranjamo maksimalno $K$ vrstic in jih po potrebi zamenjujemo ob iteraciji skozi vrstice matrike.
+            \item Za daleč najboljši pristop se je izkazalo vstavljanje v prioritetno vrsto, ki je realizirana, kot kopica. Za podatkovno strukturo uporabimo vgrajeno C++ std::priority\_queue \cite{CPP_PQUEUE}. V tem primeru je časovna zahtevnost posameznega vstavljanja $O(log_2(K))$, kar pomeni za $N$ vstavljanj $O(N \cdot log_2(K))$. Prostorska zahtevnost, pa je enako kot v zgornjem primeru $O(K)$. Problem je zastavljen, tako da $K$ ne more nikoli biti večji od $N$ in je posledično časovna zahtevnost tega pristopa najbolj optimalna. Pomemben segment pri uporabi vgrajene prioritetne vrste je tudi izbor podatkovne strukture, ki jo vrsta uporablja za shranjevanje podatkov. Za najbolj optimalen pristop se je izkazal vgrajeni std::vector \cite{CPP_VECTOR}, ki je na nivoju pomnilnika shranjen v enem kosu, kar omogoči prevajalniku in procesorju, da izrabita še optimizacijo z lokalnostjo.
         \end{enumerate}
 
         \noindent
@@ -945,11 +912,11 @@ query = User.link(
         \newline
         \colorbox{BurntOrange}{bulkcreate, bulkdelete}
     \end{itemize}
-    
-\chapter{Analiza}
-\label{ch2}
 
-   \section{Testno usmerjen razvoj}
+\chapter{Sodoben pristop razvoja programske opreme}
+\label{ch1}
+
+    \section{Testno usmerjen razvoj}
 
     Da zagotovimo pravilno delovanje nekega bolj kompleksnega sistema je na področju razvoja programske opreme zelo priporočen testno usmerjen razvoj. Gre za način validacije pravilnega delovanja posameznih komponent sistema, kot ločeni segmenti in kot celotna enota. V ta namen testno usmerjen razvoj delimo na tri testne faze. 
    
@@ -988,14 +955,83 @@ query = User.link(
 
    Pristop avtomatskega testiranja in posodabljanja imenujemo tudi CI/CD, ki temelji na hitrem in varnem razvoju, ki razvijalce hitro obvesti o morebitnih napakah, ki se pojavljajo znotraj aplikacije in omogoča, tako avtomatsko testiranje kot tudi avtomatsko posodobitev produkcijskih verziji aplikacije ali v našem primeru posodobitev stabilne verzije knjižnice.
    
+    \section{Kako pohitriti izvajanje v programskem jeziku Python}
+   Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike, strežniških aplikaciji in preprostih aplikaciji. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede direktno v strojni jezik. Python ima za zagon kode, še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku.
+
+   Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od pravih prevedenih jezikov. Poleg tega jezik tudi nima striktnih tipov, kar pomeni, da je za vsako spremenljivko v jeziku najprej potrebno preveriti za kateri tip gre, kar ponovno prinese časovne zakasnitve.
+
+    Področji umetne inteligence in podatkovne analitike, pa temeljita na obdelavi masovnih podatkov. Kar pa posledično pomeni, da Python ni najbolj optimalen jezik za izvedbo teh nalog. Zaradi teh omejitev so nastale knjižnice, ki so v osnovi napisane v jezikih, ki so bistveno hitrejši. Tako se funkcije in strukture, ki jih potem lahko uporabljamo na nivoju programskega jezika Python prevedejo že v strojno kodo in jih potem lahko kličemo direktno iz programskega jezika Python. Med temi knjižnicami so pogosteje uporabljene:
+    \begin{itemize}
+        \item \textbf{Numpy \cite{NUMPY_GITHUB}} – odprto kodna knjižnica, ki v Python prinese podatkovni tip polja (ang. array), in veliko vgrajenih funkciji, ki bistveno pospešijo operacije delo s polji, kot tudi matrikami, ki v področju podatkovne analitike in umetne inteligence predstavljajo enega izmed glavnih temeljev. Veliko je tudi knjižnic, ki za delovanje uporabljajo ravno Numpy. Tak primer je npr. Pandas \cite{PANDAS_GITHUB} – gre za eno izmed najpogosteje uporabljenih knjižnic za podatkovno analitiko, ki s seboj prinese še nekaj dodatnih abstrakciji za lažje delo s podatkovnimi okviri (ang. data frame).
+        \item \textbf{Tensorflow \cite{TENSORFLOW_GITHUB}} –  odprto kodna knjižnica za strojno učenje, v osnovi je celoten produkt Tensorflow namenjen širšemu spektru programskih jezikov in ni implementiran le za Python. Gre za splošno namensko knjižnico z že pripravljenimi metodami za kreiranje modelov za strojno učenje, kar bistveno olajša delo programerju, saj je velikosti postopkov avtomatiziranih.
+        \item \textbf{UltraJSON \cite{UJSON_GITHUB}} – gre za manj poznano knjižnico, ki dela z JSON strukturami. Glavni funkcionalnosti knjižnice sta pretvorba Python strukture v JSON in obratno. JSON je v zadnjih letih postal glavni standard za prenos podatkov preko HTTP zahtevkov, posledično je vsaka optimizacija na nivoju obdelave JSON strukture zelo dobrodošla. 
+    \end{itemize}
+
+    \noindent
+    Vse te knjižnice so v osnovi napisane s pomočjo Python.h API vmesnika. Gre za vmesnik med programskima jezikoma Python in C. Na nivoju jezika C lahko vsak tip predstavimo z vgrajeno PyObject strukturo, katerega lahko neposredno uporabljamo na nivoju programskega jezika C. 
+
+    \subsection{Primer uporabe Python.h API vmesnika}
+    Primer preproste funkcije na nivoju programskega jezika C, ki vrne seštevek dveh celih števil:
+\begin{minted}{c}
+#include <Python.h>
+
+static PyObject* add_nums(PyObject* self, PyObject* args) {
+    int64_t a, b;
+    if (!PyArg_ParseTuple(args, "ii", &a, &b)) {
+        return NULL;
+    }
+
+    int64_t sum = a + b;
+    return PyLong_FromLong(sum);
+}
+\end{minted}
+
+    \noindent
+    Funkcija je sestavljena tako, da v prvi fazi argumente shrani na naslove spremenljivk, ki so deklarirane na nivoju programskega jezika C (to sta v zgornjem primeru $int64_t a, b;$). Argumenti so poslani kot terka, za katero moramo najprej povedati strukturo, v zgornjem primeru je to $ii$, kar pomeni dve celi števili. Seveda, lahko kot argumente beremo tudi ostale strukture vendar branje postane bistveno bolj kompleksno, ko želimo brati sestavljene tipe. V tem primeru je v večini primerov lažje preprosto pretvoriti vse v primitivne tipe in na nivoju programskega jezika C operirati direktno s temi.
+
+    \section{Naprednejša knjižnica z dodatnimi strukturami za lažji prehod med jezikoma}
+
+    Izdelava knjižnic s pomočjo Python.h API vmesnika pomeni uporabo programskega jezika C, kar pomeni, da je velik del implementaciji prepuščen razvijalcu, da si tukaj delo malo olajšamo smo se odločili za razvoj knjižnice s pomočjo C++ jezika in knjižnice, ki dela nivo višje, kot Python.h API - PyBind11 \cite{PYBIND11_GITHUB}. Gre za knjižnico, ki bistveno olajša pretvorbe podatkovnih struktur med jezikoma npr. kadar želimo, kot parameter poslati strukturo seznama v C++ lahko to preprosto definiramo, kot tip vector in pretvorba iz seznama v vektor bo avtomatska. Knjižnica deluje s pomočjo C++ verzije 11, ki je izšla septembra 2011.
+
+    Poleg avtomatskih pretvorb, pa imamo že vseeno možnost uporabe vseh tipov, ki so vključeni v Python.h API vmesnik.
+
+    \subsection{Primer uporabe PyBind11 knjižnice}
+    Spodaj imamo še preprost primer vse potrebne kode na nivoju C++ za izdelavo preproste knjižnice, ki vsebuje funkcijo za seštevek dveh celih števil (main.cpp):
+\begin{minted}{c++}
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+int64_t add_nums(int64_t a, int64_t b)
+{
+    return a + b;
+}
+
+PYBIND11_MODULE(my_math_module, m)
+{
+    m.def("custom_sum", &add_nums, "Add 2 ints");
+}
+\end{minted}
+
+    \noindent
+    Pod pogojem, da je knjižnica pravilno vključena v projekt, lahko iz programskega jezika Python uporabimo funkcijo "custom\_sum", kot:
+\begin{minted}{python}
+import my_math_module
+total = my_math_module.custom_sum(5, 10)
+print(total) # prints 15
+\end{minted}
+    
+\chapter{Analiza}
+\label{ch2}
+
+    V tem poglavju se bomo posvetili temeljni analizi, ki vključuje časovno in prostorsko primerjavo. Osredotočili se bomo na primerjavo med našo razvito knjižnico Graphenix ter obstoječima DBMS-jema SQLite in MySQL. Analizo bomo izvedli na različnih scenarijih, pri čemer se bomo predvsem osredotočili na branje podatkov. Poleg tega bomo proučili vpliv uporabe ORM in izvedli teste tako z uporabo ORM kot tudi brez njega. Na ta način bomo pridobili vpogled v zmogljivost, učinkovitost ter prednosti ter slabosti posameznih rešitev v različnih kontekstih.
+   
    %\section{Meritve na različnih napravah za shranjevanje in konfiguracijah}
    %\colorbox{BurntOrange}{Performančne razlike glede na napravo za shranjevanje}
    %\newline
    %\colorbox{BurntOrange}{SSD, Disk, USB, Zunanji SSD}
 
     \newpage
-   \section{Primerjava z ostalimi relacijskimi sistemi}
-   \subsection{Množično vnašanje podatkov}
+   \section{Množično vnašanje podatkov}
    \begin{figure}[H]
         \centerline{\includegraphics[width=0.6\textwidth, angle=0]{singleinsert.png}}
         \caption{Preprost primer relacijske podatkovne baze.}
@@ -1009,7 +1045,7 @@ query = User.link(
     \end{figure}
 
     \newpage
-    \subsection{Velikosti podatkovnih sistemov na disku}
+    \section{Velikosti podatkovnih baz na disku}
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.6\textwidth, angle=0]{sizes.png}}
         \caption{Preprost primer relacijske podatkovne baze.}
@@ -1017,7 +1053,7 @@ query = User.link(
     \end{figure}
 
     \newpage
-    \subsection{Primerjava poizvedb na eni entiteti}
+    \section{Primerjava poizvedb na eni entiteti}
 
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.6\textwidth, angle=0]{singleread.png}}
@@ -1032,7 +1068,10 @@ query = User.link(
     \end{figure}
 
     \newpage
-    \subsection{Pohitritev poizvedb s pomočjo indeksiranja}
+    \section{Izvedba agregacije nad zapisi}
+
+    \newpage
+    \section{Pohitritev poizvedb s pomočjo indeksiranja}
 
     V sklopu primerjave pohitritev s pristopom indeksiranja smo izmerili faktor pohitritve pri izvedbi naslednjega SQL stavka:
 
@@ -1047,7 +1086,7 @@ SELECT * FROM users WHERE points = 32
     
     \begin{center}
         \begin{tabular}{p{0.2\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}}
-          {\bf Podatkovni sistem} & {\bf 1/8000 (ms)} & {\bf Pohitritev} & {\bf 1/80 \newline (ms)} & {\bf Pohitritev} \\ \hline
+          {\bf DMBS} & {\bf 1/8000 (ms)} & {\bf Pohitritev} & {\bf 1/80 \newline (ms)} & {\bf Pohitritev} \\ \hline
           {\bf Graphenix} & \num{69.93} & \num{1}x & \num{87.15} & \num{1.12}x \\
           {\bf SQLite} & \num{0.83} & \num{66.01}x & \num{29.39} & \num{2.82}x \\
           {\bf MySQL} & \num{1.96} & \num{126.18}x & \num{91.11} & \num{3.26}x \\
@@ -1064,7 +1103,7 @@ SELECT * FROM users WHERE points = 32
 
     \begin{center}
         \begin{tabular}{p{0.2\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}}
-          {\bf Podatkovni sistem} & {\bf 1/8000 (ms)} & {\bf Pohitritev} & {\bf 1/80 \newline (ms)} & {\bf Pohitritev} \\ \hline
+          {\bf DBMS} & {\bf 1/8000 (ms)} & {\bf Pohitritev} & {\bf 1/80 \newline (ms)} & {\bf Pohitritev} \\ \hline
           {\bf Graphenix} & \num{69.93} & \num{1}x & \num{87.15} & \num{1.12}x \\
           {\bf SQLite} & \num{0.83} & \num{66.01}x & \num{29.39} & \num{2.82}x \\
           {\bf MySQL} & \num{1.96} & \num{126.18}x & \num{91.11} & \num{3.26}x \\
@@ -1078,7 +1117,7 @@ SELECT * FROM users WHERE points = 32
     \end{figure}
 
     \newpage
-    \subsection{Primerjava poizvedb z uporabo relaciji}
+    \section{Primerjava poizvedb z uporabo relaciji}
 
 
     
@@ -1155,7 +1194,7 @@ def route_with_log(route):
 
     \subsection{Branje zapisanih podatkov}
 
-    V končni fazi je glavna prednost uporabe pripravljene knjižnice za beleženje podatkov struktura shranjenih podatkov. Namreč z uporabo relacijskega podatkovnega sistema dosežemo fiksno strukturo, ki je v primeru klasičnih datotek za beleženje nimamo. Omogočeno nam je tudi bistveno več načinov pridobivanja statistik na nivoju naše strežniške aplikacije, saj lahko podatke filtriramo in po potrebi dodamo še indeksiranje na stolpce, po katerih pogosteje iščemo in urejamo podatke npr. čas zahtevka (timestamp). Na nivoju administratorske aplikacije lahko nato prožimo različne poizvedbe nad $ReqInfo$ entiteto.
+    V končni fazi je glavna prednost uporabe pripravljene knjižnice za beleženje podatkov struktura shranjenih podatkov. Namreč z uporabo DBMS dosežemo fiksno strukturo, ki je v primeru klasičnih datotek za beleženje nimamo. Posledično nam je omogočeno tudi bistveno več načinov pridobivanja statističnih podatkov, saj lahko podatke poljubno filtriramo in razvrščamo. Na nivoju administratorske aplikacije lahko nato prožimo različne poizvedbe nad našo relacijsko podatkovno bazo, ki podatke shranjuje znotraj $ReqInfo$ entitete.
 
     \subsubsection{Izpis zadnjih treh zahtevkov}
 
@@ -1180,7 +1219,7 @@ ReqInfo(id=1, route=/get-range, timestamp=2023-07-16 03:02:05,
 
     \subsubsection{Statističen pregled zahtevkov}
 
-    Podatke lahko v vgrajenem podatkovnem sistemu tudi grupiramo, in sicer z uporabo $.agg(...)$ metode v poizvedbi, lahko definiramo polje po katerem grupiramo podatke, kot tudi agregacije, ki jih želimo izvesti.
+    Podatke lahko v pripravljenem DBMS tudi grupiramo, in sicer z uporabo $.agg(...)$ metode v poizvedbi, lahko definiramo polje po katerem grupiramo podatke, kot tudi agregacije, ki jih želimo izvesti.
     
 \begin{minted}{python}
 route_stats = ReqInfo\
@@ -1203,7 +1242,7 @@ count, api_errors = ReqInfo\
 
     \subsubsection{Izvoz vseh podatkov v .csv datoteko}
 
-    Podatkovni sistem omogoča tudi izvoz v csv datoteko, ki za nekatere uporabnike lahko pomeni lažjo obdelavo podatkov, poleg tega, pa lahko predstavlja tudi varnostno kopijo podatkovne baze v ločeni datoteki.
+    DBMS omogoča tudi izvoz v csv datoteko, ki za nekatere uporabnike lahko pomeni lažjo obdelavo podatkov, poleg tega, pa lahko predstavlja tudi varnostno kopijo podatkovne baze v ločeni datoteki.
 
     Za omenjeno nalogo potrebujemo najprej izvesti nabor vseh podatkov, nato pa s pomočjo privzetega pretvornika podatke izvozi v datoteko s pomočjo metode "dump2csv", ki prejme dva parametra – podatke in naziv izvozne datoteke.
     
@@ -1214,9 +1253,9 @@ ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
 
     \section{Manjši strežniški API}
 
-    Strežniške aplikacije, ki zahtevajo fleksibilno in hitro delo s podatkovnim sistemom postajajo vse bolj pogoste. Python predstavlja enega izmed najpogosteje uporabljenih programskih jezikov na omenjenem področju. Obstaja tudi že ogromno pripravljenih knjižnic za izdelavo API aplikaciji, kot tudi za sam podatkovni sistem, ki se uporablja znotraj aplikacije.
+    Strežniške aplikacije, ki zahtevajo fleksibilno in hitro delo s podatkovno bazo postajajo vse bolj pogoste. Python predstavlja enega izmed najpogosteje uporabljenih programskih jezikov na omenjenem področju. Obstaja tudi že ogromno pripravljenih knjižnic za izdelavo API aplikaciji, kot tudi za uporabljanje s podatkovno bazo, ki se uporablja znotraj aplikacije.
 
-    Tekom poglavja je predstavljena izdelava strežniške aplikacije, kjer uporabljamo Flask \cite{FLASK_GITHUB} ogrodje. Sama aplikacija, pa je namenjena delu z sistemu prefesorjev in laboratorijev.
+    Tekom poglavja je predstavljena izdelava strežniške aplikacije, kjer uporabljamo Flask \cite{FLASK_GITHUB} ogrodje. Sama aplikacija, pa je namenjena delu za preprosto uporabljanje sistema profesorjev in laboratorijev.
     
     \subsection{Podatkovna shema za aplikacijo}
 
