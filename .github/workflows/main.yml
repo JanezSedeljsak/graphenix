@@ -29,7 +29,10 @@ jobs:
       - name: Install PyBind11
         run: pip install pybind11
 
-      - name: Install dependencies 
+      - name: Install graphenix engine lib
+        run: python graphenix/setup.py
+
+      - name: Install graphenix lib 
         run: python setup.py install
 
       - name: Display Python version
