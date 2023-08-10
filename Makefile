@@ -11,7 +11,10 @@ _build:
 	sudo rm -rf graphenix_engine2.egg-info/
 	sudo rm -rf graphenix.egg-info/
 
-	# install library
+	# install engine
+	sudo python3 graphenix/setup.py install --force
+
+	# install wrapper lib
 	sudo python3 setup.py install --force
 	@echo "[graphenix] Finished build!"
 

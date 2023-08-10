@@ -5,6 +5,8 @@
 *.pyc
 *.txt
 *.egg*/
+*.so
+*.o
 /graphenix_db/*
 main.py
 test.py
