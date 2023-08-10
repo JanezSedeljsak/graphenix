@@ -877,8 +877,27 @@ end function
 
         Izkaže se, da je algoritem z uporabo prioritetne vrste najbolj optimalen pristop, kar pokažejo tudi perfomančni testi, ki se izvajajo na platformi GitHub, saj z uporabo omenjenega pristopa dobili do 4x pohitritev izvedbe nabora podatkov iz ene entitete.
 
-        \subsection{Uporaba podatkovnih okvirjev za nalaganje podatkov}
+        \subsection{Uporaba podatkovnih okvirjev ob poizvedovanju podatkov}
 
+        Akcija za poizvedovanje ob prvi implementaciji deluje po naslednjih korakih:
+        \begin{enumerate}
+            \item Izgradnja strukture, ki definira vse potrebne parametre za poizvedbo – QueryObject.
+            \item Izvedba branja na nivoju programskega jezika C++ in pretvorba zapisov v seznam, kjer je posamezen zapis predstavljen kot slovar.
+            \item Pretvorba posameznega slovarja (vrstice) v instanco objekta.
+        \end{enumerate}
+
+        \noindent
+        Ob profiliranju akcije za poizvedovanje podatkov opazimo, da velik delež izvajalnega časa vzame 3. točka – torej pretvorba posameznega zapisa v instanco razreda.
+
+        Za hitrejšo izvedbo smo na nivoju programskega jezika Python pripravili podatkovno strukturo – pogled (ang. View). Ta struktura omogoča preprečevanje potrebe po tretjem koraku in tudi spreminja predstavitev posameznih vrstic iz strukture slovarja v terko (ang. Tuple). View, pa predstavlja ovoj, ki deluje na podobnem principu, kot delujejo podatkovni okvirji (ang. DataFrame) v knjižnici za podatkovno analitiko \cite{PANDAS_GITHUB}. Struktura smo implementirali na nivoju programskega jezika C++, kar še dodatno pospeši čas dostopa do posameznega zapisa.
+
+        \subsubsection{Optimizacija v številkah}
+        Za izmeritev učinkovitosti implementacije, smo uporabili scenarij iz performančnih testov celotnega sistema (branje milijona vrstic in shranjevanje celotnega seznama v pomnilnik).
+        \begin{itemize}
+            \item V prvi implementaciji je povprečni čas izvajanja bil nekje $\approx 7$ sekund, kjer je več kot 80\% časa predstavljalo instanciranje objektov.
+            \item Po optimizaciji, pa celoten čas branja zahteva povprečno $\approx 1.3$ sekunde. Kar pomeni, kar 5x pohitritev izvedbe branja.
+        \end{itemize}
+        
     \section{Podprte funkcionalnosti na nivoju vgrajenega ORM sistema}
     \begin{itemize}
         \item \textbf{Filtriranje podatkov – funkcija ``filter`` (DBMS – where)}. Parametri te funkcije se drevo, kjer je posamezno vozlišče drevesa predstavljeno z enim ali več pogoji, ki so oviti v AND ali OR pogoj.
@@ -916,49 +935,18 @@ query = User.link(
 \chapter{Sodoben pristop razvoja programske opreme}
 \label{ch1}
 
-    \section{Testno usmerjen razvoj}
+    V naslednjem poglavju bomo predstavili izbrane metodologije, ki so ključne za razvoj naše izbrane programske opreme. Jasno se zavedamo, da kakovostna zasnova predstavlja temelj celotnega sistema. Za zagotovitev pravilnega delovanja te zasnove pa se danes pogosto poslužujemo postopka avtomatskega testiranja programske opreme, ki vključuje teste enot in integracijsko testiranje. S skrbno izdelanimi testnimi primeri smo sposobni doseči zanesljivo in pravilno delovanje celotnega sistema.
 
-    Da zagotovimo pravilno delovanje nekega bolj kompleksnega sistema je na področju razvoja programske opreme zelo priporočen testno usmerjen razvoj. Gre za način validacije pravilnega delovanja posameznih komponent sistema, kot ločeni segmenti in kot celotna enota. V ta namen testno usmerjen razvoj delimo na tri testne faze. 
+    \section{Razvoj knjižnice za programski jezik \newline Python}
+
+    V svetu programiranja je razvoj knjižnic ključnega pomena za širjenje funkcionalnosti posameznega programskega jezika. Python je jezik, ki že sam po sebi vključuje zelo obsežno standardno knjižnico, ki pokriva ogromno funkcionalnosti, ki jih v ostalih programskih jezikih dobimo le z uporabo eksternih modulov/knjižnic.
+
+    V namen upravljanja z eksternimi moduli programskega jezika se pogosto srečamo z upravljavci paketov (ang. package manager). Gre za orodje, ki omogoča enostaven način nameščanja, posodabljanja in odstranjevanja uvoženih knjižnic. Programski jezik Python v svoji dokumentaciji \cite{PY_PM} predlaga uporabo PIP upravljalnik paketov za distribucijo knjižnic, ki niso del standardnega modula programskega jezika.
    
-   \subsection{Testi enot na nivoju jedra podatkovnega sistema}
+    \subsection{Uporaba Python.h API za razvoj knjižnice}
+   Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike, strežniških aplikaciji in preprostih aplikaciji. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede do strojnega jezika. Python ima za zagon kode, še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku.
 
-    V prvi fazi želimo, da zagotovimo pravilno delovanje na najnižjem nivoju oz. na jedru celotnega sistema. Gre za testiranje najbolj osnovnih funkciji, ki zagotavljajo pravilno delovanje našega sistema. V tem segmentu je bilo največ pozornosti predane na testiranje vnašanja in branja sistema za indeksiranje, ki je realizirano s pomočjo B+ dreves. Avtomatsko testiranje je na tem nivoju realizirano s pomočjo knjižnice Doctest \cite{DOCTEST_GITHUB}. Gre za testno ogrodje napisano za programski jezik C++, ki omogoča fleksibilen pristop validacije rezultatov iz posameznih funkciji.
-   
-   \subsection{Integracijsko testiranje funkcionalnosti na nivoju končne knjižnice}
-
-    Naslednja faza testiranja je realizirana s pomočjo integracijskih testov. Gre za pristop testiranja, kjer preizkusimo ali prej posamezno testirane enote delujejo tudi na nivoju integracije ene z drugo \cite{brar2015differentiating}. Iz praktičnega vidika, če smo prej testirali ali pravilno delujejo posamezne funkcionalnosti B+ dreves, lahko zdaj testiramo ali se B+ drevo kreira pravilno na nivoju vnašanja podatkov v entiteto, kjer imamo določen atribut definiran kot indeksiran. Sama izvedba testiranja je izvedena na nivoju programskega jezika Python z vgrajeno knjižnico Unittest \cite{PY_UNITTEST}.
-   
-   \subsection{Performančno testiranje kritičnih segmentov}
-
-    Izvedba tretje faze je sicer zelo podobna fazi integracijskega testiranja z izjemo, da ne posvetimo toliko pozornosti sami pravilnosti rezultatov in ne testiramo toliko različnih scenarijev in robnih pogojev, temveč je pozornost usmerjena predvsem v časovne meritve – torej koliko časa porabi posamezen scenarij za izvedbo.
-   
-   \subsection{Integracija avtomatskega testiranja z GitHub}
-
-   Platforma GitHub omogoča izvajanje različnih akciji ob različnih dogodkih najpogosteje v praksi to počnemo, kadar izvajamo združenje vej ali pa kar ob vsaki posodobitvi kode. V praksi se poleg avtomatskega testiranja na tem področju lahko izvajajo tudi avtomatske posodobitve strežniške aplikacije ali različne periodične naloge, kot npr. kreiranje rezervnih verziji podatkovne baze iz produkcijskega strežnika.
-
-   V našem primeru se ob vsaki posodobitvi kode izvede akcija za preverjanje pravilnega delovanja aplikacije. Akcije se izvedejo za dve verziji programskega jezika Python (v3.10 in v3.11), postavitev pa se izvede na virtualnem Linux Ubuntu okolju.
-
-   Ko je okolje pravilno postavljeno se akcije izvedejo v naslednjem zaporedju:
-   \begin{enumerate}
-       \item Zagon virtualnega okolja za Python programskega okolja (venv \cite{PY_VENV_DOCS}).
-       \item Postavitev potrebnih knjižnic za delovanje jedra (PyBind11 \cite{PYBIND11_GITHUB}).
-       \item Namestitev jedra podatkovnega sistema in knjižnice na nivoju programskega jezika Python.
-       \item Poskus uvoza jedra podatkovnega sistema v CLI, ki je vgrajen v programski jezik Python.
-       \item Poskus uvoza celotne knjižnice
-       \item Izvedba nizko nivojskih testov oz. testov enot v programskem jeziku C++
-       \item Izvedba integracijskih testov na nivoju programskega jezika Python
-       \item Izvedba performančnih testov
-   \end{enumerate}
-
-    \noindent
-   Takoj, ko se katera izmed akciji ne izvede pravilno se ustavi celoten cevovod izvajanja in se javi napaka, ki je vidna na zavihku GitHub akciji ali direktno na spremembi kode, ki je povzročila težavo.
-
-   Pristop avtomatskega testiranja in posodabljanja imenujemo tudi CI/CD, ki temelji na hitrem in varnem razvoju, ki razvijalce hitro obvesti o morebitnih napakah, ki se pojavljajo znotraj aplikacije in omogoča, tako avtomatsko testiranje kot tudi avtomatsko posodobitev produkcijskih verziji aplikacije ali v našem primeru posodobitev stabilne verzije knjižnice.
-   
-    \section{Kako pohitriti izvajanje v programskem jeziku Python}
-   Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike, strežniških aplikaciji in preprostih aplikaciji. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede direktno v strojni jezik. Python ima za zagon kode, še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku.
-
-   Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od pravih prevedenih jezikov. Poleg tega jezik tudi nima striktnih tipov, kar pomeni, da je za vsako spremenljivko v jeziku najprej potrebno preveriti za kateri tip gre, kar ponovno prinese časovne zakasnitve.
+   Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od pravih prevedenih jezikov. Poleg tega jezik tudi nima striktnih tipov, kar pomeni, da je za vsako spremenljivko v jeziku najprej potrebno preveriti, za kateri tip gre, kar ponovno prinese časovne zakasnitve.
 
     Področji umetne inteligence in podatkovne analitike, pa temeljita na obdelavi masovnih podatkov. Kar pa posledično pomeni, da Python ni najbolj optimalen jezik za izvedbo teh nalog. Zaradi teh omejitev so nastale knjižnice, ki so v osnovi napisane v jezikih, ki so bistveno hitrejši. Tako se funkcije in strukture, ki jih potem lahko uporabljamo na nivoju programskega jezika Python prevedejo že v strojno kodo in jih potem lahko kličemo direktno iz programskega jezika Python. Med temi knjižnicami so pogosteje uporabljene:
     \begin{itemize}
@@ -970,6 +958,7 @@ query = User.link(
     \noindent
     Vse te knjižnice so v osnovi napisane s pomočjo Python.h API vmesnika. Gre za vmesnik med programskima jezikoma Python in C. Na nivoju jezika C lahko vsak tip predstavimo z vgrajeno PyObject strukturo, katerega lahko neposredno uporabljamo na nivoju programskega jezika C. 
 
+    \newpage
     \subsection{Primer uporabe Python.h API vmesnika}
     Primer preproste funkcije na nivoju programskega jezika C, ki vrne seštevek dveh celih števil:
 \begin{minted}{c}
@@ -989,7 +978,7 @@ static PyObject* add_nums(PyObject* self, PyObject* args) {
     \noindent
     Funkcija je sestavljena tako, da v prvi fazi argumente shrani na naslove spremenljivk, ki so deklarirane na nivoju programskega jezika C (to sta v zgornjem primeru $int64_t a, b;$). Argumenti so poslani kot terka, za katero moramo najprej povedati strukturo, v zgornjem primeru je to $ii$, kar pomeni dve celi števili. Seveda, lahko kot argumente beremo tudi ostale strukture vendar branje postane bistveno bolj kompleksno, ko želimo brati sestavljene tipe. V tem primeru je v večini primerov lažje preprosto pretvoriti vse v primitivne tipe in na nivoju programskega jezika C operirati direktno s temi.
 
-    \section{Naprednejša knjižnica z dodatnimi strukturami za lažji prehod med jezikoma}
+    \subsection{Naprednejša knjižnica z dodatnimi strukturami za lažji prehod med jezikoma}
 
     Izdelava knjižnic s pomočjo Python.h API vmesnika pomeni uporabo programskega jezika C, kar pomeni, da je velik del implementaciji prepuščen razvijalcu, da si tukaj delo malo olajšamo smo se odločili za razvoj knjižnice s pomočjo C++ jezika in knjižnice, ki dela nivo višje, kot Python.h API - PyBind11 \cite{PYBIND11_GITHUB}. Gre za knjižnico, ki bistveno olajša pretvorbe podatkovnih struktur med jezikoma npr. kadar želimo, kot parameter poslati strukturo seznama v C++ lahko to preprosto definiramo, kot tip vector in pretvorba iz seznama v vektor bo avtomatska. Knjižnica deluje s pomočjo C++ verzije 11, ki je izšla septembra 2011.
 
@@ -1020,6 +1009,66 @@ total = my_math_module.custom_sum(5, 10)
 print(total) # prints 15
 \end{minted}
     
+    \newpage
+    \section{Testno usmerjen razvoj}
+
+    Da zagotovimo pravilno delovanje nekega bolj kompleksnega sistema je na področju razvoja programske opreme zelo priporočen testno usmerjen razvoj. Gre za način validacije pravilnega delovanja posameznih komponent sistema, kot ločeni segmenti in kot celotna enota. V primeru razvoja izbrane programske opreme smo proces testiranja razdelili na tri segmente – testiranje enot, integracijsko testiranje in performančno testiranje.
+   
+   \subsection{Testi enot na nivoju jedra podatkovnega sistema}
+
+    V prvi fazi želimo, da zagotovimo pravilno delovanje na najnižjem nivoju oz. na jedru celotnega sistema. Gre za testiranje najbolj osnovnih funkciji, ki zagotavljajo pravilno delovanje našega sistema. V tem segmentu je bilo največ pozornosti predane na testiranje vnašanja in branja sistema za indeksiranje, ki je realizirano s pomočjo B+ dreves. Avtomatsko testiranje je na tem nivoju realizirano s pomočjo knjižnice Doctest \cite{DOCTEST_GITHUB}. Gre za testno ogrodje napisano za programski jezik C++, ki omogoča fleksibilen pristop validacije rezultatov iz posameznih funkciji.
+   
+   \subsection{Integracijsko testiranje funkcionalnosti na nivoju končne knjižnice}
+
+    Naslednja faza testiranja je realizirana s pomočjo integracijskih testov. Gre za pristop testiranja, kjer preizkusimo ali prej posamezno testirane enote delujejo tudi na nivoju integracije ene z drugo \cite{brar2015differentiating}. Iz praktičnega vidika, če smo prej testirali ali pravilno delujejo posamezne funkcionalnosti B+ dreves, lahko zdaj testiramo ali se B+ drevo kreira pravilno na nivoju vnašanja podatkov v entiteto, kjer imamo določen atribut definiran kot indeksiran. Sama izvedba testiranja je izvedena na nivoju programskega jezika Python z vgrajeno knjižnico Unittest \cite{PY_UNITTEST}.
+   
+   \subsection{Performančno testiranje zahtevnejših akciji}
+
+    Izvedba tretje faze je sicer zelo podobna fazi integracijskega testiranja z izjemo, da ne posvetimo toliko pozornosti sami pravilnosti rezultatov in ne testiramo toliko različnih scenarijev in robnih pogojev, temveč je pozornost usmerjena predvsem v časovne meritve – torej koliko časa porabi posamezen scenarij za izvedbo.
+
+    Pripravljenih imamo 10 performančnih testov, kjer je vsak test ločen scenarij, ki meri čas izvajanja v posameznem scenariju (sak izmed teh testov se izvede petkrat, kjer ob koncu izračunamo povprečni čas izvajanja). Spodaj imamo še primer izpisa izvedbe performančne analize:
+
+\begin{minted}[breaklines]{text}
+Avg: 11.315 - Bulk delete 1M codelist records
+Avg: 1.373 - Create 100K basic codelist records
+Avg: 0.712 - Bulk create 100K basic codelist records
+Avg: 0.600 - Create 10K records and read them by IDs
+Avg: 1.372 - Read 1M records at once
+Avg: 0.010 - Read multilevel query and searilize data
+Avg: 0.144 - Read with limit 1500 + order by country from Model with 1M records
+Avg: 0.011 - Read with limit 100 from Model with 1M records
+Avg: 0.092 - Read with limit 100 + order by country from Model with 1M records
+Avg: 1.599 - Read with order by country from Model with 1M records
+----------------------------------------------------------------------
+Ran 10 tests in 254.074s
+
+OK
+[graphenix] Finished tests!
+\end{minted}
+   
+   \subsection{Integracija avtomatskega testiranja z GitHub}
+
+   Platforma GitHub omogoča izvajanje različnih akciji ob različnih dogodkih najpogosteje v praksi to počnemo, kadar izvajamo združenje vej ali pa kar ob vsaki posodobitvi kode. V praksi se poleg avtomatskega testiranja na tem področju lahko izvajajo tudi avtomatske posodobitve strežniške aplikacije ali različne periodične naloge, kot npr. kreiranje rezervnih verziji podatkovne baze iz produkcijskega strežnika.
+
+   V našem primeru se ob vsaki posodobitvi kode izvede akcija za preverjanje pravilnega delovanja aplikacije. Akcije se izvedejo za dve verziji programskega jezika Python (v3.10 in v3.11), postavitev pa se izvede na virtualnem Linux Ubuntu okolju.
+
+   Ko je okolje pravilno postavljeno se akcije izvedejo v naslednjem zaporedju:
+   \begin{enumerate}
+       \item Zagon virtualnega okolja za Python programskega okolja (venv \cite{PY_VENV_DOCS}).
+       \item Postavitev potrebnih knjižnic za delovanje jedra (PyBind11 \cite{PYBIND11_GITHUB}).
+       \item Namestitev jedra podatkovnega sistema in knjižnice na nivoju programskega jezika Python.
+       \item Poskus uvoza jedra podatkovnega sistema v CLI, ki je vgrajen v programski jezik Python.
+       \item Poskus uvoza celotne knjižnice
+       \item Izvedba nizko nivojskih testov oz. testov enot v programskem jeziku C++
+       \item Izvedba integracijskih testov na nivoju programskega jezika Python
+       \item Izvedba performančnih testov
+   \end{enumerate}
+
+    \noindent
+   Takoj, ko se katera izmed akciji ne izvede pravilno se ustavi celoten cevovod izvajanja in se javi napaka, ki je vidna na zavihku GitHub akciji.
+
+   Pristop avtomatskega testiranja in posodabljanja imenujemo tudi CI/CD, ki temelji na hitrem in varnem razvoju, ki razvijalce hitro obvesti o morebitnih napakah, ki se pojavljajo znotraj aplikacije in omogoča, tako avtomatsko testiranje kot tudi avtomatsko posodobitev produkcijskih verziji aplikacije.
+    
 \chapter{Analiza}
 \label{ch2}
 
@@ -1034,22 +1083,22 @@ print(total) # prints 15
    \section{Množično vnašanje podatkov}
    \begin{figure}[H]
         \centerline{\includegraphics[width=0.6\textwidth, angle=0]{singleinsert.png}}
-        \caption{Preprost primer relacijske podatkovne baze.}
-        \label{vnospodatkov}
+        \caption{Normaliziran čas vnašanja podatkov}
+        \label{vnos}
     \end{figure}
     
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.6\textwidth, angle=0]{indexinsert.png}}
-        \caption{Preprost primer relacijske podatkovne baze.}
-        \label{vnospodatkov_index}
+        \caption{Normaliziran čas vnašanja podatkov z dodatnim vnašanjem v B+ strukturo}
+        \label{index_vnos}
     \end{figure}
 
     \newpage
     \section{Velikosti podatkovnih baz na disku}
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.6\textwidth, angle=0]{sizes.png}}
-        \caption{Preprost primer relacijske podatkovne baze.}
-        \label{vnospodatkov_index}
+        \caption{Prostorska poraba na nivoju diska posameznega DBMS}
+        \label{velikosti}
     \end{figure}
 
     \newpage
@@ -1057,14 +1106,14 @@ print(total) # prints 15
 
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.6\textwidth, angle=0]{singleread.png}}
-        \caption{Preprost primer relacijske podatkovne baze.}
-        \label{vnospodatkov_index}
+        \caption{Branje brez dodatnih parametrov znotraj poizvedbe}
+        \label{branje}
     \end{figure}
 
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.6\textwidth, angle=0]{queryread.png}}
-        \caption{Preprost primer relacijske podatkovne baze.}
-        \label{vnospodatkov_index}
+        \caption{Branje z dodanim filtriranjem in urejanjem zapisov}
+        \label{queryread}
     \end{figure}
 
     \newpage
@@ -1073,51 +1122,14 @@ print(total) # prints 15
     \newpage
     \section{Pohitritev poizvedb s pomočjo indeksiranja}
 
-    V sklopu primerjave pohitritev s pristopom indeksiranja smo izmerili faktor pohitritve pri izvedbi naslednjega SQL stavka:
-
-\begin{minted}[breaklines]{SQL}
-SELECT * FROM users WHERE points = 32
-\end{minted}
-
-    \noindent
-    Torej izvedli smo filtriranje po atributu "points", kjer iščemo vse zapise, ki imajo vrednost 32. V prvem primeru smo kreirali milijon uporabnikov, kjer je zgornjemu kriteriju ustrezalo 14197 uporabnikov. Kar je pomenilo $\approx 1.25$\% uporabnikov.
-
-    Dodatno smo dodali še scenarij, kjer imamo enako milijon uporabnikov, vendar z razliko, da imamo v tem primeru bistveno manj uporabnikov, ki ustrezajo kriteriju (imamo jih 131). To je v omenjenem scenariju pomenilo $\approx 0.00125$\%.
-    
-    \begin{center}
-        \begin{tabular}{p{0.2\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}}
-          {\bf DMBS} & {\bf 1/8000 (ms)} & {\bf Pohitritev} & {\bf 1/80 \newline (ms)} & {\bf Pohitritev} \\ \hline
-          {\bf Graphenix} & \num{69.93} & \num{1}x & \num{87.15} & \num{1.12}x \\
-          {\bf SQLite} & \num{0.83} & \num{66.01}x & \num{29.39} & \num{2.82}x \\
-          {\bf MySQL} & \num{1.96} & \num{126.18}x & \num{91.11} & \num{3.26}x \\
-        \end{tabular}
-    \end{center}
-    
-    \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{indexing_speedup_1000000.png}}
-        \caption{Preprost primer relacijske podatkovne baze.}
-        \label{vnospodatkov_index}
-    \end{figure}
-
-    V drugem scenariju, pa smo kreirali 10 milijonov uporabnikov z enako porazdelitvijo, kot v prvem scenariju. V prvi porazdelitvi je to pomenilo \num{140758} ($\approx 1.25$\%) uporabnikov. V drugi, pa \num{1308} ($\approx 0.00125$\%) uporabnikov.
-
-    \begin{center}
-        \begin{tabular}{p{0.2\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}|p{.15\textwidth}}
-          {\bf DBMS} & {\bf 1/8000 (ms)} & {\bf Pohitritev} & {\bf 1/80 \newline (ms)} & {\bf Pohitritev} \\ \hline
-          {\bf Graphenix} & \num{69.93} & \num{1}x & \num{87.15} & \num{1.12}x \\
-          {\bf SQLite} & \num{0.83} & \num{66.01}x & \num{29.39} & \num{2.82}x \\
-          {\bf MySQL} & \num{1.96} & \num{126.18}x & \num{91.11} & \num{3.26}x \\
-        \end{tabular}
-    \end{center}
-
-    \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{indexing_speedup_10000000.png}}
-        \caption{Preprost primer relacijske podatkovne baze.}
-        \label{vnospodatkov_index}
-    \end{figure}
-
     \newpage
     \section{Primerjava poizvedb z uporabo relaciji}
+
+    \begin{figure}[H]
+        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{join.png}}
+        \caption{Poizvedovanje podatkov iz dveh entitet hkrati – uporabniki in njihove naloge}
+        \label{join}
+    \end{figure}
 
 
     
