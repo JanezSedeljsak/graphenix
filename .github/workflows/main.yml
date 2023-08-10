@@ -30,7 +30,7 @@ jobs:
         run: pip install pybind11
 
       - name: Install graphenix engine lib
-        run: python graphenix/setup.py
+        run: python graphenix/setup.py install
 
       - name: Install graphenix lib 
         run: python setup.py install
