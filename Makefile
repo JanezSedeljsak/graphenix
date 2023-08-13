@@ -12,7 +12,7 @@ _build:
 	sudo rm -rf graphenix.egg-info/
 
 	# install engine
-	sudo python3 graphenix/setup.py install --force
+	sudo python3 graphenix/engine/build/setup.py install --force
 
 	# install wrapper lib
 	sudo python3 setup.py install --force

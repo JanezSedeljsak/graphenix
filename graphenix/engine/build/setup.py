@@ -12,7 +12,7 @@ __author_data = {"author": "janezsedeljsak",
                  "author_email": "janez.sedeljsak@gmail.com"}
 
 setup_dir = os.path.dirname(os.path.abspath(__file__))
-cpp_file_path = os.path.join(setup_dir, "engine", "main.cpp")
+cpp_file_path = os.path.join(setup_dir, "..", "main.cpp")
 
 class BuildExt(build_ext):
     def build_extensions(self):
