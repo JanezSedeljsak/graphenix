@@ -42,7 +42,7 @@ _perf_test:
 # analysis section
 # --------------------------------
 
-_all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a _join_a
+_all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a _join_a _agg_a
 	@echo "[graphenix] All analysis completed!"
 
 _all_graphs:
@@ -52,6 +52,7 @@ _all_graphs:
 	python3 -m analysis.queryread.graph
 	python3 -m analysis.singleread.graph
 	python3 -m analysis.join.graph
+	python3 -m analysis.agg.graph
 	python3 -m analysis.find_no_index.graph_size 100000
 	python3 -m analysis.find_no_index.graph_size 1000000
 	@echo "[graphenix] All graphs completed!"
@@ -125,3 +126,9 @@ _sizes_a:
 	./analysis/singleinsert/file_sizes_indexed.sh 1000000
 	python3 -m analysis.singleinsert.sizes_analysis 1000000
 	@echo "[graphenix] Finished size analysis!"
+
+_agg_a:
+	@echo "[graphenix] Running agg analysis..."
+	chmod +x analysis_runner.sh
+	./analysis_runner.sh "agg" 1000 5000 10000 20000
+	@echo "[graphenix] Finished agg analysis!"

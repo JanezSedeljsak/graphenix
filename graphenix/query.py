@@ -208,11 +208,11 @@ class Query:
             self.query_object.agg_field_index = self.base_model._model_fields.index(by.name)
         
         aggs = []
-        for [field_name, func] in aggregations.values():
+        for [field, func] in aggregations.values():
             agg_obj = ge2.aggregate_object()
             agg_obj.option = func
             if func != AGG._Options.COUNT:
-                agg_obj.field_index = self.base_model._model_fields.index(field_name)
+                agg_obj.field_index = self.base_model._model_fields.index(field.name)
             else:
                 agg_obj.field_index = -1
 
