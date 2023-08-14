@@ -26,20 +26,20 @@ jobs:
       - name: Activate the virtual environment
         run: source myenv/bin/activate
 
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+
       - name: Install PyBind11
         run: pip install pybind11
 
       - name: Install graphenix engine lib
         run: python graphenix/engine/setup.py install
 
-      - name: Install graphenix lib 
-        run: python setup.py install
-
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
-
       - name: Try importing graphenix_engine2 module
         run: python -c "import graphenix_engine2;"
+
+      - name: Install graphenix lib 
+        run: python setup.py install
 
       - name: Try importing graphenix module
         run: python -c "import graphenix;"
