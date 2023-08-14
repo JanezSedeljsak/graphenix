@@ -1,14 +1,6 @@
 import mysql.connector
 import time
 import sys
-import os
-
-sizes = {
-    10000: 1,
-    100000: 6,
-    1000000: 131,
-    10000000: 1308,
-}
 
 
 def main():
@@ -20,9 +12,9 @@ def main():
     cursor.execute(f"USE {dbname}")
     start_time = time.perf_counter()
     
-    cursor.execute("SELECT * FROM users WHERE points = 32")
+    cursor.execute("SELECT * FROM users WHERE points = 5432")
     searilized = cursor.fetchall()
-    assert len(searilized) == sizes[num_users] and isinstance(searilized, list)
+    assert len(searilized) == 1 and isinstance(searilized, list)
     
     cursor.close()
     conn.close()

@@ -1,10 +1,7 @@
-from .data import user_data
+from .data import user_data, get_shuffled_points
 import mysql.connector
 import time
 import sys
-import os
-import random
-random.seed(12)
 
 create_table = """
     CREATE TABLE `users` (
@@ -37,12 +34,13 @@ def main():
     conn = mysql.connector.connect(host='localhost', port=3307, user='root', password='root')
     cursor = conn.cursor()
     cursor.execute(f"USE {dbname}")
-    
+
+    points = get_shuffled_points(num_users)
     user_data_list = []
     for i in range(num_users):
         is_admin = i % 2 == 0
         user_tuple = (user_data['first_name'] + str(i), user_data['last_name'], user_data['email'],
-                      random.randint(10, 8000), int(is_admin), user_data['created_at'])
+                      points[i], int(is_admin), user_data['created_at'])
         user_data_list.append(user_tuple)
 
     insert_query = f"INSERT INTO users (first_name, last_name, email, points, is_admin, created_at) " \

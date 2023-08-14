@@ -100,8 +100,8 @@ struct cond_object
                     idx = static_cast<int>(i);
 
         const bool not_pk = idx != -1;
-        const int offset = not_pk ? mdef.field_offsets[idx] : mdef.record_size;
-        const int size = not_pk ? mdef.field_sizes[idx] : IX_SIZE;
+        // const int offset = not_pk ? mdef.field_offsets[idx] : mdef.record_size;
+        // const int size = not_pk ? mdef.field_sizes[idx] : IX_SIZE;
         const FIELD_TYPE type = not_pk ? static_cast<FIELD_TYPE>(mdef.field_types[idx]) : INT;
         std::unordered_set<int64_t> result = std::unordered_set<int64_t>();
 

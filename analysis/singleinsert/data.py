@@ -1,4 +1,6 @@
 from datetime import datetime
+import random
+random.seed(12)
 
 user_data = {
     "first_name": "John",
@@ -8,3 +10,8 @@ user_data = {
     "is_admin": False,
     "created_at": datetime.now()
 }
+
+def get_shuffled_points(n):
+    nums = list(range(n))
+    random.shuffle(nums)
+    return nums

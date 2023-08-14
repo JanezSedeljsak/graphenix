@@ -1,9 +1,7 @@
 from graphenix import Field, Schema, Model
-from .data import user_data
+from .data import user_data, get_shuffled_points
 import sys
 import time
-import random
-random.seed(12)
 
 class User(Model):
     first_name = Field.String(size=15)
@@ -22,9 +20,10 @@ def main():
     my_schema.create()
 
     start_time = time.perf_counter()
+    points = get_shuffled_points(num_users)
     for i in range(num_users):
         current_user = {**user_data, "first_name": user_data['first_name'] + str(i),
-                        "is_admin": i%2 == 0, "points": random.randint(10, 8000)}
+                        "is_admin": i%2 == 0, "points": points[i]}
         user = User(**current_user)
         user.save()
 

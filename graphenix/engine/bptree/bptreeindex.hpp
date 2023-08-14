@@ -19,11 +19,11 @@ class BPTreeIndex
                   "T must be string or int64_t");
 
 public:
-    typedef pair<pair<int, int>, shared_ptr<BPTreeNode<T>>> LeafMatchInterval;
+    typedef pair<pair<int64_t, int64_t>, shared_ptr<BPTreeNode<T>>> LeafMatchInterval;
     less<T> generic_less;
     string ix_filename;
     shared_ptr<BPTreeNode<T>> root;
-    int key_size;
+    int64_t key_size;
 
     inline void init(const string &schema_name, const string &model_name,
                      const string &field_name)
@@ -42,7 +42,7 @@ public:
         key_size = IX_SIZE;
     }
 
-    BPTreeIndex(string schema_name, string model_name, string field_name, int size)
+    BPTreeIndex(string schema_name, string model_name, string field_name, int64_t size)
     {
         init(schema_name, model_name, field_name);
         key_size = size;
@@ -62,7 +62,7 @@ public:
         for (const auto &node : nodes)
         {
             cout << "Start " << node.first.first << " End: " << node.first.second << endl;
-            for (int i = node.first.first; i <= node.first.second; i++)
+            for (int64_t i = node.first.first; i <= node.first.second; i++)
                 cout << "Key: " << node.second->keys[i] << " Value: " << node.second->data[i] << endl;
         }
     }
@@ -71,7 +71,7 @@ public:
     {
         unordered_set<int64_t> ptrs;
         for (const auto &node : nodes)
-            for (int i = node.first.first; i <= node.first.second; i++)
+            for (int64_t i = node.first.first; i <= node.first.second; i++)
                 ptrs.insert(node.second->data[i]);
 
         return ptrs;
@@ -178,7 +178,6 @@ public:
             root->read(ix_file);
         }
 
-        root->is_cached = true;
         ix_file.close();
     }
 
@@ -195,7 +194,7 @@ public:
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         LeafMatchInterval &last = nodes.back();
         shared_ptr<BPTreeNode<T>> &node = last.second;
-        int right_idx = last.first.second;
+        int64_t right_idx = last.first.second;
 
         while (true)
         {
@@ -250,17 +249,18 @@ public:
      */
     inline LeafMatchInterval search_leaf(const T &search, shared_ptr<BPTreeNode<T>> node, fstream &ix_file)
     {
-        size_t low = 0, high = node->keys.size();
+        int64_t low = 0, high = node->keys.size();
         while (low < high)
         {
-            size_t mid = (low + high) / 2;
+            int64_t mid = (low + high) / 2;
             if (generic_equal(node->keys[mid], search))
             {
-                size_t from = mid, to = mid;
+                int64_t from = mid, to = mid;
                 while (from > 0 && generic_equal(node->keys[from - 1], search))
                     from--;
 
-                while (to < node->keys.size() - 1 && generic_equal(node->keys[to + 1], search))
+                const int64_t right_limit = static_cast<int64_t>(node->keys.size());
+                while (to < right_limit - 1 && generic_equal(node->keys[to + 1], search))
                     to++;
 
                 return make_pair(make_pair(from, to), node);
@@ -329,10 +329,10 @@ public:
     {
         vector<LeafMatchInterval> nodes;
         bool found_equal = false;
-        size_t low = 0, high = node->keys.size();
+        int64_t low = 0, high = node->keys.size();
         while (low < high)
         {
-            size_t mid = (low + high) / 2;
+            int64_t mid = (low + high) / 2;
             if (generic_equal(node->keys[mid], search))
             {
                 found_equal = true;
@@ -351,15 +351,16 @@ public:
             return nodes;
         }
 
-        size_t from = low, to = low;
+        int64_t from = low, to = low;
         while (from > 0 && generic_equal(node->keys[from - 1], search))
             from--;
 
-        while (to < node->keys.size() - 1 && generic_equal(node->keys[to + 1], search))
+        const int64_t right_limit = static_cast<int64_t>(node->keys.size());
+        while (to < right_limit - 1 && generic_equal(node->keys[to + 1], search))
             to++;
 
         // check from left to right + 1 (there are more ptrs than keys)
-        for (size_t i = from; i <= to + 1; i++)
+        for (int64_t i = from; i <= to + 1; i++)
             extend_node_interval(nodes, search, node, ix_file, i);
 
         return nodes;
@@ -403,13 +404,13 @@ public:
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         shared_ptr<BPTreeNode<T>> current = root;
         shared_ptr<BPTreeNode<T>> parent;
-        int keys_count = current->keys.size();
+        int64_t keys_count = current->keys.size();
 
         //  cout << "Search for leaf" << endl;
         while (!current->is_leaf)
         {
             parent = current;
-            for (int i = 0; i < keys_count; i++)
+            for (int64_t i = 0; i < keys_count; i++)
             {
                 if (generic_less(key, current->keys[i]))
                 {
@@ -433,7 +434,7 @@ public:
 
         if (keys_count < current->get_capacity())
         {
-            int i = 0;
+            int64_t i = 0;
             while (i < keys_count && !generic_less(key, current->keys[i]))
                 i++;
 
@@ -441,7 +442,7 @@ public:
             current->keys.resize(keys_count + 1);
             current->data.resize(keys_count + 1);
 
-            for (int j = keys_count + 1; j > i; j--)
+            for (int64_t j = keys_count + 1; j > i; j--)
             {
                 current->keys[j] = current->keys[j - 1];
                 current->data[j] = current->data[j - 1];
@@ -460,17 +461,17 @@ public:
             vector<T> tmp_keys(current->get_capacity() + 1);
             vector<int64_t> tmp_data(current->get_capacity() + 1);
 
-            for (int i = 0; i < current->get_capacity(); i++)
+            for (int64_t i = 0; i < current->get_capacity(); i++)
             {
                 tmp_keys[i] = current->keys[i];
                 tmp_data[i] = current->data[i];
             }
 
-            int i = 0;
+            int64_t i = 0;
             while (!generic_less(key, tmp_keys[i]) && i < current->get_capacity())
                 i++;
 
-            for (int k = current->get_capacity(); k > i; k--)
+            for (int64_t k = current->get_capacity(); k > i; k--)
             {
                 tmp_keys[k] = tmp_keys[k - 1];
                 tmp_data[k] = tmp_data[k - 1];
@@ -479,7 +480,7 @@ public:
             tmp_keys[i] = key;
             tmp_data[i] = record_offset;
 
-            int new_size = (current->get_capacity() + 1) - (current->get_capacity() + 1) / 2;
+            int64_t new_size = (current->get_capacity() + 1) - (current->get_capacity() + 1) / 2;
             keys_count = (current->get_capacity() + 1) / 2;
 
             current->keys.resize(keys_count);
@@ -488,14 +489,14 @@ public:
             new_leaf->keys.resize(new_size);
             new_leaf->data.resize(new_size);
 
-            for (int i = 0; i < keys_count; i++)
+            for (int64_t i = 0; i < keys_count; i++)
             {
                 current->keys[i] = tmp_keys[i];
                 current->data[i] = tmp_data[i];
             }
 
             // cout << "new size " << new_size << endl;
-            for (int i = 0; i < new_size; i++)
+            for (int64_t i = 0; i < new_size; i++)
             {
                 new_leaf->keys[i] = tmp_keys[i + keys_count];
                 new_leaf->data[i] = tmp_data[i + keys_count];
@@ -536,20 +537,20 @@ public:
 
     inline void shift_tree_level(T key, shared_ptr<BPTreeNode<T>> parent, shared_ptr<BPTreeNode<T>> child, fstream &ix_file)
     {
-        const int keys_count = parent->keys.size();
+        const int64_t keys_count = parent->keys.size();
         if (keys_count < parent->get_capacity())
         {
-            int i = 0;
+            int64_t i = 0;
             while (i < keys_count && key > parent->keys[i])
                 i++;
 
             parent->keys.resize(keys_count + 1);
             parent->children.resize(keys_count + 2);
 
-            for (int j = keys_count; j > i; j--)
+            for (int64_t j = keys_count; j > i; j--)
                 parent->keys[j] = parent->keys[j - 1];
 
-            for (int j = keys_count + 1; j > i + 1; j--)
+            for (int64_t j = keys_count + 1; j > i + 1; j--)
                 parent->children[j] = parent->children[j - 1];
 
             parent->keys[i] = key;
@@ -565,7 +566,7 @@ public:
                 prev_node->write(ix_file);
             }
 
-            if (i < keys_count && child->is_leaf)
+            /*if (i < keys_count && child->is_leaf)
             {
                 BPTreeNode<T> *next_ptr = new BPTreeNode<T>(parent->children[i + 2], key_size);
                 shared_ptr<BPTreeNode<T>> next_node = shared_ptr<BPTreeNode<T>>(next_ptr);
@@ -583,7 +584,7 @@ public:
                 next_node->set_prev(child);
                 child->set_next(next_node);
                 next_node->write(ix_file);
-            }
+            }*/
 
             child->write(ix_file);
             parent->write(ix_file);
@@ -594,41 +595,41 @@ public:
             BPTreeNode<T> *new_internal_ptr = new BPTreeNode<T>(-1, key_size);
             shared_ptr<BPTreeNode<T>> new_internal_node = shared_ptr<BPTreeNode<T>>(new_internal_ptr);
 
-            int max_capacity = parent->get_capacity();
+            int64_t max_capacity = parent->get_capacity();
             T new_keys[max_capacity + 1];
             int64_t new_offsets[max_capacity + 2];
 
-            for (int i = 0; i < max_capacity; i++)
+            for (int64_t i = 0; i < max_capacity; i++)
                 new_keys[i] = parent->keys[i];
 
-            for (int i = 0; i < max_capacity + 1; i++)
+            for (int64_t i = 0; i < max_capacity + 1; i++)
                 new_offsets[i] = parent->children[i];
 
-            int i = 0;
+            int64_t i = 0;
             while (i < max_capacity && generic_less(new_keys[i], key))
                 i++;
 
-            for (int j = max_capacity; j > i; j--)
+            for (int64_t j = max_capacity; j > i; j--)
                 new_keys[j] = new_keys[j - 1];
             new_keys[i] = key;
 
-            for (int j = max_capacity + 1; j > i + 1; j--)
+            for (int64_t j = max_capacity + 1; j > i + 1; j--)
                 new_offsets[j] = new_offsets[j - 1];
             new_offsets[i + 1] = child->offset;
 
             new_internal_node->is_leaf = false;
-            int child_size = (max_capacity + 1) / 2;
-            int new_internal_size = max_capacity - child_size;
+            int64_t child_size = (max_capacity + 1) / 2;
+            int64_t new_internal_size = max_capacity - child_size;
 
             parent->keys.resize(child_size);
             parent->children.resize(child_size + 1);
             new_internal_node->keys.resize(new_internal_size);
             new_internal_node->children.resize(new_internal_size + 1);
 
-            for (int i = 0; i < child_size; i++)
+            for (int64_t i = 0; i < child_size; i++)
                 new_internal_node->keys[i] = new_keys[i + child_size + 1];
 
-            for (int i = 0; i < child_size + 1; i++)
+            for (int64_t i = 0; i < child_size + 1; i++)
                 new_internal_node->children[i] = new_offsets[i + child_size + 1];
 
             parent->write(ix_file);
@@ -669,7 +670,8 @@ public:
         if (first_child->is_leaf)
             return nullptr;
 
-        for (int i = 0; i < current->keys.size() + 1; i++)
+        const int64_t right_limit = static_cast<int64_t>(current->keys.size() + 1);
+        for (int64_t i = 0; i < right_limit; i++)
         {
             BPTreeNode<T> *tmp_child_ptr = new BPTreeNode<T>(current->children[i], key_size);
             shared_ptr<BPTreeNode<T>> tmp_child = shared_ptr<BPTreeNode<T>>(tmp_child_ptr);
@@ -711,7 +713,7 @@ public:
         if (current->is_leaf)
             return current;
 
-        const size_t last_index = current->children.size() - 1;
+        const int64_t last_index = current->children.size() - 1;
         BPTreeNode<T> *last_child_ptr = new BPTreeNode<T>(current->children[last_index], key_size);
         shared_ptr<BPTreeNode<T>> last_child = shared_ptr<BPTreeNode<T>>(last_child_ptr);
         last_child->read(ix_file);
@@ -774,7 +776,7 @@ public:
         bool limit_reached = false;
         while (ignore_count || amount > 0)
         {
-            for (int i = current->data.size() - 1; i >= 0; i--)
+            for (int64_t i = current->data.size() - 1; i >= 0; i--)
             {
                 const auto &child_offset = current->data[i];
                 if (offset > 0)

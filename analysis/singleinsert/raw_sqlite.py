@@ -1,10 +1,8 @@
-from .data import user_data
+from .data import user_data, get_shuffled_points
 import sqlite3
 import time
 import sys
 import os
-import random
-random.seed(12)
 
 create_table = """
      CREATE TABLE users (
@@ -31,9 +29,10 @@ def main():
     conn.commit()
     
     start_time = time.perf_counter()
+    points = get_shuffled_points(num_users)
 
     for i in range(num_users):
-        cu = {**user_data, "is_admin": i%2 == 0, "points": random.randint(10, 8000),
+        cu = {**user_data, "is_admin": i%2 == 0, "points": points[i],
               "first_name": user_data['first_name'] + str(i)}
         cursor.execute(
             "INSERT INTO users (first_name, last_name, email, points, is_admin, created_at) VALUES (?, ?, ?, ?, ?, ?)",

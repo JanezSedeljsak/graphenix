@@ -42,7 +42,7 @@ _perf_test:
 # analysis section
 # --------------------------------
 
-_all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a _find_diff_a _join_a
+_all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a _join_a
 	@echo "[graphenix] All analysis completed!"
 
 _insert_a:
@@ -77,45 +77,24 @@ _find_make_base:
 	python3 -m analysis.singleinsert.graphenix_bulk 1000000
 	python3 -m analysis.singleinsert.mysql_bulk 1000000
 
-	# create DBs with 10M rows
-	python3 -m analysis.singleinsert.raw_sqlite 10000000
-	python3 -m analysis.singleinsert.graphenix_bulk 10000000
-	python3 -m analysis.singleinsert.mysql_bulk 10000000
-
 	# create indexed DBs with 1M rows
 	python3 -m analysis.indexinsert.raw_sqlite 1000000
 	python3 -m analysis.indexinsert.graphenix_bulk 1000000
 	python3 -m analysis.indexinsert.mysql_bulk 1000000
 
-	# create indexed DBs with 10M rows
-	python3 -m analysis.indexinsert.raw_sqlite 10000000
-	python3 -m analysis.indexinsert.graphenix_bulk 10000000
-	python3 -m analysis.indexinsert.mysql_bulk 10000000
-
-	#### Diff distribution of indexed data 100x smaller range
-	chmod +x ./analysis/diffdistinsert/run_insert.sh
-	./analysis/diffdistinsert/run_insert.sh 100000 1000000 10000000
 	@echo "[graphenix] Finished creating large DBs!"
-
-_find_diff_a:
-	@echo "[graphenix] Running find diff index analysis..."
-	chmod +x analysis_runner.sh
-	./analysis_runner.sh diffdistinsert.find_index 1000000 10000000
-	./analysis_runner.sh diffdistinsert.find_no_index 1000000 10000000
-	python3 -m analysis.find_no_index.graph_size 1000000
-	python3 -m analysis.find_no_index.graph_size 10000000
-	@echo "[graphenix] Finished find diff index analysis!"
 
 _find_a:
 	@echo "[graphenix] Running find without index analysis..."
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh find_no_index 100000 1000000 10000000
+	./analysis_runner.sh find_no_index 100000 1000000
+	# python3 -m analysis.find_no_index.graph_size
 	@echo "[graphenix] Finished find without index analysis!"
 
 _ifind_a:
 	@echo "[graphenix] Running find with index analysis..."
 	chmod +x analysis_runner.sh
-	./analysis_runner.sh find_index 100000 1000000 10000000
+	./analysis_runner.sh find_index 100000 1000000
 	@echo "[graphenix] Finished find with index analysis!"
 
 _join_a:
@@ -129,7 +108,7 @@ _join_a:
 _sizes_a:
 	@echo "[graphenix] Running size analysis..."
 	chmod +x ./analysis/singleinsert/file_sizes.sh
-	./analysis/singleinsert/file_sizes.sh 10000000
-	./analysis/singleinsert/file_sizes_indexed.sh 10000000
-	python3 -m analysis.singleinsert.sizes_analysis 10000000
+	./analysis/singleinsert/file_sizes.sh 1000000
+	./analysis/singleinsert/file_sizes_indexed.sh 1000000
+	python3 -m analysis.singleinsert.sizes_analysis 1000000
 	@echo "[graphenix] Finished size analysis!"

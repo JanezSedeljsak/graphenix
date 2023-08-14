@@ -1,10 +1,7 @@
-from .data import user_data
+from .data import user_data, get_shuffled_points
 import mysql.connector
 import time
 import sys
-import os
-import random
-random.seed(12)
 
 create_table = """
     CREATE TABLE `users` (
@@ -38,6 +35,7 @@ def main():
     cursor.execute(f"USE {dbname}")
     first_name_counter = 0
     chunk_size = 10000
+    points = get_shuffled_points(num_users)
     
     for chunk_start in range(0, num_users, chunk_size):
         chunk_end = min(chunk_start + chunk_size, num_users)
@@ -46,7 +44,7 @@ def main():
         for i in range(chunk_start, chunk_end):
             is_admin = i % 2 == 0
             user_tuple = (user_data['first_name'] + str(first_name_counter), user_data['last_name'], user_data['email'],
-                        random.randint(10, 8000), int(is_admin), user_data['created_at'])
+                        points[i], int(is_admin), user_data['created_at'])
             user_data_list.append(user_tuple)
 
         first_name_counter += 1

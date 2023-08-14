@@ -2,13 +2,6 @@ import sqlite3
 import time
 import sys
 
-sizes = {
-    10000: 1,
-    100000: 6,
-    1000000: 131,
-    10000000: 1308,
-}
-
 def main():
     num_users = int(sys.argv[1])
     dbname = f'db_index_{num_users}'
@@ -17,10 +10,10 @@ def main():
     start_time = time.perf_counter()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM users WHERE points = 32")
+    cursor.execute("SELECT * FROM users WHERE points = 5432")
     searilized = cursor.fetchall()
     
-    assert len(searilized) == sizes[num_users] and isinstance(searilized, list) 
+    assert len(searilized) == 1 and isinstance(searilized, list) 
     
     cursor.close()
     conn.close()

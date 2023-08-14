@@ -31,13 +31,12 @@ def main():
 
     total_size = ax.bar(np.arange(3), mb_indexed_sizes, color=['#EEEC7B', '#92D6B4', '#35BFEC'])
     index_diff_size = ax.bar(np.arange(3), mb_indexed_sizes - mb_sizes, color=['#B1B04F', '#649A7C', '#1784A9'])
-
-    
+    # print(mb_indexed_sizes, mb_sizes)
 
     # Set labels and title
-    ax.set_xlabel('Podatkovni sistem')
+    ax.set_xlabel('DBMS')
     ax.set_ylabel('Velikost (MB)')
-    ax.set_ylim(0, 1200)
+    ax.set_ylim(0, 120)
     ax.set_title('')
     ax.set_xticks(np.arange(3))
     ax.set_xticklabels(['Graphenix', 'SQLite', 'MySQL'], rotation=0)
@@ -59,18 +58,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-    import numpy as np
-
-
-def read_nums(file_path): 
-    try:
-        with open(file_path, 'r') as file:
-            lines = file.readlines()
-            times = [float(line.strip()) for line in lines]
-        return np.array(times)
-    except Exception as ex:
-        print("err", ex)
-        return []

@@ -1,12 +1,9 @@
 from sqlalchemy import create_engine, Column, String, Integer, Boolean, DateTime, Index
 from sqlalchemy.orm import sessionmaker, declarative_base
-from .data import user_data
+from .data import user_data, get_shuffled_points
 import mysql.connector
 import time
 import sys
-import os
-import random
-random.seed(12)
 
 Base = declarative_base()
 
@@ -39,8 +36,9 @@ def main():
     Session = sessionmaker(bind=engine)
     start_time = time.perf_counter()
 
+    points = get_shuffled_points(num_users)
     users = [User(**{**user_data, "first_name": user_data['first_name'] + str(i),
-                     "is_admin": i%2 == 0, "points": random.randint(10, 8000)}) for i in range(num_users)]
+                     "is_admin": i%2 == 0, "points": points[i]}) for i in range(num_users)]
 
     session = Session()
     session.bulk_save_objects(users)

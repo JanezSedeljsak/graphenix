@@ -2,13 +2,6 @@ from graphenix import Field, Schema, Model
 import sys
 import time
 
-sizes = {
-    10000: 1,
-    100000: 6,
-    1000000: 131,
-    10000000: 1308,
-}
-
 class User(Model):
     first_name = Field.String(size=15)
     last_name = Field.String(size=15)
@@ -23,8 +16,8 @@ def main():
 
     start_time = time.perf_counter()
     
-    _, data = User.filter(User.points.equals(32)).all()
-    assert len(data) == sizes[num_users] and isinstance(data, list)
+    _, data = User.filter(User.points.equals(5432)).all()
+    assert len(data) == 1 and isinstance(data, list)
 
     end_time = time.perf_counter()
     elapsed_time = (end_time - start_time) * 1000

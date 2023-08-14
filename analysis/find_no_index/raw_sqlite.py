@@ -17,10 +17,10 @@ def main():
     start_time = time.perf_counter()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM users WHERE points = 32")
+    cursor.execute("SELECT * FROM users WHERE points = 5432")
     searilized = cursor.fetchall()
     
-    assert len(searilized) == sizes[num_users] and isinstance(searilized, list) 
+    assert len(searilized) == 1 and isinstance(searilized, list) 
     
     cursor.close()
     conn.close()
