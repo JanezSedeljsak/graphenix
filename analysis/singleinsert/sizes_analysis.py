@@ -25,6 +25,9 @@ def main():
     mb_indexed_sizes = bytes_array_to_megabytes(indexed_sizes)
     
     plt.style.use("fivethirtyeight")
+    plt.rcParams['figure.facecolor'] = 'white'
+    plt.rcParams['axes.facecolor'] = 'white'
+    plt.rcParams['axes.edgecolor'] = 'white'
     plt.rcParams.update({'font.size': 2 * plt.rcParams['font.size']})
 
     fig, ax = plt.subplots(figsize=(16, 12))
@@ -50,7 +53,7 @@ def main():
         ax.text(totals.get_x() + totals.get_width() / 2, iheight + bottom_offset, f'{(iheight):.2f} MB', 
                 ha='center', va='bottom', fontweight='normal')
 
-    plt.savefig(f'./analysis/graphs/sizes.png', bbox_inches='tight')
+    plt.savefig(f'./analysis/graphs/sizes.png', bbox_inches='tight', facecolor='white')
     plt.close()
 
 

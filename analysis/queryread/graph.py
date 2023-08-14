@@ -22,6 +22,9 @@ def main():
         matrix[:, i] = col
 
     plt.style.use("fivethirtyeight")
+    plt.rcParams['figure.facecolor'] = 'white'
+    plt.rcParams['axes.facecolor'] = 'white'
+    plt.rcParams['axes.edgecolor'] = 'white'
     plt.rcParams.update({'font.size': 2 * plt.rcParams['font.size']})
 
     x_values = np.arange(len(sizes))
@@ -41,7 +44,7 @@ def main():
     ax.set_xticks(x_values)
     ax.set_xticklabels([str(s) for s in sizes], rotation=0)
     ax.legend()
-    plt.savefig(f'./analysis/graphs/queryread.png', bbox_inches='tight')
+    plt.savefig(f'./analysis/graphs/queryread.png', bbox_inches='tight', facecolor='white')
     plt.close()
 
 

@@ -21,6 +21,9 @@ def main():
     indexed = read_nums(file_indexed_1)
 
     plt.style.use("fivethirtyeight")
+    plt.rcParams['figure.facecolor'] = 'white'
+    plt.rcParams['axes.facecolor'] = 'white'
+    plt.rcParams['axes.edgecolor'] = 'white'
     plt.rcParams.update({'font.size': 2 * plt.rcParams['font.size']})
 
     x_values = np.arange(3)
@@ -53,7 +56,7 @@ def main():
     #             ha='center', va='bottom', fontweight='normal')
         
     ax.legend(loc='upper left')
-    plt.savefig(f'./analysis/graphs/indexing_speedup_{num_users}.png', bbox_inches='tight')
+    plt.savefig(f'./analysis/graphs/indexing_speedup_{num_users}.png', bbox_inches='tight', facecolor='white')
     plt.close()
     
 
