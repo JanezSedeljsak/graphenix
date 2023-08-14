@@ -57,13 +57,13 @@ sorting=nty,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	DIPLOMA INFO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newcommand{\ttitle}{Razvoj vgrajenega podatkovnega sistema}
-\newcommand{\ttitleEn}{Diploma thesis template}
+\newcommand{\ttitle}{Razvoj DBMS jedra z integracijo v programski jezik Python}
+\newcommand{\ttitleEn}{Development of a DBMS core with integration into the Python programming language}
 \newcommand{\tsubject}{\ttitle}
 \newcommand{\tsubjectEn}{\ttitleEn}
 \newcommand{\tauthor}{Janez Sedeljšak}
-\newcommand{\tkeywords}{Podatkovne baze, C++, Python, B+ drevesa, Podatkovne strukture}
-\newcommand{\tkeywordsEn}{Databases, C++, Python, B+ trees, Data structures}
+\newcommand{\tkeywords}{Podatkovne baze, C++, Python, B+ drevesa, Podatkovne strukture, SQL, DBMS}
+\newcommand{\tkeywordsEn}{Databases, C++, Python, B+ trees, Data structures, SQL, DBMS}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	HYPERREF SETUP
@@ -273,7 +273,7 @@ Besedilo je oblikovano z urejevalnikom besedil \LaTeX.}
 
 \bigskip
 \noindent\textbf{Kandidat:} Janez Sedeljšak\\
-\noindent\textbf{Naslov:} Razvoj vgrajenega podatkovnega sistema\\
+\noindent\textbf{Naslov:} \ttitle \\
 \noindent\textbf{Vrsta naloge:} Diplomska naloga na visokošolskem programu prve stopnje Računalništvo in informatika \\
 \noindent\textbf{Mentor:} doc. dr. Boštjan Slivnik\\
 
@@ -284,7 +284,7 @@ V nekaj stavkih bo opisal, kaj pričakuje od kandidatovega diplomskega dela.
 Kaj so cilji, kakšne metode naj uporabi, morda bo zapisal tudi ključno literaturo.
 
 \bigskip
-\noindent\textbf{Title:} Development of an embeded database system
+\noindent\textbf{Title:} \ttitleEn
 
 \bigskip
 \noindent\textbf{Description:}\\
@@ -320,7 +320,7 @@ opis diplome v angleščini
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % kazalo
-\setcounter{tocdepth}{4}
+\setcounter{tocdepth}{2}
 \pagestyle{empty}
 \def\thepage{}% preprečimo težave s številkami strani v kazalu
 \tableofcontents{}
@@ -369,11 +369,11 @@ opis diplome v angleščini
 \bigskip
 
 %\noindent\textbf{Povzetek:} 
-\noindent V diplomskem delu je predstavljenih trenutno nekaj najbolj uporabljenih sistemov za upravljanje podatkovnih baz (DMBS). V veliki meri so standard podatkovnih baz še vedno relacijske podatkovne baze. V ta namen je tekom dela predstavljen razvoj vgrajenega relacijskega sistema za programski jezik Python.
+\noindent V diplomskem delu je predstavljenih trenutno nekaj najbolj uporabljenih sistemov za upravljanje podatkovnih baz (DMBS). V veliki meri so standard podatkovnih baz še vedno relacijske podatkovne baze. V ta namen je tekom dela predstavljen razvoj lastnega DBMS za programski jezik Python.
 
-Sam razvoj namenske knjižnice je pripravljen v programskem jeziku C++, saj gre za nizko nivojski jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilniku. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba dobrih podatkovnih struktur in algoritmov, ki dobro izkoristijo I/O operacije, ki jih ponuja operacijski sistem in posledično pripeljejo do dobro pripravljenega podatkovnega sistema.
+Sam razvoj namenske knjižnice je pripravljen v programskem jeziku C++, saj gre za nizko nivojski jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilniku. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba dobrih podatkovnih struktur in algoritmov, ki dobro izkoristijo I/O operacije, ki jih ponuja operacijski sistem in posledično pripeljejo do zanesljivega in optimalnega delovanja DBMS.
 
-V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije podatkovnega sistema na različnih scenarijih in ob različnih konfiguracijah. Poleg tega je pripravljena tudi analiza z že obstoječimi DMBS – SQLite in MySQL) ob enakovrednih scenarijih testiranja novo pripravljene knjižnice.
+V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije podatkovnega sistema na različnih scenarijih, kjer razvito programsko opremo primerjamo z že obstoječimi DMBS – SQLite in MySQL.
 \bigskip
 
 \noindent\textbf{Ključne besede:} \tkeywords.
@@ -394,11 +394,11 @@ V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementac
 \bigskip
 
 %\noindent\textbf{Abstract:} 
-\noindent The thesis presents several currently used relational systems for working with data (DBMS). Relational databases are still widely used as the standard data storage systems. In this context, the development of an embedded relational database system for the Python programming language is presented.
+\noindent The thesis presents an overview of some of the currently most widely used Database Management Systems (DBMS). Relational databases still largely dominate the landscape of database standards. With this in mind, the thesis focuses on developing a custom DBMS for the Python programming language.
 
-The development of the dedicated library is implemented in the C++ programming language, which is a low-level language providing high flexibility in memory management. The development of all necessary components for a well-functioning relational database is described. During the development process, a key focus was on utilizing efficient data structures and algorithms that make effective use of I/O operations offered by the operating system, resulting in a well-prepared data system.
+The development of this dedicated library is carried out in the C++ programming language, chosen for its low-level nature, providing high flexibility in memory management. The development encompasses all necessary components for a well-functioning relational database. Throughout the development process, a crucial aspect has been the utilization of efficient data structures and algorithms, optimizing I/O operations provided by the operating system, resulting in a reliable and optimized DBMS performance.
 
-In the final part of the thesis, a performance analysis of the implemented data system is conducted under different scenarios and configurations. Additionally, an analysis is performed comparing the newly developed library with existing DBMS (SQLite and MySQL) using equivalent testing scenarios.
+In the final part of the thesis, a performance analysis of the implemented data system is conducted across various scenarios. The developed software is compared against existing DBMS solutions – SQLite and MySQL.
 \bigskip
 
 \noindent\textbf{Keywords:} \tkeywordsEn.
@@ -455,15 +455,13 @@ In the final part of the thesis, a performance analysis of the implemented data 
     Glavna motivacija za razvoj izhaja iz želje po boljšem razumevanju notranjega delovanja podatkovnih baz, ter njihovega vpliva na delovanje modernih aplikaciji. Kot programerji se pogosto osredotočamo le na izgradnjo funkcionalnosti, pri čemer podatkovno bazo pogosto spregledamo oz. spregledamo vpliv podatkovnega sloja na delovanje celotne aplikacije.
     
     Podatkovna baza s seboj prinese visoko raven abstrakcije, ki je podprta z obsežno množico algoritmov in konceptov, ki omogočijo zanesljivo, hitro in varno izvajanje operaciji nad podatki. Tekom raziskave je cilj spoznati tudi te koncepte, ki sicer ostajajo skriti v abstrakciji, ki jo prinašata DBMS in jezik SQL.
-    \newline
-    \newline
-    \noindent
+
     Pomembnost podatkovnega sloja postane očitna, predvsem ko se aplikacija začne odzivati počasneje. Pogost razlog je obsežna količina podatkov v posamezni entiteti, kar za uporabnika hitro pomeni nesprejemljiv čas odzivnosti celotnega sistema.
 
     Ob iskanju pristopov za optimizacijo podatkovnega sloja, hitro naletimo na koncept indeksiranja podatkov.
     Ta pristop ni omejen zgolj na relacijske podatkovne baze, temveč se pojavlja širom računalniške znanosti. Osnovna ideja za optimizacijo je ustvarjanje iskalne strukture, ki omogoča izrazito hitrejše iskanje podatkov z izrabo učinkovite podatkovne organizacije.
     
-    Dve bolj pogosti podatkovni strukturi za izvedbo indeksiranja predstavljajo zgoščevalne tabele in drevesa. Na področju relacijskih podatkovnih baz se najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B-drevesa). Drevo, je sestavljeno iz vozlišč, kjer ima vsako največ $M$ zapisov in $M+1$ kazalcev na nadaljnja vozlišča. S pomočjo dodajanja indeksov lahko linearno iskanje – $O(N)$ bistveno pohitrimo, kar z uporabo B-drevesa pomeni časovno zahtevnost $O(log_M(N))$.
+    Dve bolj pogosti podatkovni strukturi za izvedbo indeksiranja predstavljajo zgoščevalne tabele in drevesa. Na področju relacijskih podatkovnih baz se najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B-drevesa). Drevo, je sestavljeno iz vozlišč, kjer ima vsako največ $M$ zapisov in $M+1$ kazalcev na nadaljnja vozlišča. S pomočjo dodajanja indeksov lahko linearno iskanje, ki je definirano z $O(N)$ notacijo bistveno pohitrimo. Z uporabo B-drevesa pomeni časovno zahtevnost $O(log_M(N))$, kjer je $N$ število vseh zapisov v drevesu.
     \newline
     \newline
     \noindent
@@ -521,13 +519,14 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
     \end{minted}
 
     \noindent
-    Zgornji pristop pomeni, da za vsakega uporabnika prenesemo $T_i \cdot M_i$ sporočil, kjer je $T_i$ število nalog $i$-tega uporabnika in $M_i$ število sporočil $i$-tega uporabnika.
+    Zgornji pristop pomeni, da za vsakega uporabnika prenesemo $T_i \cdot M_i$ zapisov, kjer je $T_i$ število nalog $i$-tega uporabnika in $M_i$ število sporočil $i$-tega uporabnika.
+    $N$ pa določa število uporabnikov.
 
     \begin{izrek}
         \label{iz:1}
-        Skupno število zapisov, ki jih pridobimo je definirano s pomočjo naslednje vsote
+        Skupno število zapisov, ki jih pridobimo, je definirano s pomočjo naslednje vsote
         \begin{equation}
-            \Large \sum_{i=1}^{N} T_i \cdot M_i
+            \sum_{i=1}^{N} T_i \cdot M_i
         \label{eq:1}
         \end{equation}
     \end{izrek}
@@ -536,7 +535,7 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
         \label{iz:2}
         Skupno število zapisov, ob idealnih pogojih (brez podvajanja podatkov)
         \begin{equation}
-            \Large N + \sum_{i=1}^{N} T_i + M_i
+            N + \sum_{i=1}^{N} T_i + M_i
         \label{eq:2}
         \end{equation}
     \end{izrek}
@@ -572,17 +571,17 @@ class Task(Model):
 
 class Message(Model):
     content = Field.String(size=50)
-    date = Field.DateTime().as_index()
-    sender = Field.Link("User").as_index()
-    reciever = Field.Link("User").as_index()
+    date = Field.DateTime()
+    sender = Field.Link("User")
+    reciever = Field.Link("User")
 \end{minted}
     
     \section{Struktura shranjevanja podatkov}
         \subsection{Datotečna struktura za shranjevanje podatkov znotraj entitet}
         Za vsako posamezno entiteto se privzeto kreirata 2 datoteki $ix\_<naziv\_entitete>.bin$ in $<naziv\_entitete>.bin$.
         \begin{enumerate}
-            \item $<naziv\_entitete>.bin$ (matrika podatkov) – je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v entiteti. Posamezen stolpec matrike pa predstavlja atributov vsakega zaporednega zapisa.
-            \item $ix\_<naziv\_entitete>.bin$ (glava entitete s kazalci) – gre za vektorsko strukturo, kjer vsaka zaporedna vrstica vsebuje kazalec na dejanski zapis v matriki podatkov - ta kazalec je realiziran, kot celoštevilski odmik zapisa v matriki. Poleg kazalcev struktura vsebuje tudi kazalec na prvo prosto vrstico v matriki:
+            \item $<naziv\_entitete>.bin$ (matrika podatkov) – je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v entiteti. Posamezen stolpec matrike predstavlja posamezne atribute v matriki.
+            \item $ix\_<naziv\_entitete>.bin$ (glava entitete s kazalci) – gre za vektorsko strukturo, kjer vsaka zaporedna vrstica vsebuje kazalec na dejanski zapis v matriki podatkov – ta kazalec je realiziran, kot celoštevilski odmik zapisa v matriki. Poleg kazalcev struktura vsebuje tudi kazalec na prvo prosto vrstico v matriki:
             \begin{itemize}
                 \item Matrika je polna – kazalec na konec datoteke
                 \item V matriki podatkov obstaja fragmentacija – kazalec na prvo prosto vrstico v matriki 
@@ -601,18 +600,31 @@ class Message(Model):
         \subsection{Tipi podatkov}
         Znotraj našega vgrajenega podatkovnega sistema podpiramo 5 podatkovnih tipov:
         \begin{enumerate}
-            \item Cela števila (ang. Int) – v tem primeru gre za vrednost, ki je na nivoju C++ jezika shranjena kot int64\_t oziroma predznačeno celo število. Velikost za posamezno vrednost je 8B. Sam razpon vrednosti, ki jih lahko shranimo v posamezen zapis je $[-2^{63}, 2^{63} - 1]$.
+            \item Cela števila (ang. Int) – v tem primeru gre za vrednost, ki je na nivoju C++ programskega jezika shranjena kot int64\_t oziroma predznačeno celo število. Velikost za posamezno vrednost je 8B. Sam razpon vrednosti, ki jih lahko shranimo v posamezen zapis je $[-2^{63}, 2^{63} - 1]$.
             \item Realna števila (ang. Float) – zaradi lažje implementacije je velikost realnih števil enaka, kot velikost celih števil – torej 64 bitov. Vrednost je na nivoju podatkov realizirana, kot dvojni "float" oz. "double". Gre za zaporedje bitov, ki so po standardu IEEE 754 \cite{kahan1996ieee} ločeni v predznak, eksponent in mantiso.
             \item Nizi (ang. String) – Gre za zaporedje znakov, kjer na nivoju posamezne entitete določimo maksimalno dovoljeno dolžino posameznega zapisa. Torej velikost posameznega zapisa je $N * 1B$, kjer je $N$ maksimalna dolžina podatka. 
-            \item Logične vrednosti (ang. Bool) – je najmanjši podatkovni tip, ki ga vsebuje naš DBMS in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot to definira Python programski jezik.
-            \item Datumi (ang. Datetime) – gre za podatkovni tip, ki ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970 \cite{EPOCH_FORMAT}. 
+            \item Logične vrednosti (ang. Bool) – je najmanjši podatkovni tip, ki ga vsebuje naš DBMS in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot je to definirano v programskem jeziku Python.
+            \item Datumi (ang. Datetime) – gre za podatkovni tip, ki je ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu \cite{EPOCH_FORMAT} – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970. 
             \item Povezava (ang. Link) – gre za vgrajen tip relacije, kjer je podatek kazalec na drug zapis v določeni entiteti. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
-            \item Virtualna povezava (ang. VirtualLink) – gre za navidezno polje v entiteti, ki ne zavzame nobenega dodatnega prostora za shranjevanje podatkov. Polje je pomembno za kreiranje povezave, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
+            \item Virtualna povezava (ang. VirtualLink) – gre za navidezno polje v entiteti, ki ne zavzame nobenega dodatnega prostora. Polje je pomembno za kreiranje povezave ob poizvedbah, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
         \end{enumerate}
         
         \subsection{Realizacija relaciji med entitetami}
 
-        Sama implementacija relaciji je dokaj preprosta, saj se povezave kreirajo avtomatsko direktno preko primarnega ključa posameznega zapisa. Razvijalcu je tako prepuščena le definicija entitete in atributov, kjer določimo povezave (oz. relacije) na drugo entiteto. Sama relacija, pa je realizirana s preprostim kazalcem, ki kaže na zapis v glavo entitete, ki jo želimo povezati.
+        Implementacija relacij med entitetami se izvaja s pomočjo uporabe tujih ključev, ki predstavljajo primarne ključe identificiranih zapisov in omogočajo povezavo med entitetami. Ti tujih ključi se shranijo kot atributi v entiteto, ki vzpostavlja povezavo, in kažejo na primarni ključ v povezani entiteti. Vzpostavitev povezave se izvede pri ustvarjanju modela na ravni programskega jezika Python.
+
+        Spodaj je predstavljen tudi preprost primer, kjer neko sporočilo vežemo na dva uporabnika, ki imata vlogo pošiljatelja in prejemnika:
+\begin{minted}{python}
+john = User(name='John Doe').make()
+jane = User(name='Jane Doe').make()
+
+first_mesage = Message(
+    content = 'Moje prvo sporočilo',
+    date = datetime.now(),
+    sender = john
+    reciever = jane
+).make()
+\end{minted}
 
     \section{Indeksiranje z uporabo B+ dreves}
         \subsection{B+ drevesa in njihove značilnosti}
@@ -620,7 +632,7 @@ class Message(Model):
         B+ drevesa so podatkovna struktura, uporabljena za učinkovito indeksiranje in iskanje podatkov.
         Vsako vozišče ima lahko največ $M$ podatkov in $M+1$ kazalcev na nova vozlišča.
 
-        V B+ drevesih so vsi nivoji razen listov drevesa, vmesna vozlišča, ki vsebujejo kazalce na nadaljnja vozlišča znotraj drevesa - služijo le kot povezave ter omogočajo učinkovitejše iskanje in navigacijo po strukturi. Medtem so podatki shranjeni v listih drevesa.
+        V B+ drevesih so vsi nivoji razen listov drevesa, vmesna vozlišča, ki vsebujejo kazalce na nadaljnja vozlišča znotraj drevesa – služijo le kot povezave ter omogočajo učinkovitejše iskanje in navigacijo po strukturi. Medtem so podatki shranjeni v listih drevesa.
 
         Definicija strukture zahtevna tudi striktno uravnoteženost drevesa, torej da so vsi listi drevesa na istem nivoju.
 
@@ -670,11 +682,10 @@ child {node (E){29\nodepart{two}31}}
         \newpage
         \subsection{Pravila, ki jih zahteva B+ drevesna struktura}
         \begin{enumerate}
-            \item Vsako vozlišče ima največ $M$ podatkov in $M+1$ kazalcev.
+            \item Vsako vozlišče ima največ $M$ podatkov in $M+1$ kazalcev – kapaciteta vozlišča.
             \item Listi drevesa so vsi na enakem nivoju.
-            \item Urejenost - vse vrednosti, ki se nahajajo levo morajo biti manjše ali enake trenutni; vse vrednosti desno, pa marajo biti večje ali enake.
-            \item Vmesna vozlišča morajo vsebovati $X+1$ kazalcev, kjer je $X$ število podatkov v vozlišču.
-            \item Vozlišče je veljavno, kadar ima vsaj $C/2$ zapisov, kjer je $C$ kapaciteta oz. maksimalno število podatkov, ki jih lahko ima vozlišče.
+            \item Urejenost – vse vrednosti, ki se nahajajo levo morajo biti manjše ali enake trenutni; vse vrednosti desno, pa marajo biti večje ali enake.
+            \item Vozlišče je veljavno, kadar ima vsaj $M/2$ zapisov, kjer je $M$ kapaciteta oz. maksimalno število podatkov, ki jih lahko ima vozlišče.
         \end{enumerate}
 
         \subsection{Implementacija iskanja v MySQL in SQLite DMBS}
@@ -705,58 +716,17 @@ child {node (E){29\nodepart{two}31}}
 
         Na drugi strani pa se skriva kar nekaj lastnosti B+ dreves, ki jih moramo imeti v mislih ob dodajanju nepotrebnih indeksov v našo podatkovno bazo.
         \begin{itemize}
-            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezno entiteto se poveča iz $O(1)$ na $O(log_M(N) * X)$, kjer je $X$ število postavljenih indeksov. $N$ pa predstavlja število že obstoječih zapisov v posamezni entiteti.
+            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezni entiteti se zaradi vnašanja v B-drevo z osnovo $M$ poveča iz $O(1)$ na $O(log_M(N) * X)$, kjer je $X$ število stolpcev z dodano indeksno strukturo. $N$ pa predstavlja število že obstoječih zapisov v posamezni entiteti.
             \item Za vsak postavljen indeks se bistveno poveča poraba prostora na disku, saj shranjevanje drevesne strukture s seboj prinese podvajanje atributa, kot tudi dodatek kazalca na glavo entitete.
         \end{itemize}
 
         \subsection{Ostali pristopi indeksiranja podatkov}
         \colorbox{BurntOrange}{Indeksiranje s pomočjo zgoščevalnih tabel ...}
-        
+
+    \newpage
     \section{Pomembni gradniki za optimalno izvedbo poizvedb}
-        \subsection{Gradnja dreves za pogojni del poizvedb}
-        \colorbox{BurntOrange}{Iskanje zapisov glede na strukturo pogoja in kako sestavimo drevsno strukturo}
         
-        \subsection{Izvedba poizvedb na več entitetah hkrati}
-            DBMS nima klasičnega načina združevanja entitet, kot nam je to poznano iz ostalih relacijskih podatkovnih sistemov, kjer je to realizirano s pomočjo kartezičnega produkta nad entitetami in potem dodatna povezava s pomočjo tujih ključev.
-            
-\begin{minted}{python}
-query = User.link(
-    tasks=Task,
-    recieved_msgs=Message.filter(
-        Message.date >= datetime(2020, 1, 1, 0, 0, 0)
-    )
-)
-count, rows = query.all()
-\end{minted}
-                    
-        \begin{figure}[h]
-            \begin{center}
-                \begin{tikzpicture}
-                \tikzset{
-                  bplus/.style={
-                    rectangle,
-                    rounded corners=5pt, % Adjust the value to change the border radius
-                    draw,
-                    text centered,
-                    minimum width=2cm, % Adjust the value to change the node size
-                    minimum height=1cm, % Adjust the value to change the node size
-                  },
-                  level 1/.style={sibling distance=60mm},
-                  level 2/.style={sibling distance=15mm},
-                }
-            
-                \node[bplus] {Uporabniki} [->]
-                  child {node[bplus] {Naloge}} 
-                  child {node[bplus] {Sprejeta sporočila}
-                    child {node[bplus, fill=gray!30] {Novejši zapisi od ``2020-01-01''}}
-                  };
-              \end{tikzpicture}
-              \caption{Drevesi prikaz poizvedbe, ki se izvaja usmerjeno od vozlišča proti listom}
-            \end{center}
-            \end{figure}
-        
-        \subsection{Optimizacija poizvedb z gručenjem (ang. clustering)}
-        \subsubsection{Razlaga postopka gručenja}
+        \subsection{Gručanje podatkov ob branju iz diska}
         
         Kot je bilo že omenjeno v prejšnjih poglavjih je največje ozko grlo, s katerim se srečujemo I/O operacije (torej pisanje in branje iz/na disk). V ta namen je tudi v segmentu prenosa podatkov iz datoteke v pomnilnik realizirano s čim manj dostopi do diska. V ta namen je ob prvi fazi nabora dodan algoritem za gručenje podatkov.
 
@@ -846,12 +816,12 @@ fn clusterify(offsets: vector) -> vector of vectors
     end while
 
     return clusters
-end function
+end fn
 \end{minted}
         
-        \subsection{Optimizacija na nivoju urejanja podatkov ob izvedbi nabora nad posamezno entiteto}
+        \subsection{Uporaba prioritetne vrste za urejanje zapisov}
 
-        Ob implementaciji omejevanja število rezultatov s pomočjo ukazov `limit` in `offset` moramo poskrbeti za časovno optimalno izvedbo poizvedbe, saj iz vidika uporabnika relacijskega sistema pričakujemo, da z dodatkom ukaza `limit` podatkovnemu sistemu povemo, da želimo omejeno število podatkov in posledično pričakujemo hitrejšo poizvedbo.
+        Ob implementaciji omejevanja števila rezultatov s pomočjo ukazov `limit` in `offset` moramo poskrbeti za časovno optimalno izvedbo poizvedbe, saj iz vidika uporabnika relacijskega sistema pričakujemo, da z dodatkom ukaza `limit` čas izvajanja skrajša.
 
         Tekom razvoja smo testirali nekaj različnih pristopov in podatkovnih struktur. Naš problem lahko definiramo, kot iskanje $K$ najmanjših elementov, kjer je $K$ sestavljen iz dveh komponent $L$ in $O$, kjer je $L$ maksimalno število elementov oz. limita, $O$ pa predstavlja odmik oz. število zapisov, ki jih želimo preskočiti.
 
@@ -867,8 +837,8 @@ end function
         Za zgornje tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja samega algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti, vse imajo namreč časovno zahtevnost vsaj $O(N)$. Bistveno bolj zanimiv, pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $\num{10000000}$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[500, 15000]$.
 
         \begin{figure}[H]
-            \centerline{\includegraphics[height=0.44\textwidth, angle=0]{prvih_k_elementov.png}}
-            \caption{Časovna primerjava pristopov za iskanje $K$ najmanjših elementov v seznamu}
+            \centerline{\includegraphics[height=0.52\textwidth, angle=0]{prvih_k_elementov.png}}
+            \caption{Časovna primerjava pristopov za iskanje $K$ najmanjših elementov v seznamu.}
             \label{sl:k_smallest}
         \end{figure}
 
@@ -895,42 +865,160 @@ end function
         Za izmeritev učinkovitosti implementacije, smo uporabili scenarij iz performančnih testov celotnega sistema (branje milijona vrstic in shranjevanje celotnega seznama v pomnilnik).
         \begin{itemize}
             \item V prvi implementaciji je povprečni čas izvajanja bil nekje $\approx 7$ sekund, kjer je več kot 80\% časa predstavljalo instanciranje objektov.
-            \item Po optimizaciji, pa celoten čas branja zahteva povprečno $\approx 1.3$ sekunde. Kar pomeni, kar 5x pohitritev izvedbe branja.
+            \item Po optimizaciji, pa celoten čas branja zahteva povprečno $\approx 1.3$ sekunde. Kar v podanem scenariju pomeni, kar 5x pohitritev izvedbe branja.
         \end{itemize}
-        
+
     \section{Podprte funkcionalnosti na nivoju vgrajenega ORM sistema}
     \begin{itemize}
-        \item \textbf{Filtriranje podatkov – funkcija ``filter`` (DBMS – where)}. Parametri te funkcije se drevo, kjer je posamezno vozlišče drevesa predstavljeno z enim ali več pogoji, ki so oviti v AND ali OR pogoj.
-        \item \textbf{Omejitev števila zapisov + določanje odmikov – funkciji ``limit`` in ``offset`` (ekvivalentno, kot v DBMS)}. Gre za preprosta ukaza, ki sta namenjeni omejevanju števila zapisov, ko iščemo le prvih nekaj zapisov oz. prvih nekaj zapisov z določenim odmikom. Pogost primer uporabe je implementacija strani (ang. paging) na nivoju API-ja. Razlog za implementacijo je število optimizacija prikaza na način, da omejimo število zapisov, ki jih naenkrat prikažemo uporabniku. Optimizira se tako in sloj, pridobivanja podatkov na nivoju programskega jezika Python, pri prenosu na uporabniški vmesnik (najpogosteje gre tukaj za HTTP protokol), ter v zaključni fazi prikaza podatkov.
-        \item \textbf{Urejanje zapisov – funkcija ``order`` (DMBS – order by)}. Gre za malo drugačno izvedbo, kot je to pri klasičnih relacijskih sistemih, saj v našem primeru podatkov ne združujemo v eno matrično strukturo, temveč so podatki združeni v drevesno strukturo, kjer povezave realiziramo z dedovanjem. Na primer, če bi imeli sledečo poizvedbo na nivoju relacijske podatkovne baze:
+        \item \textbf{Filtriranje podatkov – funkcija ``filter`` (DBMS – where).}
+        \newline
+        \noindent
+        Parametri te funkcije se drevo, kjer je posamezno vozlišče drevesa predstavljeno z enim ali več pogoji, ki so oviti v AND ali OR pogoj.
+        
+        Vozlišče v katerem želimo, da vsi pogoji držijo kreiramo s pomočjo ``gx.every(...)`` metode, medtem ko za kreiranje vozlišča z vezavo ali uporabimo metodo ``gx.some(...)``.
+        \end{itemize}
+\begin{minted}[breaklines]{Python}
+john = User(name='John Doe').make()
+jane = User(name='Jane Doe').make()
+...
+query = Message.filter(
+    Message.date.greater(
+        datetime.now() - timedelta(days=5)
+    ),
+    gx.some(
+        Message.sender.equals(john),
+        Message.reciever.equals(john),
+        Message.reciever.is_not(jane)))
+\end{minted}    
+
+        \noindent
+        V zgornjem primeru je sestavljena poizvedba, kjer izvedemo nabor sporočil, ki so bila poslana v zadnjih petih dneh, poleg tega pa želimo, da je izpolnjen vsaj eden izmed pogojev – pošiljatelj/prejemnik je "John" in prejemnik ni "Jane".
+        
+        \item \textbf{Omejitev števila zapisov + določanje odmikov – funkciji ``limit`` in ``offset`` (ekvivalentno, kot v DBMS)}. Gre za preprosta ukaza, ki sta namenjena omejevanju števila zapisov, ko iščemo le prvih nekaj zapisov oz. prvih nekaj zapisov z določenim odmikom. 
+
+        Pogost primer uporabe je implementacija strani (ang. paging). Razlog za implementacijo je optimizacija prikaza na način, da omejimo število zapisov, ki jih naenkrat prikažemo uporabniku. Lahko, pa gre tudi za čisto preprosto poizvedbo, kjer iščemo prvih nekaj zapisov glede na določene kriterije npr. zadnjih pet sporočil določenega uporabnika.
+        
+        \item \textbf{Urejanje zapisov – funkcija ``order`` (DMBS – order by)}. 
+        \noindent
+        Izvedba urejanja podatkov je omejena na urejanje znotraj ene entitete oz. atributih ene entitete. Pri tem imamo možnost urejati po poljubnem številu atributov, pri čemer lahko izvajamo bodisi naraščajoče bodisi padajoče urejanje.
+
+        V spodnjem primeru je predstavljen enostaven primer, kjer uredimo sporočila. Urejamo padajoče glede na datum sporočila in naraščajoče glede na vsebino.
+
+\begin{minted}[breaklines]{python}
+query = Message.order(
+    Message.date.desc(),
+    Message.content
+)
+\end{minted}    
+
+        \noindent
+        Za zgornjo poizvedbo, lahko napišemo tudi ekvivalentno SQL poizvedbo.
+
+\begin{minted}[breaklines]{SQL}
+SELECT * FROM messages
+ORDER BY date DESC, content
+\end{minted}          
+
+        \newpage
+        \item \textbf{Uporaba relaciji znotraj poizvedbe – funkcija ``link`` (DBMS – različne verzije JOIN stavka).}
+        \noindent
+        Gre za malo drugačno izvedbo, kot je to pri klasičnih relacijskih sistemih, saj v našem primeru podatkov ne združujemo v eno matrično strukturo, temveč so podatki združeni v drevesno strukturo, kjer povezave realiziramo z dedovanjem. Sledečo SQL poizvedbo, kjer podatke naloge in uporabnike združimo preko tujega ključa v tabeli nalog.
 
 \begin{minted}[breaklines]{sql}
 SELECT * FROM users
 INNER JOIN tasks ON tasks.id_user = users.id
-ORDER BY users.name, tasks.content
 \end{minted}
 
-        Bi podatki bili urejeni po imenu uporabnika in nato še na istem nivoju po vsebini naloge. Ekvivalentna poizvedba na nivoju našega sistema bi izgleda tako:
+        \noindent
+        Ker moramo povezavo definirati že na nivoju modela, je združevanje nekoliko drugačno.
 
 \begin{minted}[breaklines]{python}
-query = User.link(
-    tasks=Task.order(Task.content)
-).order(User.name)
+query = User.link(tasks=Task)
 \end{minted}
 
-        V tem bi dobili za vsakega uporabnika seznam njegovih nalog in bi ta seznam znotraj uporabnika bil urejen glede na vsebino naloge namesto, da ureditev po nazivu naloge vpliva na celotno matriko.
-        
-        \item \textbf{Avtomatsko združevanje podatkov iz različnih entitet tekom poizvedb – funkcija ``link`` (DBMS – različne verzije JOIN stavka).}
-        \colorbox{BurntOrange}{Predstavimo algoritem združevanja zapisov v skupno strukturo}
+        \noindent
+        V primeru zgornje izvedbe, bi za vsakega uporabnika dobili še seznam njegovih nalog. Posamezen zapis uporabnika, lahko predstavimo z naslednjo definicijo JSON strukture:
+\begin{minted}[breaklines]{javascript}
+{
+    name: string,
+    tasks: [
+        {
+            content: string,
+            user: number // id uporabnika
+        },
+    ]
+}
+\end{minted}
+
+        \subsection{Algoirtem poizvedb z uporabo relaciji}
+
+        Spodaj je v obliki psevdokode predstavljen algoritem za poizvedovanje, kjer omogočamo nabor podatkov iz različnih entitet hkrati.
+
+\begin{minted}[breaklines]{text}
+fn execute_query(qobject: query_object) -> View
+    root_res := execute query on the root entity
+    if no qobject.subquery:
+        return root_res
+
+    subquery_map := map
+    for link in root_res:
+        subquery_map[link] := empty View
+
+    for subquery in qobject.subquery:
+        subquery_res := execute_query(subquery)
+        for link, view in subquery_res:
+            subquery_map[link].add(view)
+
+    for link, view in subquery_map:
+        root_res[link] := view
+
+    return root_res
+end fn
+\end{minted}
+
+        \noindent
+        Algoritem nam omogoča, da izvajamo zapletene poizvedbe na strukturah, ki imajo hierarhično organizacijo podatkov. 
+
+        \begin{enumerate}
+            \item Začetna točka rekurzivne metode je izvedba na korenski entiteti celotne poizvedbe. V primeru, da gre za poizvedbo, ki ne vsebuje povezovanja, rekurzijo zaključimo – robni pogoj rekurzije.
+            \item V drugi točki pripravimo strukture za dodatno filtriranje znotraj nadaljnjih poizvedb. Poleg tega, pa tudi pripravimo vmesno strukturo za shranjevanje rezultatov teh poizvedb.
+            \item Nato rekurzivno izvajamo nadaljnje poizvedbe in rezultate shranjujemo v prej pripravljeno združevalno strukturo (gre za zgoščevalno tabelo).
+            \item V zaključni fazi algoritma vmesne rezultate iz zgoščevalne tabele nato združimo v rezultat korenske poizvedbe – to je tudi rezultat celotne metode, ki je predstavljen v obliki podatkovnega okvirja.
+        \end{enumerate}
 
         \item \textbf{Agregacija oz. združevanje podatkov}
-        \newline
-        \colorbox{BurntOrange}{COUNT, SUM, MIN, MAX}
+        \noindent
+        Ko govorimo o agregaciji imamo v mislih poizvedbe, kjer iščemo različne statistične rezultate iz posamezne tabele. MySQL DBMS podpira kar nekaj različnih operaciji za agregacijo \cite{MYSQL_AGG} (AVG, COUNT, MAX, MIN, SUM, STD, STDDEV, VARIANCE ...).
 
-        \item \textbf{Množične akcije}
-        \newline
-        \colorbox{BurntOrange}{bulkcreate, bulkdelete}
-    \end{itemize}
+        V našem DBMS podpiramo prvih pet operaciji iz zgornjega seznama:
+        \begin{itemize}
+            \item \textbf{SUM} – operacija za seštevanje vrednosti v stolpcu.
+            \item \textbf{MIN} – iskanje najmanjše vrednosti v stolpcu.
+            \item \textbf{MAX} – iskanje maksimalne vrednosti v stolpcu.
+            \item \textbf{COUNT} – štetje zapisov.
+        \end{itemize}
+
+        Vse operacije so omejene nad striktno eno entiteto in enim stolpcem, kar pomeni, da lahko v eni poizvedbi poiščemo npr. iskanje najnovejšega sporočila med zapisi. V večini primerov agregaciji, pa ne iščemo globalno gledanega zapisa, ki najbolj ustreza našim kriterijem, ampak iščemo zapis glede na neko dodatno polje npr. iščemo najnovejše sporočilo za vsakega posameznega uporabnika. Kadar govorimo v smislu SQL poizvedb, to pomeni uporabo ``GROUP BY`` stavka.
+
+\begin{minted}[breaklines]{sql}
+SELECT MAX(messages.date) as 'latest' 
+FROM messages
+GROUP BY tasks.user_id
+\end{minted}
+
+        \noindent
+        Zgornjo SQL poizvedbo lahko v poizvedbo, ki deluje na pripravljeni knjižnici pretvorimo v naslednji odsek kode:
+
+\begin{minted}[breaklines]{python}
+query = Message.agg(
+    by=Message.user, 
+    latest=gx.AGG.max(Message.date)
+)
+\end{minted}
+
+        \noindent
+        Sintaksa je dokaj preprosta, da izvedemo agregacijsko poizvedbo preprosto uporabimo metodo ''agg'' nad eno izmed entitet. Kot parametre, pa lahko pošljemo polje po katerem združujemo (nadomestilo GROUP BY), nato pa lahko dodamo še poljubno število parametrov, ki izvajajo različne združevalne akcije.
+
 
 \chapter{Sodoben pristop razvoja programske opreme}
 \label{ch1}
@@ -980,7 +1068,7 @@ static PyObject* add_nums(PyObject* self, PyObject* args) {
 
     \subsection{Naprednejša knjižnica z dodatnimi strukturami za lažji prehod med jezikoma}
 
-    Izdelava knjižnic s pomočjo Python.h API vmesnika pomeni uporabo programskega jezika C, kar pomeni, da je velik del implementaciji prepuščen razvijalcu, da si tukaj delo malo olajšamo smo se odločili za razvoj knjižnice s pomočjo C++ jezika in knjižnice, ki dela nivo višje, kot Python.h API - PyBind11 \cite{PYBIND11_GITHUB}. Gre za knjižnico, ki bistveno olajša pretvorbe podatkovnih struktur med jezikoma npr. kadar želimo, kot parameter poslati strukturo seznama v C++ lahko to preprosto definiramo, kot tip vector in pretvorba iz seznama v vektor bo avtomatska. Knjižnica deluje s pomočjo C++ verzije 11, ki je izšla septembra 2011.
+    Izdelava knjižnic s pomočjo Python.h API vmesnika pomeni uporabo programskega jezika C, kar pomeni, da je velik del implementaciji prepuščen razvijalcu, da si tukaj delo malo olajšamo smo se odločili za razvoj knjižnice s pomočjo C++ programskega jezika in knjižnice, ki dela nivo višje, kot Python.h API - PyBind11 \cite{PYBIND11_GITHUB}. Gre za knjižnico, ki bistveno olajša pretvorbe podatkovnih struktur med jezikoma npr. kadar želimo, kot parameter poslati strukturo seznama v C++ lahko to preprosto definiramo, kot tip vector in pretvorba iz seznama v vektor bo avtomatska. Knjižnica deluje s pomočjo C++ verzije 11, ki je izšla septembra 2011.
 
     Poleg avtomatskih pretvorb, pa imamo že vseeno možnost uporabe vseh tipov, ki so vključeni v Python.h API vmesnik.
 
@@ -1014,7 +1102,7 @@ print(total) # prints 15
 
     Da zagotovimo pravilno delovanje nekega bolj kompleksnega sistema je na področju razvoja programske opreme zelo priporočen testno usmerjen razvoj. Gre za način validacije pravilnega delovanja posameznih komponent sistema, kot ločeni segmenti in kot celotna enota. V primeru razvoja izbrane programske opreme smo proces testiranja razdelili na tri segmente – testiranje enot, integracijsko testiranje in performančno testiranje.
    
-   \subsection{Testi enot na nivoju jedra podatkovnega sistema}
+   \subsection{Testi enot na nivoju jedra DBMS}
 
     V prvi fazi želimo, da zagotovimo pravilno delovanje na najnižjem nivoju oz. na jedru celotnega sistema. Gre za testiranje najbolj osnovnih funkciji, ki zagotavljajo pravilno delovanje našega sistema. V tem segmentu je bilo največ pozornosti predane na testiranje vnašanja in branja sistema za indeksiranje, ki je realizirano s pomočjo B+ dreves. Avtomatsko testiranje je na tem nivoju realizirano s pomočjo knjižnice Doctest \cite{DOCTEST_GITHUB}. Gre za testno ogrodje napisano za programski jezik C++, ki omogoča fleksibilen pristop validacije rezultatov iz posameznih funkciji.
    
@@ -1056,9 +1144,8 @@ OK
    \begin{enumerate}
        \item Zagon virtualnega okolja za Python programskega okolja (venv \cite{PY_VENV_DOCS}).
        \item Postavitev potrebnih knjižnic za delovanje jedra (PyBind11 \cite{PYBIND11_GITHUB}).
-       \item Namestitev jedra podatkovnega sistema in knjižnice na nivoju programskega jezika Python.
-       \item Poskus uvoza jedra podatkovnega sistema v CLI, ki je vgrajen v programski jezik Python.
-       \item Poskus uvoza celotne knjižnice
+       \item Namestitev jedra DBMS \& poskus uvoza.
+       \item Namestitev knjižnice, ki vsebuje ORM in operira z jedrom \& poskus uvoza.
        \item Izvedba nizko nivojskih testov oz. testov enot v programskem jeziku C++
        \item Izvedba integracijskih testov na nivoju programskega jezika Python
        \item Izvedba performančnih testov
@@ -1263,49 +1350,10 @@ _, all_reqs = ReqInfo.all()
 ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
 \end{minted}
 
-    \section{Manjši strežniški API}
+    \section{Preprosta namizna aplikacija za upravljanje dnevnih ciljev}
 
-    Strežniške aplikacije, ki zahtevajo fleksibilno in hitro delo s podatkovno bazo postajajo vse bolj pogoste. Python predstavlja enega izmed najpogosteje uporabljenih programskih jezikov na omenjenem področju. Obstaja tudi že ogromno pripravljenih knjižnic za izdelavo API aplikaciji, kot tudi za uporabljanje s podatkovno bazo, ki se uporablja znotraj aplikacije.
-
-    Tekom poglavja je predstavljena izdelava strežniške aplikacije, kjer uporabljamo Flask \cite{FLASK_GITHUB} ogrodje. Sama aplikacija, pa je namenjena delu za preprosto uporabljanje sistema profesorjev in laboratorijev.
+    \textbf{Če bo uspelo bo aplikacija mobilna.}
     
-    \subsection{Podatkovna shema za aplikacijo}
-
-    V shemi imamo vsega dve tabeli, ki bosta držali podatke o profesorjih in laboratorijih.
-\begin{minted}{python}
-class Teacher(Model):
-    full_name = Field.String(size=256)
-    email = Field.String(size=128)
-    laboratory = Field.Link()
-
-class Laboratory(Model):
-    name = Field.String(size=64)
-    room_number = Field.Int()
-    teachers = Field.VirtualLink('laboratory')
-\end{minted}
-
-    \newpage
-    \subsection{Pretvornik za serializacijo podatkov nad shemo}
-
-\begin{minted}{python}
-class TeacherSearilizer(ViewSearilizer):
-    fields = ('id', 'full_name', 'email')
-
-class LaboratorySearilizer(ViewSearilizer):
-    fields = '*'
-    teachers = TeacherSearilizer
-        
-class BasicLaboratorySearilizer(ViewSearilizer):
-    fields = ('id', 'name', 'room_number')
-
-class DetailTeacherSearilizer(ViewSearilizer):
-    fields = '*'
-    laboratory = BasicLaboratorySearilizer
-\end{minted}
-
-    \subsection{Kreiranje novega zapisa}
-    \subsection{Nabor podatkov profesorjev po laboratorijih}
-    \subsection{Nabor podatkov z dinamičnim filtriranjem}
 
 \chapter{Sklepne ugotovitve}
     \colorbox{BurntOrange}{Splošne ugotovitve tekom izdelave vgrajenega podatkovnega sistema}
