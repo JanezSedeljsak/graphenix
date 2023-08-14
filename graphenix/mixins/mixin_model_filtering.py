@@ -1,11 +1,12 @@
 import graphenix_engine2 as ge2
 from .enums import FilterOperationEnum
+from .mixin_model_base import ModelBaseMixin
 
 def _make_cond_object(model, operation, cmp_value):
     cond_obj = ge2.cond_object()
     cond_obj.field_name = '' # empty string marks PK
     cond_obj.operation_index = operation
-    cond_obj.value = cmp_value
+    cond_obj.value = cmp_value if not isinstance(cmp_value, ModelBaseMixin) else cmp_value.id
     return False, cond_obj
 
 class ModelFilteringMixin:

@@ -27,7 +27,7 @@ class Field:
             cond_obj = ge2.cond_object()
             cond_obj.field_name = self.name
             cond_obj.operation_index = operation
-            cond_obj.value = cmp_value
+            cond_obj.value = cmp_value if not isinstance(cmp_value, ModelBaseMixin) else cmp_value.id
             is_indexed = self.index and FilterOperationEnum.supports_index(operation)
             return is_indexed, cond_obj
         

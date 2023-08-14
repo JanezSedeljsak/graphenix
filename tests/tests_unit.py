@@ -529,6 +529,27 @@ class GraphenixUnitTests(CommonTestBase):
         self.assertEqual(2, data[1].id)
 
     @CommonTestBase().prepare_and_destroy
+    def test_filter_22(self):
+        """ test filter with model condition """
+        users = self._get_users()
+        for user in users:
+            user.save()
+        
+        Task(name="Travel to Italy", owner=users[0]).make()
+        _, tasks = Task.all()
+        self.assertEqual(1, len(tasks))
+
+        _, tasks = Task.filter(Task.owner.equals(users[0])).all()
+        self.assertEqual(1, len(tasks))
+
+        _, tasks = Task.filter(Task.owner.equals(users[1])).all()
+        self.assertEqual(0, len(tasks))
+
+        _, tasks = Task.filter(Task.owner.is_not(users[0])).all()
+        self.assertEqual(0, len(tasks))   
+
+
+    @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_comlex_struct
     def test_join_0(self):
         """ test join 2 tables """
