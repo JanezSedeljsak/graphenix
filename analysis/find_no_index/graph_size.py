@@ -27,11 +27,11 @@ def main():
     fig, ax = plt.subplots(figsize=(16, 12))
     width = 0.22
     
-    ax.bar(x_values - width, no_index, width, label='Without index', color="#EEEC7B")
-    ax.bar(x_values + width, indexed, width, label=f'Using B+ tree', color="#68ADDF")
+    ax.bar(x_values - width, no_index, width * 2, label='Brez indeksiranja', color="#D2CC7E")
+    ax.bar(x_values + width, indexed, width * 2, label=f'Uporaba B+ drevesa', color="#68ADDF")
 
     # Set labels and title
-    ax.set_xlabel('DBMS')
+    ax.set_xlabel('DBMS + faktor pohitritve')
     ax.set_ylabel('Čas (ms)')
     ax.set_title('')
     ax.set_xticks(x_values)
@@ -39,7 +39,7 @@ def main():
     ax.set_xticklabels([
         f'Graphenix\n{speedups[0]:.2f}x\n',
         f'SQLite\n{speedups[1]:.2f}x\n',
-        f'MySQL\n{speedups[1]:.2f}x\n'
+        f'MySQL\n{speedups[2]:.2f}x\n'
     ])
 
     # for bar in bars:
