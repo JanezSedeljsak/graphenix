@@ -17,9 +17,9 @@ def main():
     sort_insert_queue = nums[1::3]
     sort_end = nums[2::3]
 
-    plt.rcParams.update({'font.size': 2.5 * plt.rcParams['font.size']})
+    plt.style.use("fivethirtyeight")
+    plt.rcParams.update({'font.size': 2 * plt.rcParams['font.size']})
 
-    plt.style.use("fast")
     x_values = np.arange(500, 25001, 500)
     fig, ax = plt.subplots(figsize=(16, 10))
     

@@ -45,6 +45,17 @@ _perf_test:
 _all_a: _insert_a _iinsert_a _find_make_base _sizes_a _read_a _qread_a _ifind_a _find_a _join_a
 	@echo "[graphenix] All analysis completed!"
 
+_all_graphs:
+	python3 -m analysis.singleinsert.graph
+	python3 -m analysis.singleinsert.sizes_analysis 1000000
+	python3 -m analysis.indexinsert.graph
+	python3 -m analysis.queryread.graph
+	python3 -m analysis.singleread.graph
+	python3 -m analysis.join.graph
+	python3 -m analysis.find_no_index.graph_size 100000
+	python3 -m analysis.find_no_index.graph_size 1000000
+	@echo "[graphenix] All graphs completed!"
+
 _insert_a:
 	@echo "[graphenix] Running single insert analysis..."
 	chmod +x analysis_runner.sh
@@ -88,13 +99,15 @@ _find_a:
 	@echo "[graphenix] Running find without index analysis..."
 	chmod +x analysis_runner.sh
 	./analysis_runner.sh find_no_index 100000 1000000
-	# python3 -m analysis.find_no_index.graph_size
+	python3 -m analysis.find_no_index.graph_size
 	@echo "[graphenix] Finished find without index analysis!"
 
 _ifind_a:
 	@echo "[graphenix] Running find with index analysis..."
 	chmod +x analysis_runner.sh
 	./analysis_runner.sh find_index 100000 1000000
+	python3 -m analysis.find_no_index.graph_size 100000
+	python3 -m analysis.find_no_index.graph_size 1000000
 	@echo "[graphenix] Finished find with index analysis!"
 
 _join_a:

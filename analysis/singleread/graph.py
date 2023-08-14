@@ -20,8 +20,8 @@ def main():
         col = read_nums(file)
         matrix[:, i] = col # time for 100 inserts
 
-    plt.rcParams.update({'font.size': 2.5 * plt.rcParams['font.size']})
-    plt.style.use("fast")
+    plt.style.use("fivethirtyeight")
+    plt.rcParams.update({'font.size': 2 * plt.rcParams['font.size']})
 
     x_values = np.arange(len(sizes))
     fig, ax = plt.subplots(figsize=(16, 12))

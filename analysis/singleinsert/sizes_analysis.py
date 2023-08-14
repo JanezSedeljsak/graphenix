@@ -24,8 +24,8 @@ def main():
     indexed_sizes = read_nums(f'analysis/singleinsert/indexed_size_{num_users}.txt')
     mb_indexed_sizes = bytes_array_to_megabytes(indexed_sizes)
     
-    plt.rcParams.update({'font.size': 3 * plt.rcParams['font.size']})
-    plt.style.use("fast")
+    plt.style.use("fivethirtyeight")
+    plt.rcParams.update({'font.size': 2 * plt.rcParams['font.size']})
 
     fig, ax = plt.subplots(figsize=(16, 12))
 

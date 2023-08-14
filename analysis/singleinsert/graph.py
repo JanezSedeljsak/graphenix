@@ -21,18 +21,18 @@ def main():
         col = read_nums(file)
         matrix[:, i] = (col * 1000) / size # time for 1000 inserts
 
-    plt.rcParams.update({'font.size': 3 * plt.rcParams['font.size']})
-    plt.style.use("fast")
+    plt.style.use("fivethirtyeight")
+    plt.rcParams.update({'font.size': 2 * plt.rcParams['font.size']})
 
     x_values = np.arange(len(sizes))
     fig, ax = plt.subplots(figsize=(16, 12))
 
-    ax.plot(x_values, matrix[0], label='Graphenix', marker='o', linewidth=3)
-    ax.plot(x_values, matrix[5], label='Graphenix množično', marker='o', linewidth=3)
-    ax.plot(x_values, matrix[1], label='SQLite ORM', marker='o', linewidth=3)
-    ax.plot(x_values, matrix[2], label='MySQL ORM', marker='o', linewidth=3)
-    ax.plot(x_values, matrix[3], label='SQLite', marker='o', linewidth=3)
-    ax.plot(x_values, matrix[4], label='MySQL', marker='o', linewidth=3)
+    ax.plot(x_values, matrix[0], label='Graphenix', marker='o', linewidth=4)
+    ax.plot(x_values, matrix[5], label='Graphenix množično', marker='o', linewidth=4)
+    ax.plot(x_values, matrix[1], label='SQLite ORM', marker='o', linewidth=4)
+    ax.plot(x_values, matrix[2], label='MySQL ORM', marker='o', linewidth=4)
+    ax.plot(x_values, matrix[3], label='SQLite', marker='o', linewidth=4)
+    ax.plot(x_values, matrix[4], label='MySQL', marker='o', linewidth=4)
 
     # Set labels and title
     ax.set_xlabel('Št. zapisov')
