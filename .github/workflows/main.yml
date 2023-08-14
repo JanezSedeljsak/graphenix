@@ -1,6 +1,16 @@
 name: Graphenix - Continuous Integration (CI)
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - 'graphenix/**'
+      - 'tests/**'
+      - '.github/**'
+  pull_request:
+    paths:
+      - 'graphenix/**'
+      - 'tests/**'
+      - '.github/**'
 
 jobs:
   build:
