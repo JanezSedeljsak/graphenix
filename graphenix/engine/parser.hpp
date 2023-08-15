@@ -20,6 +20,7 @@
 
 #define MIN_CLUSTER_SIZE 50
 #define MAX_CLUSTER_SIZE 1000000 // 1 MB
+#define IX_WITH_CONSTRAINTS_THRESHOLD 100
 
 typedef std::unordered_map<int64_t, int64_t> hashmap_ii;
 typedef std::vector<int64_t> vector_i64;

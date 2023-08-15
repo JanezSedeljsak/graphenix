@@ -50,6 +50,17 @@ inline void ix_read_all(std::fstream &ix_file, std::vector<std::pair<int64_t, in
     }
 }
 
+inline void ix_read_with_constraints(std::fstream &ix_file,
+                                     std::vector<std::pair<int64_t, int64_t>> &offsets,
+                                     const std::unordered_set<int64_t> &ixs)
+{
+    for (const auto &ix : ixs)
+    {
+        const int64_t rec_offset = get_record_offset(ix, ix_file);
+        offsets.push_back(std::make_pair(rec_offset, ix));
+    }
+}
+
 inline py::tuple build_record(const model_def &mdef, const py::bytes raw_record)
 {
     char *buffer = new char[mdef.record_size + IX_SIZE];
@@ -404,9 +415,6 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     const bool is_sorting = qobject.field_indexes.size() > 0;
     const size_t K = qobject.limit + qobject.offset;
 
-    ix_read_all(ix_file, offsets);
-    ix_file.close();
-
     std::unordered_set<int64_t> instant_pk_filter;
     bool has_pk_filter = false;
 
@@ -417,7 +425,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
         has_pk_filter = true;
     }
 
-    // chech for indexed conditions in condition root and update offsets
+    // chech for indexed conditions in condition root
     else if (qobject.filter_root.btree_conditions.size() > 0)
     {
         std::unordered_set<int64_t> indexed_conditions = evaluate_btree_conditions_every(mdef, qobject_editable.filter_root);
@@ -425,6 +433,17 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
 
         has_pk_filter = true;
         instant_pk_filter = indexed_conditions;
+    }
+
+    if (has_pk_filter && instant_pk_filter.size() > IX_WITH_CONSTRAINTS_THRESHOLD)
+    {
+        ix_read_all(ix_file, offsets);
+        ix_file.close();
+    }
+    else
+    {
+        ix_read_with_constraints(ix_file, offsets, instant_pk_filter);
+        ix_file.close();
     }
 
     // check for PK conditions
