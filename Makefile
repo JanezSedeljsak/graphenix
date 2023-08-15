@@ -100,7 +100,6 @@ _find_a:
 	@echo "[graphenix] Running find without index analysis..."
 	chmod +x analysis_runner.sh
 	./analysis_runner.sh find_no_index 100000 1000000
-	python3 -m analysis.find_no_index.graph_size
 	@echo "[graphenix] Finished find without index analysis!"
 
 _ifind_a:
