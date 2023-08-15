@@ -54,7 +54,7 @@ _all_graphs:
 	python3 -m analysis.join.graph
 	python3 -m analysis.agg.graph
 	python3 -m analysis.find_no_index.graph_size 100000
-	python3 -m analysis.find_no_index.graph_size 1000000
+	python3 -m analysis.find_no_index.graph_size_single 1000000
 	@echo "[graphenix] All graphs completed!"
 
 _insert_a:
@@ -108,7 +108,7 @@ _ifind_a:
 	chmod +x analysis_runner.sh
 	./analysis_runner.sh find_index 100000 1000000
 	python3 -m analysis.find_no_index.graph_size 100000
-	python3 -m analysis.find_no_index.graph_size 1000000
+	python3 -m analysis.find_no_index.graph_size_single 1000000
 	@echo "[graphenix] Finished find with index analysis!"
 
 _join_a:
