@@ -435,7 +435,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
         instant_pk_filter = indexed_conditions;
     }
 
-    if (has_pk_filter && instant_pk_filter.size() < IX_WITH_CONSTRAINTS_THRESHOLD)
+    if (has_pk_filter && instant_pk_filter.size() < IX_THRESHOLD)
     {
         ix_read_with_constraints(ix_file, offsets, instant_pk_filter);
         ix_file.close();
