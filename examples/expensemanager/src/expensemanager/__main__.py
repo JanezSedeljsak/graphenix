@@ -1,4 +1,4 @@
-from dailyplanner.app import main
+from expensemanager.app import main
 
 if __name__ == '__main__':
     main().main_loop()
