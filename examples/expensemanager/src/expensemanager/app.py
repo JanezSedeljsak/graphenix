@@ -23,13 +23,10 @@ class ExpenseManager(toga.App):
             flex=1
         ), id=f'expense_{invoice.id}')
 
-        if isinstance(invoice, Invoice):
-            invoice.connect_child(ExpenseType, 'expense_type')
-
         top_label = toga.Label(f"{invoice.title} - {invoice.amount}€", style=Pack(padding=(5, 10), font_weight='bold'))
         bottom_label = toga.Label(f"{invoice.expense_type.name} - {invoice.day.strftime('%d. %m. %Y')}", style=Pack(padding=(5, 10)))
         
-        delete_button = toga.Button('X', on_press=self.delete_invoice, id=f'delete_{invoice.id}', style=Pack(width=80, padding=(10, 10)))
+        delete_button = toga.Button('Delete', on_press=self.delete_invoice, id=f'delete_{invoice.id}', style=Pack(width=80, padding=(10, 10)))
         edit_button = toga.Button('Edit', on_press=self.edit_invoice, id=f'edit_{invoice.id}', style=Pack(width=80, padding=(10, 10)))
     
         text_box = toga.Box(style=Pack(flex=1, direction=COLUMN))
@@ -52,8 +49,7 @@ class ExpenseManager(toga.App):
                 break
 
         if idx != -1:
-            record = Invoice.get(actual_id)
-            record.connect_child(ExpenseType, 'expense_type')
+            record = Invoice.link(expense_type=ExpenseType).filter(Invoice.equals(actual_id)).first()
             self.title_input.value = record.title
             self.amount_input.value = record.amount
             self.expense_type_input.value = record.expense_type.name
@@ -96,9 +92,6 @@ class ExpenseManager(toga.App):
             card = self.make_card(invoice)
             self.items_box.add(card)
 
-    def cmd_action(self, widget):
-        print(f"Command {widget.label} was clicked")
-
     def do_refresh(self, widget):
         while self.items_box.children:
             self.items_box.remove(self.items_box.children[0])
@@ -127,15 +120,12 @@ class ExpenseManager(toga.App):
         self.amount_input = toga.NumberInput(style=Pack(flex=1, padding=(5, 0)))
         self.expense_type_input = toga.Selection(style=Pack(flex=1, padding=(5, 0)), items=self.expense_type_names)
         self.add_button = toga.Button('Save', on_press=self.on_upsert_expense, style=Pack(flex=0.5, padding=(5, 0)))
-        self.back_button = toga.Button('Cancel', on_press=self.on_go_back, style=Pack(flex=0.5, padding=(5, 0)))
-        self.open_form = toga.Button('+', on_press=self.on_open_form, style=Pack(flex=0.5, padding=(5, 0)))
+        self.back_button = toga.Button('Cancel', on_press=self.on_go_home, style=Pack(flex=0.5, padding=(5, 0)))
         self.search = toga.TextInput(style=Pack(flex=1, padding=(5, 0)), placeholder='Search ...', on_change=self.do_refresh)
         self.items_box = toga.Box(style=Pack(direction=COLUMN, padding=(10, 0)))
         self.scrollable = toga.ScrollContainer(content=self.items_box, style=Pack(height=400))
         self.order_by_options = toga.Selection(style=Pack(flex=1, padding=(5, 0)), items=['Title', 'Amount', 'Date'], on_select=self.do_refresh)
         
-        self.amount_input.value = 10
-        self.main_box.add(self.open_form)
         self.main_box.add(self.search)
         self.main_box.add(self.order_by_options)
         self.main_box.add(self.scrollable)
@@ -149,16 +139,43 @@ class ExpenseManager(toga.App):
 
         self.reset_form()
         self.display_expenses()
+
+        actions = toga.Group("Actions")
+        add_new_action = toga.Command(
+            self.on_open_form,
+            text="Add new item",
+            tooltip="",
+            group=actions,
+        )
+
+        go_home_action = toga.Command(
+            self.on_go_home,
+            text="Home",
+            tooltip="",
+            group=actions,
+        )
+
+        stats_action = toga.Command(
+            self.show_stats,
+            text="Stats",
+            tooltip="",
+            group=actions,
+        )
+
         self.main_window = toga.MainWindow(title=self.formal_name)
+        self.commands.add(add_new_action, go_home_action, stats_action)
         self.main_window.content = self.main_box
         self.main_window.show()
+
+    def show_stats(self, widget):
+        self.main_window.content = self.stats
 
     def reset_form(self):
         self.title_input.value = ""
         self.amount_input.value = 10
         self.expense_type_input.value = self.expense_type_names[0]
 
-    def on_go_back(self, widget):
+    def on_go_home(self, widget):
         self.main_window.content = self.main_box
         self.edit_id = None
 
@@ -185,7 +202,7 @@ class ExpenseManager(toga.App):
 
             self.edit_id = None
             self.reset_form()
-            self.on_go_back(None)
+            self.on_go_home(None)
 
 
 def main():
