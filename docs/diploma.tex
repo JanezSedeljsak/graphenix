@@ -62,8 +62,8 @@ sorting=nty,
 \newcommand{\tsubject}{\ttitle}
 \newcommand{\tsubjectEn}{\ttitleEn}
 \newcommand{\tauthor}{Janez Sedeljšak}
-\newcommand{\tkeywords}{Podatkovne baze, C++, Python, B+ drevesa, Podatkovne strukture, SQL, DBMS}
-\newcommand{\tkeywordsEn}{Databases, C++, Python, B+ trees, Data structures, SQL, DBMS}
+\newcommand{\tkeywords}{Podatkovne baze, C++, Python, B+ drevesa, Podatkovne strukture, SQL, DBMS, ORM}
+\newcommand{\tkeywordsEn}{Databases, C++, Python, B+ trees, Data structures, SQL, DBMS, ORM}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %	HYPERREF SETUP
@@ -372,7 +372,7 @@ opis diplome v angleščini
 
 Sam razvoj namenske knjižnice je pripravljen v programskem jeziku C++, saj gre za nizko nivojski jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilniku. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba dobrih podatkovnih struktur in algoritmov, ki dobro izkoristijo I/O operacije, ki jih ponuja operacijski sistem in posledično pripeljejo do zanesljivega in optimalnega delovanja DBMS.
 
-V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije podatkovnega sistema na različnih scenarijih, kjer razvito programsko opremo primerjamo z že obstoječimi DMBS – SQLite in MySQL.
+V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije DBMS na različnih scenarijih, kjer razvito programsko opremo primerjamo z že obstoječimi DMBS – SQLite in MySQL.
 \bigskip
 
 \noindent\textbf{Ključne besede:} \tkeywords.
@@ -397,7 +397,7 @@ V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementac
 
 The development of this dedicated library is carried out in the C++ programming language, chosen for its low-level nature, providing high flexibility in memory management. The development encompasses all necessary components for a well-functioning relational database. Throughout the development process, a crucial aspect has been the utilization of efficient data structures and algorithms, optimizing I/O operations provided by the operating system, resulting in a reliable and optimized DBMS performance.
 
-In the final part of the thesis, a performance analysis of the implemented data system is conducted across various scenarios. The developed software is compared against existing DBMS solutions – SQLite and MySQL.
+In the final part of the thesis, a performance analysis of the implemented DBMS is conducted across various scenarios. The developed software is compared against existing DBMS solutions – SQLite and MySQL.
 \bigskip
 
 \noindent\textbf{Keywords:} \tkeywordsEn.
@@ -497,7 +497,7 @@ In the final part of the thesis, a performance analysis of the implemented data 
     Glede na zgornjo tabelo izluščimo, da v ekosistemu prevladujejo naslednje tri ORM knjižnice:
     \begin{itemize}
         \item \textbf{Django ORM \cite{DJANGO_GITHUB}} je vgrajen sistem v Django knjižnico za izdelavo spletnih aplikaciji. Omogoča zelo širok nabor operaciji nad podatkovno bazo, poleg tega ima vgrajen tudi svoj CLI. S tem celotno ogrodje bistveno pospeši produktivnost razvijalcev, a hkrati kot ogrodje doda, kar 8.9 MB dodatne teže. Knjižnica podpira pet podatkovnih sistemov, to so PostgreSQL, MariaDB, MySQL, Oracle, SQLite.
-        \item \textbf{SQLalchemy \cite{SQLALCHEMY_GITHUB}} gre za eno najbolj fleksibilnih in uporabljenih knjižnic znotraj programskega jezika. Sama fleksibilnost pomeni, da številne operacije, ki so znotraj Django ORM že avtomatizirane so tukaj prepuščene implementaciji razvijalca. Fleksibilnost, pa s seboj prinaša tudi bistveno prednost, saj lahko kot razvijalec, ki dobro pozna ozadje delovanja uporabljenega relacijskega podatkovnega sistema uporabimo različne pristope optimizaciji, ki jih znotraj Django ORM ni mogoče realizirati oz. je implementacija bistveno težja. Knjižnica zaradi lahkotne abstrakcije podpira SQLite, MySQL, Oracle, MS-SQL in še ostale DBMS sisteme.
+        \item \textbf{SQLalchemy \cite{SQLALCHEMY_GITHUB}} gre za eno najbolj fleksibilnih in uporabljenih knjižnic znotraj programskega jezika. Sama fleksibilnost pomeni, da številne operacije, ki so znotraj Django ORM že avtomatizirane so tukaj prepuščene implementaciji razvijalca. Fleksibilnost, pa s seboj prinaša tudi bistveno prednost, saj lahko kot razvijalec, ki dobro pozna ozadje delovanja uporabljenega DBMS uporabimo različne pristope optimizaciji, ki jih znotraj Django ORM ni mogoče realizirati oz. je implementacija bistveno težja. Knjižnica zaradi lahkotne abstrakcije podpira SQLite, MySQL, Oracle, MS-SQL in še ostale DBMS sisteme.
         \item \textbf{Peewee \cite{PEEWEE_GITHUB}} je ena izmed preprostejših knjižnic, ki predstavlja lahkoten nivo abstrakcije. Knjižnica podpira 3 relacijske podatkovne sisteme, to so PostgreSQL, MySQL in SQLite. Gre za dokaj omejen nabor podprtih relacijskih podatkovnih sistemov, vendar zaradi svoje preprostosti knjižnica ima svojo ciljno skupino razvijalcev, ki razvijajo preproste sisteme in ne potrebujejo kompleksnosti, ki jih s seboj prineseta Django ORM in SQLalchemy.
     \end{itemize}
 
@@ -505,7 +505,7 @@ In the final part of the thesis, a performance analysis of the implemented data 
     Cilj vseh teh knjižnic je pospešiti proces razvoja aplikacij in zagotoviti dodatno varnost pri delu s podatkovno bazo. Omeniti velja, da te knjižnice omogočajo tudi druge koristne funkcionalnosti, kot je lažja manipulacija s podatki, poenostavljeno vzdrževanje in enostavna migracija strukture. S svojo abstrakcijo in intuitivnimi vmesniki odpravljajo potrebo po neposrednem rokovanju z zapletenimi SQL poizvedbami ter s tem razbremenjujejo razvijalce in omogočajo hitrejši razvoj aplikacij.
 
     \subsection{Slabost uporabe ORM knjižnic na nivoju poizvedb}
-    Kljub vsem dobrim lastnostim omenjenih knjižnic, pa tudi vsaka izmed njih prinaša dodaten nivo abstrakcije in razvijalcu skrije veliko možnosti za optimizacijo delovanja relacijskega podatkovnega sistema. V algoritmih je pogost kompromis med hitrostjo in porabo prostora, ko pa govorimo o ORM knjižnicah in programskih jezikih, pa višji nivo abstrakcije pomeni kompromis hitrosti delovanja.
+    Kljub vsem dobrim lastnostim omenjenih knjižnic, pa tudi vsaka izmed njih prinaša dodaten nivo abstrakcije in razvijalcu skrije veliko možnosti za optimizacijo delovanja DBMS. V algoritmih je pogost kompromis med hitrostjo in porabo prostora, ko pa govorimo o ORM knjižnicah in programskih jezikih, pa višji nivo abstrakcije pomeni kompromis hitrosti delovanja.
 
     Narava relacijskih podatkovnih baz in združevanja tabel je usmerjena v skupen rezultat v obliki ene matrike, kjer imamo kartezičen produkt zapisov različnih entitet, katerega filtriramo glede na povezava, ki so realizirane s pomočjo tujih ključev. Pogosto, pa kot ciljni uporabniki ne želimo tega, temveč želimo drugačno strukturo podatkov, ki pa ni v skladu z osnovno idejo relacijskih baz. V ta namen ORM knjižnice izvedejo več različnih poizvedb in potem znotraj jedra knjižnice združujejo zapise in kreirajo ciljno strukturo ali pa izvedejo eno kompleksnejšo poizvedbo in pridobljene podatke nato pretvorijo v končno strukturo. Primer, take preproste naloge je: "Za vse uporabnike pridobi njihove naloge in zadnjih pet sporočil, ki jih je vsak izmed teh uporabnikov poslal".
 
@@ -542,7 +542,7 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
     \noindent
     Torej najprej potrebujemo $N$ zapisov za vsakega uporabnika, nato pa za vsakega uporabnika pridobimo še $T_i$ nalog in $M_i$ nalog. Če predpostavimo, da imamo podatkovno bazo, kjer imamo sto uporabnikov in ima vsak izmed njih tisoč sporočil, ter dvesto nalog pomeni, da bomo v primeru prve poizvedbe ~\eqref{eq:1} prenesli, kar $100 \cdot 1000 \cdot 200$ oz. $\num{20000000}$ zapisov.
 
-    Medtem, ko v primeru druge poizvedbe ~\eqref{eq:2} to pomeni prenos bistveno manjše strukture ($100 \cdot (1000 + 200)$ oz. $\num{120000}$. Kar predstavlja le $0.6\%$ količine podatkov, ki jih je potrebno prenesti iz podatkovnega sistema do naše ORM implementacije.
+    Medtem, ko v primeru druge poizvedbe ~\eqref{eq:2} to pomeni prenos bistveno manjše strukture ($100 \cdot (1000 + 200)$ oz. $\num{120000}$. Kar predstavlja le $0.6\%$ količine podatkov, ki jih je potrebno prenesti iz podatkovne baze do naše ORM implementacije.
 
     Ozko grlo, pa se pojavi še v enem segmentu, namreč pripravljanje končne strukture, ki jo vrne ORM je v vseh treh omenjenih knjižnicah izvedeno na nivoju programskega jezika Python, ki sam po sebi ni optimiziran za filtriranje in združevanje zapisov oz. ne omogoča pristopov, ki jih lahko uporabimo znotraj prevedenih jezikov in tako bistveno pohitrimo kreiranje končne strukture, ki predstavlja glavni rezultat poizvedbe.
 
@@ -597,7 +597,7 @@ class Message(Model):
         
         
         \subsection{Tipi podatkov}
-        Znotraj našega vgrajenega podatkovnega sistema podpiramo 5 podatkovnih tipov:
+        Znotraj razvitega DBMS podpiramo 7 podatkovnih tipov:
         \begin{enumerate}
             \item Cela števila (ang. Int) – v tem primeru gre za vrednost, ki je na nivoju C++ programskega jezika shranjena kot int64\_t oziroma predznačeno celo število. Velikost za posamezno vrednost je 8B. Sam razpon vrednosti, ki jih lahko shranimo v posamezen zapis je $[-2^{63}, 2^{63} - 1]$.
             \item Realna števila (ang. Float) – zaradi lažje implementacije je velikost realnih števil enaka, kot velikost celih števil – torej 64 bitov. Vrednost je na nivoju podatkov realizirana, kot dvojni "float" oz. "double". Gre za zaporedje bitov, ki so po standardu IEEE 754 \cite{kahan1996ieee} ločeni v predznak, eksponent in mantiso.
@@ -702,7 +702,7 @@ child {node (E){29\nodepart{two}31}}
         \subsection{Uporaba B+ dreves v bazi podatkov (iskanje po indeksiranih podatkih)}
         Na nivoju podatkovne baze se B+ drevesa uporabljajo za indeksiranje podatkov oz. zapisov glede na določen atribut npr. datum rojstva, ime, hišno številko itd. Gre za pristop, ki nam omogoča filtriranje posameznih zapisov s pomočjo binarnega iskanja v logaritmičnem času namesto linearnega iskanja skozi celotno matriko.
         
-        Določanje indeksov, pa je v klasičnih podatkovnih bazah lahko tudi malo bolj kompleksno, saj poleg iskanja po določenem atributu lahko iščemo tudi po izpeljanih vrednostih npr. po kombinaciji prve črke priimka in imena. V primeru našega podatkovnega sistema to ni realizirano, lahko pa si sami kreiramo dodaten atribut na nivoju entitete in vanj shranjujemo želeno vrednost, ter nato direktno nad atributom kreiramo indeksno strukturo.
+        Določanje indeksov, pa je v klasičnih podatkovnih bazah lahko tudi malo bolj kompleksno, saj poleg iskanja po določenem atributu lahko iščemo tudi po izpeljanih vrednostih npr. po kombinaciji prve črke priimka in imena. V primeru našega DBMS to ni realizirano, lahko pa si sami kreiramo dodaten atribut na nivoju entitete in vanj shranjujemo želeno vrednost, ter nato direktno nad atributom kreiramo indeksno strukturo.
         
         \subsection{Dinamično nalaganje in ohranjanje posameznih segmentov drevesa v pomnilnik}
         Za dodatno optimizacijo delovanja internih indeksov je dodana tudi implementacija predpomnilnika, kamor lahko shranjujemo posamezne segmente drevesa. Deluje, kot preprost zgoščevalni slovar, kjer je ključ odmik posameznega vozlišča v fizični datoteki vrednost, pa je dejansko vozlišče.
@@ -1167,14 +1167,29 @@ OK
     V vseh treh DBMS je indeksiranje realizirano z uporabo B drevesa. Kljub temu, pa je razlika v načinu vnašanja podatkov, namreč naša implementacija B drevesa ne izkorišča algoritma za množično vstavljanje v drevo. MySQL in SQLite za vstavljanje uporabljata algoritem množičnega vstavljanja in posledično čas vstavljanja v drevo nima bistvenega vpliva na celoten čas vstavljanja.
  
     \section{Velikosti podatkovnih baz na disku}
+    \label{size_analysis}
+
+    Glede na prva dva scenarija smo pripravili tudi analizo porabe prostora na disku.
+    
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.7\textwidth, angle=0]{sizes.png}}
         \caption{Prostorska poraba na nivoju diska posameznega DBMS}
         \label{velikosti}
     \end{figure}
 
-    \newpage
+    \noindent
+    Iz grafa takoj opazimo, da je Graphenix DBMS najbolj potraten iz vidika porabe prostora. Razlog se skriva v načinu shranjevanja tekstovnih vrednosti. SQLite in MySQL uporabljata podatkovne strukture, ki ob shranjevanju uporabljata še dodatno optimizacijo porabe prostora, saj uporabita le toliko prostora kot je potrebno. V primeru Graphenix, pa je dolžina tekstovnih polji točno določena in v primeru, da polje definiramo kot ``Field.String(size=50)`` pomeni, da bo vsak zapis ne glede na dolžino zavzel 50 bajtov.
+
+    V temnem delu stolpca je prikazana razlika velikosti z in brez uporabe indeksne strukture. DBMS z najnižjo porabo prostora je SQLite. Razlog za nižjo porabo se nahaja v velikosti posameznega vozlišča in samem algoritmu vstavljanja v drevo, ki lahko vpliva na število nivojev v drevesu.
+
     \section{Primerjava poizvedb na eni entiteti}
+
+    Za tretji scenarij je pripravljena analiza, kjer izmerimo čas izvajanja na preprosti poizvedbi brez kakršnih koli omejitev.
+    
+\begin{minted}[breaklines]{SQL}
+SELECT * FROM users
+\end{minted}
+    
 
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.7\textwidth, angle=0]{singleread.png}}
@@ -1182,32 +1197,90 @@ OK
         \label{branje}
     \end{figure}
 
+    \noindent
+    Iz grafa je jasno razvidno, da uporaba ORM ni dobro pripravljena za masovno nalaganje podatkov, saj se ponovno kreirajo instance, ki predstavljajo, več kot 70\% delež celotne poizvedbe. V primeru MySQL se ponovno pojavi tudi nekaj dodatne zakasnitve zaradi načina prenosa podatkov preko TCP/IP protokola.
+
+    \subsection{Branje s filtriranjem, urejanjem in omejevanjem podatkov}
+
+    V drugem scenariju branja podatkov iz ene entitete dodamo še omejitev na tip uporabnikov (želimo le administratorje). Poleg tega, pa je dodano tudi urejanje podatkov in dodana omejitev števila zapisov (želimo prvih 500 zapisov urejenih po točkah uporabnika).
+
+\begin{minted}[breaklines]{SQL}
+SELECT * FROM users
+WHERE is_admin = 1
+ORDER BY points, id
+LIMIT 500
+\end{minted}
+    
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.7\textwidth, angle=0]{queryread.png}}
         \caption{Branje z dodanim filtriranjem in urejanjem zapisov}
         \label{queryread}
     \end{figure}
 
+    \noindent
+    Sam čas izvajanja posameznega branja je relativno nizek, v vseh primerih je bilo branje izvedeno v manj kot 100 ms. Opazimo, da omejitve ORM tukaj ne pridejo toliko do izraza, saj je potrebno kreirati le 500 instanc razredov. Pride pa do izraza zakasnitev, ki jo za prenos podatkov prinaša TCP/IP protokol, kar je videno v primerih uporabe MySQL.
+
     \newpage
     \section{Primerjava poizvedb z uporabo relaciji}
+    \label{join_lbl}
+
+    V scenariju definiramo poizvedbo, kjer izvedemo nabor podatkov iz dveh entitet. Št. zapisov definira število uporabnikov. Za vsakega uporabnika, pa je bilo vnesenih še 10 nalog, ki so vezani preko tujega ključa ``user\_id`` v entiteti nalog.
+    
+\begin{minted}[breaklines]{SQL}
+SELECT * FROM users 
+INNER JOIN tasks ON tasks.user_id = users.id
+\end{minted}
 
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.7\textwidth, angle=0]{join.png}}
         \caption{Poizvedovanje podatkov iz dveh entitet hkrati – uporabniki in njihove naloge}
         \label{join}
     \end{figure}
+
+    \noindent
+    Ponovno se izkaže, da ORM s seboj prinese dodatne zakasnitve zaradi kreiranja instanc. Za razliko od prejšnjih scenarijev je rezultat v tem primeru drugačen v primeru uporabe ORM in uporaba klasične poizvedbe.
+    \begin{itemize}
+        \item ORM – podatki so v gnezdeni obliki, kjer imamo za vsakega izmed uporabnikov seznam njegovih nalog.
+        \item Brez – podatki so v obliki kartezičnega produkta oz. matrike in imamo za vsakega uporabnika toliko zapisov, kot ima uporabnik sporočil.
+    \end{itemize}
+
+    \noindent
+    Graphenix deluje po principu ORM in imamo gnezdeno strukturo podatkov. Kljub temu, pa zaradi združevanja na nivoju programskega jezika C++ poizvedba steče v primerljivem času poizvedbam, ki ne uporabljajo ORM.
     
-    \newpage
-    \section{Izvedba agregacije nad zapisi}
+    \section{Izvedba agregacijske poizvedbe}
+
+    V scenariju izvedbe agregacije uporabljamo strukturo, ki smo jo pripravili v prejšnje scenariju \ref{join_lbl}. Kreiramo strukturo uporabnikov in na vsakega uporabnika vežemo še 10 nalog.
+
+    V poizvedbi naloge združujemo po uporabnikih in za vsakega uporabnika pridobimo število nalog, ki mora biti v vseh primerih 10. Poleg tega, pa glede na atribut ``created\_at`` pridobimo tudi datum zadnje naloge uporabnika.
+    
+\begin{minted}[breaklines]{SQL}
+SELECT user_id, COUNT(*) AS 'count', 
+       MAX(created_at) AS 'latest' 
+FROM tasks GROUP BY user_id
+\end{minted}
 
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{agg.png}}
+        \centerline{\includegraphics[width=0.75\textwidth, angle=0]{agg.png}}
         \caption{Uporaba agregacijskih metod}
         \label{join}
     \end{figure}
 
-    \newpage
+    \noindent
+    V tem scenariju rezultat poizvedbe ni predstavljen, kot instance objektov, saj vedno kreiramo prilagojen tip rezultata, ki vsebuje identifikator uporabnika, število nalog in zadnji datum naloge za vezanega uporabnika.
+
+    Rezultati sicer dobro sledijo trendom iz predhodnih scenarijev – MySQL zaradi načina prenosa podatkov potrebuje nekoliko več časa, poleg tega pa se ponovno pozna razlika uporabe ORM in uporaba SQL poizvedb. Graphenix, pa je tudi tukaj primerljiv uporabi SQLite brez uporabe ORM.
+
     \section{Pohitritve s pomočjo indeksiranja}
+
+    Kot zadnji scenarij je predstavljen eden izmed najbolj kritičnih segmentov DBMS – pohitritev iskanja s pomočjo indeksiranja podatkov. V scenariju je predstavljena pohitritev iskanja, kjer primerjamo pristop brez in z uporabo indeksiranja.
+    
+\begin{minted}[breaklines]{SQL}
+SELECT * FROM users
+WHERE points = 5432
+\end{minted}
+
+    \noindent
+    Na spodnjem grafu je prikazano iskanje zapisa nad entiteto z \num{100000} zapisi.
 
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.7\textwidth, angle=0]{indexing_speedup_100000.png}}
@@ -1215,19 +1288,45 @@ OK
         \label{join}
     \end{figure}
 
+    \noindent
+    Iz grafa hitro razberemo, da je pohitritev v Graphenix DBMS drastično manjša, kot je to v primeru SQLite in MySQL.
 
-    \subsection{Optimizacija iskanja v implementiranem DBMS}
+    \subsection{Optimizacija v metodi filtriranja zapisov}
+
+    Zaradi bistveno slabšega rezultata pri iskanju smo se lotili profiliranja posameznih segmentov programske kode za nabor podatkov.
+
+    Kaj hitro smo prišli do ugotovitve, da težava ni bil proces iskanja v B drevesu, temveč je bila težava branje zaglavja datoteke entitete. Metoda za branje podatkov iz posamezne entitete je delovala, tako da je najprej prebrala celotno datoteko zaglavja entitete in za posamezen identifikator zapisa pridobila še odmik v matriki zapisov. Izkazalo se je, da je ta proces zavzel nekje $\approx 85$\% izvajalnega časa.
+
+    V namen hitrejšega izvajanja se branja celotnega zaglavja izognemu v primeru, da imamo že vnaprej določene identifikatorje, ki jih iščemo in je teh manj kot \textbf{IX\_THRESHOLD}, kar predstavlja mejo branja vsakega zapisa ločeno in je v Graphenix nastavljen na vrednost \num{100}.
+    
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{indexing_speedup_100000_v2.png}}
+        \centerline{\includegraphics[width=0.75\textwidth, angle=0]{indexing_speedup_100000_v2.png}}
         \caption{Iskanje specifičnega zapisa ($N = \num{1000000}$ z optimizacijo)}
         \label{join}
     \end{figure}
 
+    \noindent
+    Po implementirani optimizaciji opazimo bistveno izboljšavo, kar se tiče časa iskanja. Sedaj se čas in faktor pohitritve lahko primerjata z MySQL in SQLite.
+
+    \subsubsection{Analiza iskanja nad večjo bazo podatkov}
+
+    V spodnjem grafu, je prikazana še pohitritev enake poizvedbe, kot v zgornjem scenariju. V tem primeru, pa je število vseh uporabnikov \num{1000000}.
+    
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{indexing_speedup_1000000_v2.png}}
+        \centerline{\includegraphics[width=0.75\textwidth, angle=0]{indexing_speedup_1000000_v2.png}}
         \caption{Iskanje specifičnega zapisa ($N = \num{1000000}$ z optimizacijo)}
         \label{join}
     \end{figure}
+
+    \noindent
+    Iz grafa razberemo, da v vseh treh izvedbah zapis najdemo v manj kot 2 ms. Nekaj zakasnitve se sicer vseeno pojavi iz strani MySQL, kar je glede na predhodne scenarije pričakovano.
+
+    Poleg tega v vseh treh primerih, dobimo več \num{100}x pohitritev v primerjavi z branjem brez uporabe indeksa.
+
+    \subsubsection{Idealni pogoji za indeksiranje}
+    Pomembno je omeniti, da je scenarij zelo prilagojen uporabi indeksiranja, saj v scenariju iskanja, kjer vrednosti niso unikatne učinkovitost indeksa zelo hitro pade. Poleg tega je bilo iskanje izvedeno, kot iskanje specifične vrednosti v drevesu, medtem, ko če bi iskali širši interval vrednosti bi se ponovno oddaljili od časovne zahtevnosti $O(log_M(N))$ in približali $O(N)$.
+
+    Če potegnemo rdečo nit je jasno, da se pri odločanju o uporabi indeksov odpira kompleksno vprašanje, ki zahteva premišljeno obravnavo. Odgovornost za to odločitev se prepušča razvijalcem, pri čemer je ključnega pomena, da se kot razvijalci zavedamo optimizaciji in pasti, ki izvirajo iz uporabe B dreves za indeksiranje v izbranem DBMS. Poleg tega je nujno, da poznamo naravo podatkov, s katerimi delamo, in vrst poizvedb, ki jih načrtujemo, saj je optimizacija z indeksiranjem smiselna le v določenih kontekstih.
 
 
     
@@ -1367,9 +1466,39 @@ ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
     
 
 \chapter{Sklepne ugotovitve}
-    \colorbox{BurntOrange}{Splošne ugotovitve tekom izdelave vgrajenega podatkovnega sistema}
-    \newline
-    \colorbox{BurntOrange}{in strnjene ugotovitve glede na analizo}
+
+    V zaključenem poglavju so najprej na kratko predstavljene možnosti izboljšave razvitega DBMS jedra, ki bi knjižnico približale nivoju produkcijske podatkovne baze.
+
+    V \ref{refleksija}, pa je na kratko opisana celotna izkušnja razvoja namenske knjižnice Graphenix.
+    
+    \section{Nadaljnji razvoj}
+
+    \begin{enumerate}
+        \item \textbf{Izboljšava indeksiranja}
+        \newline
+        \noindent
+        Indeksiranje je v razviti programski opremi sicer implementirano in v nekaterih scenarijih celo doseže primerljive rezultate implementacijam v ostalih DBMS rešitvah.
+
+        Kljub temu, pa ostaja še ogromno scenarijev, ki jih z našo implementacijo ne dosežemo. Sploh je to vidno v množičnih akcijah, kot npr. hkratno iskanje več zapisov in množično vnašanje v B drevo.
+
+        \item \textbf{Implementacija dnevnika}
+        \newline
+        \noindent
+        Sam koncept dnevnika je dokaj preprost gre za začasen sklad, kjer definiramo spremembe, ki se zgodijo direktno nad samo bazo podatkov. V primeru različnih izpadov električnega toka ali napak, pri vnašanju se lahko baza povrne v predhodno (delujoče) stanje.
+
+        \item \textbf{Prostorska optimizacija shranjevanja nizov}
+        \newline
+        \noindent
+        MySQL in SQLite sta že dva primera DBMS rešitev, ki ponujata prostorsko optimizacijo, kot je razvidno iz prostorske analize \ref{size_analysis}.
+        \begin{itemize}
+            \item SQLite nize definira s strukturo ``TEXT``, ki besedilo shranjuje v ločeni strukturi od zapisov in po potrebi zapise v tej ločeni strukturi premika.
+            \item MySQL, pa ima možnost uporabe ``VARCHAR``, kjer lahko definiramo tudi maksimalno dolžino niza, vendar ta dolžina ne pomeni dejanske dolžine, ki jo niz porabi na disku, temveč tudi MySQL DBMS izvaja dinamično alokacijo za nize, ki s seboj poleg boljše izkoriščenega prostora na disku prinese tudi nekaj dodatnih korakov za branje teh zapisov.
+        \end{itemize}
+    \end{enumerate}
+    
+    
+    \section{Refleksija razvoja}
+    \label{refleksija}
 
 %\cleardoublepage
 % \addcontentsline{toc}{chapter}{Literatura}
