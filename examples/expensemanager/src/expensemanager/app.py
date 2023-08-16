@@ -137,6 +137,8 @@ class ExpenseManager(toga.App):
         self.form.add(self.add_button)
         self.form.add(self.back_button)
 
+        self.stats = toga.Box(style=Pack(direction=COLUMN, padding=10))
+
         self.reset_form()
         self.display_expenses()
 
@@ -167,8 +169,20 @@ class ExpenseManager(toga.App):
         self.main_window.content = self.main_box
         self.main_window.show()
 
+    def refresh_stats(self):
+        agg_data = Invoice.agg(by=Invoice.expense_type, count=gx.AGG.count(), amount=gx.AGG.sum(Invoice.amount))
+        data = sorted(agg_data, key=lambda x: -x.amount)
+        while self.stats.children:
+            self.stats.remove(self.stats.children[0])
+        
+        for row in data:
+            self.stats.add(toga.Label(f"{self.expense_type_names[row.expense_type]}: {row.count} - {row.amount}€", style=Pack(padding=(5, 10), font_weight='bold')))
+
+        self.stats.add(toga.Label(f"Total: {sum([row.amount for row in data])}€", style=Pack(padding=(5, 10), font_weight='bold')))
+
     def show_stats(self, widget):
         self.main_window.content = self.stats
+        self.refresh_stats()
 
     def reset_form(self):
         self.title_input.value = ""

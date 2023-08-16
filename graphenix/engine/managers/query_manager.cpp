@@ -397,6 +397,7 @@ std::vector<py::tuple> QueryManager::execute_agg_query(const query_object &qobje
         idx++;
     }
 
+    std::sort(rows.begin(), rows.end());
     return rows;
 }
 
