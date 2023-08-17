@@ -9,6 +9,7 @@ class FilterOperationEnum:
     IS_IN = 7
     NOT_IN = 8
     BETWEEN = 9
+    IREGEX = 10
 
     @staticmethod
     def supports_index(operation):

@@ -4,7 +4,7 @@ from pybind11 import get_include
 from setuptools.command.build_ext import build_ext
 import os
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __engine_name__ = "graphenix_engine2"
 __name__ = "graphenix"
 

@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __engine_name__ = "graphenix_engine2"
 __name__ = "graphenix"
 

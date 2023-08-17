@@ -20,7 +20,7 @@
 
 #define MIN_CLUSTER_SIZE 50
 #define MAX_CLUSTER_SIZE 1000000 // 1 MB
-#define IX_THRESHOLD 100 // upper bound for reading each ix offset seperately
+#define IX_THRESHOLD 100         // upper bound for reading each ix offset seperately
 
 typedef std::unordered_map<int64_t, int64_t> hashmap_ii;
 typedef std::vector<int64_t> vector_i64;
@@ -50,7 +50,8 @@ enum FILTER_OPERATION_TYPE
     REGEX = 6,
     IS_IN = 7,
     NOT_IN = 8,
-    BETWEEN = 9
+    BETWEEN = 9,
+    IREGEX = 10
 };
 
 enum AGGREGATE_OPERATION
@@ -304,13 +305,14 @@ struct cond_object
         {
             py::str py_str = py::cast<py::str>(value);
             std::string val_b = py_str;
-            if (operation_index == REGEX)
+            if (operation_index == REGEX || operation_index == IREGEX)
             {
                 try
                 {
                     const std::regex regex_obj(val_b);
+                    const std::regex iregex_obj(val_b, std::regex_constants::icase);
                     const std::string trimed_value = std::string(cmp_field, size);
-                    return std::regex_match(trimed_value, regex_obj);
+                    return std::regex_match(trimed_value, operation_index == REGEX ? regex_obj : iregex_obj);
                 }
                 catch (const std::regex_error &e)
                 {

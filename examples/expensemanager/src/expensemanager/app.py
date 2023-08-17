@@ -1,6 +1,6 @@
 import toga
 from toga.style import Pack
-from toga.style.pack import COLUMN, ROW, RIGHT
+from toga.style.pack import COLUMN, ROW, CENTER
 from datetime import datetime
 import graphenix as gx
 
@@ -77,7 +77,7 @@ class ExpenseManager(toga.App):
     def display_expenses(self, search=None, order_by=None):
         query = Invoice.link(expense_type=ExpenseType)
         if search:
-            query = query.filter(Invoice.title.regex(f'.*{search}.*'))
+            query = query.filter(Invoice.title.iregex(f'.*{search}.*'))
 
         match order_by:
             case 'Title':
@@ -137,7 +137,7 @@ class ExpenseManager(toga.App):
         self.form.add(self.add_button)
         self.form.add(self.back_button)
 
-        self.stats = toga.Box(style=Pack(direction=COLUMN, padding=10))
+        self.stats = toga.Box(style=Pack(direction=COLUMN, padding=10, flex=1))
 
         self.reset_form()
         self.display_expenses()
@@ -172,13 +172,16 @@ class ExpenseManager(toga.App):
     def refresh_stats(self):
         agg_data = Invoice.agg(by=Invoice.expense_type, count=gx.AGG.count(), amount=gx.AGG.sum(Invoice.amount))
         data = sorted(agg_data, key=lambda x: -x.amount)
+        searilized = [(self.expense_type_names[row.expense_type], str(row.count), f"{row.amount}€") for row in data]
+        searilized.append(('Total', sum([row.count for row in data]), f'{sum([row.amount for row in data])}€'))
+        searilized.append(('                                                ',
+                           '                                                ', 
+                           '                                                '))
         while self.stats.children:
             self.stats.remove(self.stats.children[0])
-        
-        for row in data:
-            self.stats.add(toga.Label(f"{self.expense_type_names[row.expense_type]}: {row.count} - {row.amount}€", style=Pack(padding=(5, 10), font_weight='bold')))
 
-        self.stats.add(toga.Label(f"Total: {sum([row.amount for row in data])}€", style=Pack(padding=(5, 10), font_weight='bold')))
+        table = toga.Table(['Expense type', 'Count', 'Total'], data=searilized, style=Pack(alignment=CENTER))
+        self.stats.add(table)
 
     def show_stats(self, widget):
         self.main_window.content = self.stats
@@ -203,7 +206,7 @@ class ExpenseManager(toga.App):
 
         if amount_input and input_content:
             edit_data = {}
-            if self.edit_id:
+            if hasattr(self, 'edit_id') and self.edit_id:
                 edit_data['_id'] = self.edit_id
 
             self.upsert_expense(

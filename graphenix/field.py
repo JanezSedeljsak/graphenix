@@ -52,6 +52,9 @@ class Field:
         def regex(self, val):
             raise Exception("Regex is only allowed on type String")
         
+        def iregex(self, val):
+            raise Exception("Regex is only allowed on type String")
+        
         def is_in(self, values):
             return self.make_cond_object(FilterOperationEnum.IS_IN, values)
         
@@ -92,6 +95,9 @@ class Field:
         
         def regex(self, val):
             return self.make_cond_object(FilterOperationEnum.REGEX, val)
+        
+        def iregex(self, val):
+            return self.make_cond_object(FilterOperationEnum.IREGEX, val)
 
     class Bool(BaseType):
         def __init__(self, default: bool = False):
