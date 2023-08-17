@@ -548,6 +548,19 @@ class GraphenixUnitTests(CommonTestBase):
         _, tasks = Task.filter(Task.owner.is_not(users[0])).all()
         self.assertEqual(0, len(tasks))   
 
+    @CommonTestBase().prepare_and_destroy
+    def test_filter_23(self):
+        """ test iregex """
+        user0 = User(first_name="JOHN", last_name="last1", email="fl@gmail.com", age=30).make()
+        user1 = User(first_name="john", last_name="last2", email="fl2@gmail.com", age=32).make()
+
+        _, rows = User.filter(User.first_name.regex('.*john.*')).all()
+        self.assertEqual(1, len(rows))
+
+        _, rows = User.filter(User.first_name.iregex('.*john.*')).all()
+        self.assertEqual(2, len(rows))
+
+
 
     @CommonTestBase().prepare_and_destroy
     @CommonTestBase().prepare_comlex_struct
