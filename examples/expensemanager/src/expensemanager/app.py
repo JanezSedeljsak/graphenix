@@ -206,7 +206,7 @@ class ExpenseManager(toga.App):
 
         if amount_input and input_content:
             edit_data = {}
-            if hasattr(self, 'edit_id') and self.edit_id:
+            if hasattr(self, 'edit_id') and (self.edit_id or self.edit_id == 0):
                 edit_data['_id'] = self.edit_id
 
             self.upsert_expense(
