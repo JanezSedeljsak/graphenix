@@ -340,6 +340,7 @@ opis diplome v angleščini
   {\bf BCNF} & Boyce-Codd normal form & normalna oblika, ki se uporablja pri normalizaciji podatkovne baze \\
   {\bf CI/CD} & continuous integration, continuous delivery & neprekinjena integracija in postavitev \\
   {\bf CLI} & command line interface & vmesnik za ukazno vrstico \\
+  {\bf CRUD} & create, read, update, delete & ustvarjanje, branje, posodabljanje in brisanje \\
   {\bf CSV} & comma-separated values & vrednosti, ločene z vejico \\
   {\bf DBMS} & database management system & sistem za upravljanje podatkovnih baz \\
   {\bf ER} & entitiy relationship (diagram) & (diagram) entitet in relaciji \\
@@ -368,11 +369,11 @@ opis diplome v angleščini
 \bigskip
 
 %\noindent\textbf{Povzetek:} 
-\noindent V diplomskem delu je predstavljenih trenutno nekaj najbolj uporabljenih sistemov za upravljanje podatkovnih baz (DMBS). V veliki meri so standard podatkovnih baz še vedno relacijske podatkovne baze. V ta namen je tekom dela predstavljen razvoj lastnega DBMS za programski jezik Python.
+\noindent V diplomskem delu je predstavljenih trenutno nekaj najbolj uporabljenih sistemov za upravljanje podatkovnih baz (DBMS). V veliki meri so standard podatkovnih baz še vedno relacijske podatkovne baze. V ta namen je tekom dela predstavljen razvoj lastnega DBMS za programski jezik Python.
 
 Sam razvoj namenske knjižnice je pripravljen v programskem jeziku C++, saj gre za nizko nivojski jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilniku. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba dobrih podatkovnih struktur in algoritmov, ki dobro izkoristijo I/O operacije, ki jih ponuja operacijski sistem in posledično pripeljejo do zanesljivega in optimalnega delovanja DBMS.
 
-V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije DBMS na različnih scenarijih, kjer razvito programsko opremo primerjamo z že obstoječimi DMBS – SQLite in MySQL.
+V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije DBMS na različnih scenarijih, kjer razvito programsko opremo primerjamo z že obstoječimi DBMS – SQLite in MySQL.
 \bigskip
 
 \noindent\textbf{Ključne besede:} \tkeywords.
@@ -425,7 +426,7 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
         \newline
         \newline
         \noindent
-        Gre za standard, ki se je prvič pojavil leta 1970, ko ga je razvil IBM \cite{IBM_DMBS_1970}. Razvita je bila prva družina relacijskih podatkovnih baz DB2, katero je razvil Edgar F. Codd – matematik izobražen na univerzi Oxford.
+        Gre za standard, ki se je prvič pojavil leta 1970, ko ga je razvil IBM \cite{IBM_DBMS_1970}. Razvita je bila prva družina relacijskih podatkovnih baz DB2, katero je razvil Edgar F. Codd – matematik izobražen na univerzi Oxford.
         \textbf{TODO}
         
         \subsection{Nerelacijske podatkovne baze}
@@ -438,7 +439,7 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
     \newpage
     \subsection{Vloga DBMS v informacijskih sistemih}
 
-    Spodnja slika predstavlja standardno arhitekturno zasnovo za večino modernih spletnih aplikaciji:
+    Na sliki \ref{infsistem} je predstavljena standardna zasnova arhitekture za večino modernih informacijskih sistemov:
     \begin{figure}[h]
         \centerline{\includegraphics[height=0.5\textwidth, angle=0]{webarchitecture.png}}
         \caption{Struktura sodobnega informacijskega sistema}
@@ -446,7 +447,8 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
     \end{figure}
 
     \noindent
-    Na sliki \ref{infsistem} je predstavljena struktura odjemalec - strežnik, katero sestavljajo tri ključne komponente. Na eni strani so odjemalci, ki vključujejo mobilne aplikacije, spletne vmesnike ... Ti odjemalci z strežniškim delom aplikacije komunicirajo preko standardiziranih metod na nivoju API komponente.
+    
+    Diagram je sestavljen iz treh ključnih komponent. Na eni strani so odjemalci, ki vključujejo mobilne, spletne aplikacije  ... Ti odjemalci s strežniškim delom aplikacije komunicirajo preko standardiziranih metod na nivoju API komponente.
 
     Večji del informacijskega sistema oz. spletne aplikacije se nahaja v ozadju, kjer je realizirana poslovna logika in upravljanje s podatki – podatkovno bazo. V sodobnih informacijskih sistemih za dodaten nivo varnosti in lažjo manipulacijo podatkov pogosto uporabimo še ORM. Gre za objektno predstavitev posameznih entitet znotraj podatkovne baze in predstavitev zapisov, kot instance objektov. ORM predstavlja dodaten nivo abstrakcije, ki programerju med drugim omogoči tudi avtomatske migracije podatkovne baze, kot tudi lažjo integracijo podatkovne baze znotraj uporabljenega programskega jezika.
 
@@ -637,7 +639,7 @@ first_mesage = Message(
 
         Kot dodatna optimizacija za iskanje intervalov znotraj drevesa je v naši implementaciji dodana še struktura dvojno povezanega seznama na nivoju listov drevesa. Tako ima vsak list kazalec na predhoden in naslednji list v drevesu. Na primeru podatkovne baze, je to zelo uporabno, ko iščemo npr. prvih petdeset uporabnikov razvrščenih po priimku. V prvi fazi je seveda potrebno imeti kreirano indeksno strukturo za iskan atribut. Zatem pa je iskanje zapisov dokaj trivialno, namreč sprehodimo se le do najbolj levega lista v drevesu, nato pa se sprehodimo po povezanem seznamu od leve proti desni in shranimo kazalce na želene zapise, jih nato le preberemo iz matrike podatkov, ter razvrstimo po ciljnem atributu.
 
-        Na spodnji sliki je prikazan preprost primer B+ drevesa realiziran s stopnjo $M=2$:
+        Na sliki \ref{btree_example} je prikazan preprost primer B+ drevesa realiziran s stopnjo $M=2$:
         \colorbox{BurntOrange}{Dodaj še kazalce iz posameznega zapisa v listu (slika)}
         
         \begin{figure}[h]
@@ -673,7 +675,7 @@ child {node (E){29\nodepart{two}31}}
 \end{center}
 
             \caption{Primer B+ drevesa, kjer indeksiramo pošiljatelje sporočil}
-            \label{sl:mindmap}
+            \label{btree_example}
         \end{figure}
 
         
@@ -687,7 +689,7 @@ child {node (E){29\nodepart{two}31}}
             \item Vozlišče je veljavno, kadar ima vsaj $M/2$ zapisov, kjer je $M$ kapaciteta oz. maksimalno število podatkov, ki jih lahko ima vozlišče.
         \end{enumerate}
 
-        \subsection{Implementacija iskanja v MySQL in SQLite DMBS}
+        \subsection{Implementacija iskanja v MySQL in SQLite DBMS}
         \colorbox{BurntOrange}{https://dev.mysql.com/doc/refman/8.0/en/index-btree-hash.html}
 
         \subsection{Implementacija B+ dreves za shranjevanje na disk}
@@ -861,12 +863,14 @@ query = Message.filter(
 
         \noindent
         V zgornjem primeru je sestavljena poizvedba, kjer izvedemo nabor sporočil, ki so bila poslana v zadnjih petih dneh, poleg tega pa želimo, da je izpolnjen vsaj eden izmed pogojev – pošiljatelj/prejemnik je "John" in prejemnik ni "Jane".
+
+        V sklopu filtriranja podpiramo 11 različnih operaciji. To so je enako, ni enako, večje, večje ali enako, manjše, manjše ali enako, regex, iregex (neobčutljiv regex na velike in male črke), je v (element je v seznamu), ni v (element ni v seznamu), med (vrednost je v intervalu).
         
         \item \textbf{Omejitev števila zapisov + določanje odmikov – funkciji ``limit`` in ``offset`` (ekvivalentno, kot v DBMS)}. Gre za preprosta ukaza, ki sta namenjena omejevanju števila zapisov, ko iščemo le prvih nekaj zapisov oz. prvih nekaj zapisov z določenim odmikom. 
 
         Pogost primer uporabe je implementacija strani (ang. paging). Razlog za implementacijo je optimizacija prikaza na način, da omejimo število zapisov, ki jih naenkrat prikažemo uporabniku. Lahko, pa gre tudi za čisto preprosto poizvedbo, kjer iščemo prvih nekaj zapisov glede na določene kriterije npr. zadnjih pet sporočil določenega uporabnika.
         
-        \item \textbf{Urejanje zapisov – funkcija ``order`` (DMBS – order by)}. 
+        \item \textbf{Urejanje zapisov – funkcija ``order`` (DBMS – order by)}. 
         \noindent
         Izvedba urejanja podatkov je omejena na urejanje znotraj ene entitete oz. atributih ene entitete. Pri tem imamo možnost urejati po poljubnem številu atributov, pri čemer lahko izvajamo bodisi naraščajoče bodisi padajoče urejanje.
 
@@ -917,6 +921,7 @@ query = User.link(tasks=Task)
 }
 \end{minted}
 
+        \newpage
         \subsubsection{Algoirtem za poizvedovanje z uporabo relaciji}
 
         Spodaj je v obliki psevdokode predstavljen algoritem za poizvedovanje, kjer omogočamo nabor podatkov iz različnih entitet hkrati.
@@ -968,6 +973,7 @@ end fn
 
         Vse operacije so omejene nad striktno eno entiteto in enim stolpcem, kar pomeni, da lahko v eni poizvedbi poiščemo npr. iskanje najnovejšega sporočila med zapisi. V večini primerov agregaciji, pa ne iščemo globalno gledanega zapisa, ki najbolj ustreza našim kriterijem, ampak iščemo zapis glede na neko dodatno polje npr. iščemo najnovejše sporočilo za vsakega posameznega uporabnika. Kadar govorimo v smislu SQL poizvedb, to pomeni uporabo ``GROUP BY`` stavka.
 
+\newpage
 \begin{minted}[breaklines]{sql}
 SELECT MAX(messages.date) as 'latest' 
 FROM messages
@@ -1014,33 +1020,13 @@ query = Message.agg(
     \noindent
     Vse te knjižnice so v osnovi napisane s pomočjo Python.h API vmesnika. Gre za vmesnik med programskima jezikoma Python in C. Na nivoju jezika C lahko vsak tip predstavimo z vgrajeno PyObject strukturo, katerega lahko neposredno uporabljamo na nivoju programskega jezika C. 
 
-    \newpage
-    \subsection{Primer uporabe Python.h API vmesnika}
-    Primer preproste funkcije na nivoju programskega jezika C, ki vrne seštevek dveh celih števil:
-\begin{minted}{c}
-#include <Python.h>
-
-static PyObject* add_nums(PyObject* self, PyObject* args) {
-    int64_t a, b;
-    if (!PyArg_ParseTuple(args, "ii", &a, &b)) {
-        return NULL;
-    }
-
-    int64_t sum = a + b;
-    return PyLong_FromLong(sum);
-}
-\end{minted}
-
-    \noindent
-    Funkcija je sestavljena tako, da v prvi fazi argumente shrani na naslove spremenljivk, ki so deklarirane na nivoju programskega jezika C (to sta v zgornjem primeru $int64_t a, b;$). Argumenti so poslani kot terka, za katero moramo najprej povedati strukturo, v zgornjem primeru je to $ii$, kar pomeni dve celi števili. Seveda, lahko kot argumente beremo tudi ostale strukture vendar branje postane bistveno bolj kompleksno, ko želimo brati sestavljene tipe. V tem primeru je v večini primerov lažje preprosto pretvoriti vse v primitivne tipe in na nivoju programskega jezika C operirati direktno s temi.
-
     \subsection{Naprednejša knjižnica z dodatnimi strukturami za lažji prehod med jezikoma}
 
     Izdelava knjižnic s pomočjo Python.h API vmesnika pomeni uporabo programskega jezika C, kar pomeni, da je velik del implementaciji prepuščen razvijalcu, da si tukaj delo malo olajšamo smo se odločili za razvoj knjižnice s pomočjo C++ programskega jezika in knjižnice, ki dela nivo višje, kot Python.h API - PyBind11 \cite{PYBIND11_GITHUB}. Gre za knjižnico, ki bistveno olajša pretvorbe podatkovnih struktur med jezikoma npr. kadar želimo, kot parameter poslati strukturo seznama v C++ lahko to preprosto definiramo, kot tip vector in pretvorba iz seznama v vektor bo avtomatska. Knjižnica deluje s pomočjo C++ verzije 11, ki je izšla septembra 2011.
 
     Poleg avtomatskih pretvorb, pa imamo že vseeno možnost uporabe vseh tipov, ki so vključeni v Python.h API vmesnik.
 
-    \subsection{Primer uporabe PyBind11 knjižnice}
+    \subsubsection{Primer uporabe PyBind11 knjižnice}
     Spodaj imamo še preprost primer vse potrebne kode na nivoju C++ za izdelavo preproste knjižnice, ki vsebuje funkcijo za seštevek dveh celih števil (main.cpp):
 \begin{minted}{c++}
 #include <pybind11/pybind11.h>
@@ -1064,8 +1050,23 @@ import my_math_module
 total = my_math_module.custom_sum(5, 10)
 print(total) # prints 15
 \end{minted}
-    
+
     \newpage
+    \section{Končna struktura namenske knjižnice}
+
+    Na sliki \ref{graphenix_structure} je diagram, ki prikazuje strukturo celotnega sistema z vsemi pomembnimi komponentami in orodji, ki omogočajo komunikacijo med njimi.
+    
+    \begin{figure}[H]
+            \centerline{\includegraphics[width=0.9\textwidth, angle=0]{graphenix_structure.png}}
+            \caption{Struktura celotne Graphenix knjižnice}
+        \label{graphenix_structure}
+    \end{figure}
+
+    \noindent
+    Sama knjižnica je sestavljena iz dveh ključnih komponent. To sta ORM, ki je napisan s pomočjo programskega jezika Python in predstavlja tudi vhodno točko za uporabnike knjižnice. Na drugi strani, pa je jedro DBMS, ki z ORM komunicira preko prej omenjene PyBind11 knjižnice.
+
+    Jedro vsebuje vse performančno gledano kritične operacije. Jedro za shranjevanje vseh podatkov uporablja binarne datoteke, ki so zunanja komponenta knjižnice, saj služijo le za shranjevanje podatkov.
+    
     \section{Testno usmerjen razvoj}
 
     Da zagotovimo pravilno delovanje nekega bolj kompleksnega sistema je na področju razvoja programske opreme zelo priporočen testno usmerjen razvoj. Gre za način validacije pravilnega delovanja posameznih komponent sistema, kot ločeni segmenti in kot celotna enota. V primeru razvoja izbrane programske opreme smo proces testiranja razdelili na tri segmente – testiranje enot, integracijsko testiranje in performančno testiranje.
@@ -1082,31 +1083,13 @@ print(total) # prints 15
 
     Izvedba tretje faze je sicer zelo podobna fazi integracijskega testiranja z izjemo, da ne posvetimo toliko pozornosti sami pravilnosti rezultatov in ne testiramo toliko različnih scenarijev in robnih pogojev, temveč je pozornost usmerjena predvsem v časovne meritve – torej koliko časa porabi posamezen scenarij za izvedbo.
 
-    Pripravljenih imamo 10 performančnih testov, kjer je vsak test ločen scenarij, ki meri čas izvajanja v posameznem scenariju (sak izmed teh testov se izvede petkrat, kjer ob koncu izračunamo povprečni čas izvajanja). Spodaj imamo še primer izpisa izvedbe performančne analize:
-
-\begin{minted}[breaklines]{text}
-Avg: 11.315 - Bulk delete 1M codelist records
-Avg: 1.373 - Create 100K basic codelist records
-Avg: 0.712 - Bulk create 100K basic codelist records
-Avg: 0.600 - Create 10K records and read them by IDs
-Avg: 1.372 - Read 1M records at once
-Avg: 0.010 - Read multilevel query and searilize data
-Avg: 0.144 - Read with limit 1500 + order by country from Model with 1M records
-Avg: 0.011 - Read with limit 100 from Model with 1M records
-Avg: 0.092 - Read with limit 100 + order by country from Model with 1M records
-Avg: 1.599 - Read with order by country from Model with 1M records
-----------------------------------------------------------------------
-Ran 10 tests in 254.074s
-
-OK
-[graphenix] Finished tests!
-\end{minted}
+    Pripravljenih imamo 10 performančnih testov, kjer je vsak test ločen scenarij, ki meri čas izvajanja. Vsak test se izvede petkrat, kjer ob koncu izračunamo povprečni čas izvajanja).
    
    \subsection{Integracija avtomatskega testiranja z GitHub}
 
    Platforma GitHub omogoča izvajanje različnih akciji ob različnih dogodkih najpogosteje v praksi to počnemo, kadar izvajamo združenje vej ali pa kar ob vsaki posodobitvi kode. V praksi se poleg avtomatskega testiranja na tem področju lahko izvajajo tudi avtomatske posodobitve strežniške aplikacije ali različne periodične naloge, kot npr. kreiranje rezervnih verziji podatkovne baze iz produkcijskega strežnika.
 
-   V našem primeru se ob vsaki posodobitvi kode izvede akcija za preverjanje pravilnega delovanja aplikacije. Akcije se izvedejo za dve verziji programskega jezika Python (v3.10 in v3.11), postavitev pa se izvede na virtualnem Linux Ubuntu okolju.
+   V našem primeru se ob vsaki posodobitvi kode izvede akcija za preverjanje pravilnega delovanja aplikacije. Akcije se izvedejo za dve verziji programskega jezika Python (v3.10 in v3.11), postavitev pa se izvede na virtualnem Linux okolju.
 
    Ko je okolje pravilno postavljeno se akcije izvedejo v naslednjem zaporedju:
    \begin{enumerate}
@@ -1134,7 +1117,7 @@ OK
 
     V okviru prvega scenarija izvajamo postopek vstavljanja podatkov v entiteto uporabnikov. V tem procesu postopoma povečujemo število zapisov, ki jih sistematično vnašamo v podatkovno bazo.
 
-    Na grafu so prikazane normalizirane vrednosti. Za vsak pristop je prikazan čas vstavljanja 1000 zapisov, izražen v milisekundah.
+    Na grafu \ref{vnos} so prikazane normalizirane vrednosti. Za vsak pristop je prikazan čas vstavljanja 1000 zapisov, izražen v milisekundah.
    
    \begin{figure}[H]
         \centerline{\includegraphics[width=0.70\textwidth, angle=0]{singleinsert.png}}
@@ -1169,7 +1152,7 @@ OK
     \section{Velikosti podatkovnih baz na disku}
     \label{size_analysis}
 
-    Glede na prva dva scenarija smo pripravili tudi analizo porabe prostora na disku.
+    Glede na prva dva scenarija smo pripravili tudi stolpčni grafikon \ref{velikosti}, kjer primerjamo porabo prostora na disku posameznega DBMS.
     
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.7\textwidth, angle=0]{sizes.png}}
@@ -1224,7 +1207,7 @@ LIMIT 500
     \section{Primerjava poizvedb z uporabo relaciji}
     \label{join_lbl}
 
-    V scenariju definiramo poizvedbo, kjer izvedemo nabor podatkov iz dveh entitet. Št. zapisov definira število uporabnikov. Za vsakega uporabnika, pa je bilo vnesenih še 10 nalog, ki so vezani preko tujega ključa ``user\_id`` v entiteti nalog.
+    V scenariju definiramo poizvedbo, kjer izvedemo nabor podatkov iz dveh entitet. Št. zapisov je določeno s številom uporabnikov. Za vsakega uporabnika, pa je bilo vnesenih še 10 nalog, ki so vezane preko tujega ključa ``user\_id`` v entiteti nalog.
     
 \begin{minted}[breaklines]{SQL}
 SELECT * FROM users 
@@ -1262,7 +1245,7 @@ FROM tasks GROUP BY user_id
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.75\textwidth, angle=0]{agg.png}}
         \caption{Uporaba agregacijskih metod}
-        \label{join}
+        \label{agg}
     \end{figure}
 
     \noindent
@@ -1272,7 +1255,7 @@ FROM tasks GROUP BY user_id
 
     \section{Pohitritve s pomočjo indeksiranja}
 
-    Kot zadnji scenarij je predstavljen eden izmed najbolj kritičnih segmentov DBMS – pohitritev iskanja s pomočjo indeksiranja podatkov. V scenariju je predstavljena pohitritev iskanja, kjer primerjamo pristop brez in z uporabo indeksiranja.
+    Kot zadnji scenarij je predstavljen eden izmed najbolj kritičnih segmentov DBMS – pohitritev iskanja s pomočjo indeksiranja podatkov. V scenariju primerjamo pristop brez in z uporabo indeksiranja.
     
 \begin{minted}[breaklines]{SQL}
 SELECT * FROM users
@@ -1280,12 +1263,12 @@ WHERE points = 5432
 \end{minted}
 
     \noindent
-    Na spodnjem grafu je prikazano iskanje zapisa nad entiteto z \num{100000} zapisi.
+    Na grafu \ref{old_speedup} je prikazano iskanje zapisa nad entiteto z \num{100000} zapisi.
 
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.7\textwidth, angle=0]{indexing_speedup_100000.png}}
         \caption{Iskanje specifičnega zapisa ($N = \num{100000}$)}
-        \label{join}
+        \label{old_speedup}
     \end{figure}
 
     \noindent
@@ -1302,7 +1285,7 @@ WHERE points = 5432
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.75\textwidth, angle=0]{indexing_speedup_100000_v2.png}}
         \caption{Iskanje specifičnega zapisa ($N = \num{1000000}$ z optimizacijo)}
-        \label{join}
+        \label{idx_speedup}
     \end{figure}
 
     \noindent
@@ -1310,12 +1293,12 @@ WHERE points = 5432
 
     \subsubsection{Analiza iskanja nad večjo bazo podatkov}
 
-    V spodnjem grafu, je prikazana še pohitritev enake poizvedbe, kot v zgornjem scenariju. V tem primeru, pa je število vseh uporabnikov \num{1000000}.
+    Na grafu \ref{idx_speedup_2} je prikazana še pohitritev enake poizvedbe, kot v zgornjem scenariju. V tem primeru, pa je število vseh uporabnikov \num{1000000}.
     
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.75\textwidth, angle=0]{indexing_speedup_1000000_v2.png}}
         \caption{Iskanje specifičnega zapisa ($N = \num{1000000}$ z optimizacijo)}
-        \label{join}
+        \label{idx_speedup_2}
     \end{figure}
 
     \noindent
@@ -1327,8 +1310,6 @@ WHERE points = 5432
     Pomembno je omeniti, da je scenarij zelo prilagojen uporabi indeksiranja, saj v scenariju iskanja, kjer vrednosti niso unikatne učinkovitost indeksa zelo hitro pade. Poleg tega je bilo iskanje izvedeno, kot iskanje specifične vrednosti v drevesu, medtem, ko če bi iskali širši interval vrednosti bi se ponovno oddaljili od časovne zahtevnosti $O(log_M(N))$ in približali $O(N)$.
 
     Če potegnemo rdečo nit je jasno, da se pri odločanju o uporabi indeksov odpira kompleksno vprašanje, ki zahteva premišljeno obravnavo. Odgovornost za to odločitev se prepušča razvijalcem, pri čemer je ključnega pomena, da se kot razvijalci zavedamo optimizaciji in pasti, ki izvirajo iz uporabe B dreves za indeksiranje v izbranem DBMS. Poleg tega je nujno, da poznamo naravo podatkov, s katerimi delamo, in vrst poizvedb, ki jih načrtujemo, saj je optimizacija z indeksiranjem smiselna le v določenih kontekstih.
-
-
     
 \chapter{Scenariji oz. primeri uporabe}
 \label{ch3}
@@ -1355,14 +1336,14 @@ app.run()
 
     \subsection{Kreiranje sheme za beleženje podatkov}
 \begin{minted}{python}
-class ReqInfo(Model):
-    route = Field.String(size=255)
-    timestamp = Field.DateTime().as_index()
-    route_req = Field.String(size=1024)
-    route_res = Field.String(size=1024)
-    resp_code = Field.Int()
+class ReqInfo(gx.Model):
+    route = gx.Field.String(size=255)
+    timestamp = gx.Field.DateTime().as_index()
+    route_req = gx.Field.String(size=1024)
+    route_res = gx.Field.String(size=1024)
+    resp_code = gx.Field.Int()
 
-logging = Schema('logging', models=[ReqInfo])
+logging = gx.Schema('logging', models=[ReqInfo])
 if not logging.exists():
     logging.create()
 \end{minted}
@@ -1373,7 +1354,7 @@ if not logging.exists():
     \newpage
     \subsection{Dekorator za dinamično dodajanje beleženja}
 
-\begin{minted}{python}
+\begin{minted}[breaklines]{python}
 def route_with_log(route):
     def decorator(f):
         @wraps(f)
@@ -1432,7 +1413,7 @@ ReqInfo(id=1, route=/get-range, timestamp=2023-07-16 03:02:05,
     
 \begin{minted}{python}
 route_stats = ReqInfo\
-    .agg(by=ReqInfo.route, count=AGG.count())
+    .agg(by=ReqInfo.route, count=gx.AGG.count())
 \end{minted}
 
     \subsubsection{Izpis napak v zadnjem dnevu}
@@ -1457,12 +1438,100 @@ count, api_errors = ReqInfo\
     
 \begin{minted}{python}
 _, all_reqs = ReqInfo.all()
-ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
+gx.ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
 \end{minted}
 
-    \section{Preprosta namizna aplikacija za upravljanje dnevnih ciljev}
+    \section{Namizna aplikacija za beleženje stroškov}
 
-    \textbf{Če bo uspelo bo aplikacija mobilna.}
+    V tem segmentu je predstavljen razvoje preproste namizne aplikacije za beleženje stroškov. Aplikacija omogoča pregled stroškov, vnašanje, urejanje in brisanje, ter statističen pregled, kjer so stroški grupirani glede na kategorije.
+
+    \subsection{Zaslonski pregled aplikacije}
+    Na sliki \ref{home_screen} je prikazan začetni zaslon, kjer imamo v obliki seznama pregled vseh stroškov uporabnika in ob tem še zaslon za urejanje ali kreiranje novega stroška. 
+    
+    \begin{figure}[H]
+        \centerline{\includegraphics[width=1\textwidth, angle=0]{app_psd.png}}
+        \caption{Seznam stroškov z možnostjo vnašanja in urejanja}
+        \label{home_screen}
+    \end{figure}
+
+    \noindent
+    Za vsak posamezen strošek sta definirani akciji brisanja in urejanja. Poleg tega lahko stroške glede na naziv, ceno in kategorijo tudi urejamo. Hkrati, pa je stroške mogoče tudi filtrirati po nazivu.
+
+    Na desnem zaslonu je predstavljen obrazec, do katerega dostopamo preko urejanja ali kreiranja novega stroška. Gre za preprost obrazec, kjer določimo naziv, ceno in kategorijo posameznega stroška.
+
+    \subsubsection{Statističen pregled stroškov}
+    Na sliki \ref{stats_screen} je prikazan statističen pregled stroškov, kjer so ti grupirani glede na kategorijo. Gre za tabelarni prikaz, kjer imamo za vsako kategorijo naziv, datum zadnjega stroška, število stroškov in vsoto cen vseh stroškov posamezne kategorije.
+
+    \begin{figure}[H]
+        \centerline{\includegraphics[width=1\textwidth, angle=0]{stats_psd.png}}
+        \caption{Statističen pregled stroškov}
+        \label{stats_screen}
+    \end{figure}
+
+    \subsection{Aplikacija iz vidika kode}
+
+    Grahepnix je dobra izbira, saj gre za relativno nezahtevno aplikacijo, kjer ne potrebujemo skrbeti za več hkratnih dostop do baze podatkov, poleg tega pripravljen ORM omogoča tudi bistveno lažjo manipulacijo podatkov.
+
+    Za izris uporabniškega vmesnika aplikacija uporablja BeeWare \cite{BEE_WARE}, ki omogoča medplatformski razvoj programske opreme, kar pomeni, da lahko isto kodo uporabimo za več različnih operacijskih sistemov.
+
+    \subsubsection{Stuktura podatkovne baze}
+
+\begin{minted}{python}
+class Invoice(gx.Model):
+    title = gx.Field.String(size=20)
+    amount = gx.Field.Int()
+    day = gx.Field.DateTime()
+    expense_type = gx.Field.Link()
+
+class ExpenseType(gx.Model):
+    name = gx.Field.String(size=30)
+\end{minted}
+
+    \noindent
+    V namen beleženja stroškov je definirana entiteta ``Invoice``, kjer določimo naziv, ceno, datum in kategorijo posameznega stroška.
+    Poleg tega, pa imamo še tabelo, ki služi kot šifrant za kategorije stroškov. Podatki v kategorijah so vnaprej pripravljeni preko vnosa ob kreiranju podatkovne baze.
+
+    \subsubsection{Metoda za statistični nabor podatkov}
+
+\begin{minted}{python}
+def refresh_stats(self):
+    agg_data = Invoice.agg(by=Invoice.expense_type,
+                           count=gx.AGG.count(), 
+                           amount=gx.AGG.sum(Invoice.amount), 
+                           latest=gx.AGG.max(Invoice.day))
+    
+    data = sorted(agg_data, key=lambda x: -x.amount)
+    ...
+\end{minted}
+
+    \noindent
+    V metodi najprej izvedemo agregacijsko poizvedbo, kjer podatke grupiramo glede na kategorijo in pridobimo število zapisov, datum zadnjega stroška in vsoto vseh cen pri posamezni kategoriji.
+
+    Za zaključek te podatke še uredimo glede na skupno ceno, saj ta funkcionalnost za agregacijske metode v DBMS ni podprta.
+
+    \subsubsection{Nabor podatkov za glavni prikaz stroškov}
+    
+\begin{minted}[breaklines]{python}
+def display_expenses(self, search=None, order_by=None):
+        query = Invoice.link(expense_type=ExpenseType)
+        if search:
+            query = query.filter(
+                Invoice.title.iregex(f'.*{search}.*')
+            )
+
+        match order_by:
+            case 'Title':
+                query = query.order(Invoice.title)
+            case 'Amount':
+                query = query.order(Invoice.amount.desc())
+            case _:
+                query = query.order(Invoice.day.desc())
+        
+        _, invoices = query.all()
+        for invoice in invoices:
+            self.items_box.add(self.make_card(invoice))
+\end{minted}
+    
     
 
 \chapter{Sklepne ugotovitve}
@@ -1496,9 +1565,20 @@ ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
         \end{itemize}
     \end{enumerate}
     
-    
     \section{Refleksija razvoja}
     \label{refleksija}
+
+    Glavni cilj celotnega diplomskega dela je bila implementacija lastnega DBMS, kjer bi na praktičen način spoznali ozadje delovanja relacijskih podatkovnih baz in obenem izdelali namensko knjižnico za programski jezik Python.
+
+    Razvoj dobrega DBMS ni trivialen, kar je mogoče razpoznati že iz tega, da se produkcijsko dokazani DBMS sistemi konstantno posodabljajo in odpravljajo manjše napake, ki se še vedno pojavljajo.
+    
+    Spoznali smo, kako organizirati podatke za učinkovito izvedbo vseh operacij CRUD (ustvarjanje, branje, posodabljanje in brisanje). Za uspešno izvajanje je ključnega pomena tudi dobro poznavanje operacijskega sistema in načina, kako jedru DBMS omogočiti optimalno delo z datotekami.
+    
+    Ključnega pomena tekom razvoja je bila tudi implementacija indeksiranja z uporabo B drevesa. S tem smo uporabnikom namenske knjižnice omogočili možnost določanja indeksov, ki bistveno pospešijo iskanje. Gre definitivno za najbolj kompleksen del celotnega sistema, saj je sami implementaciji drevesa z uporabo C++ kazalcev dodana še kompleksnost shranjevanja v datoteki. Posledično ostaja veliko funkcionalnosti, ki znotraj segmenta indeksiranja niso dobro ali sploh niso implementirane.
+    
+    Poleg tega smo tekom razvoja dodali še lasten ORM, ki direktno komunicira z operacijami jedra, kar bistveno zmanjša kompleksnost, ki jo sicer prinese ORM, kjer moramo skrbeti še za dodatne preslikave med modeli in SQL poizvedbami. Veliko operacij je prilagojenih objektnemu pristopu branja, kar se razlikuje od klasičnih relacijskih podatkovnih baz in se nekoliko približa pristopu NoSQL.
+    
+    Kot celota je bil razvoj uspešen, z dodatkom različnih testnih scenarijev smo tekom razvoja zagotovili pravilno delovanje. Analiza uspešnosti je pokazala primerljive rezultate z MySQL in SQLite DBMS. Za konec, pa smo izdelali še nekaj preprostih primerov uporabe namenske knjižnice Grahepnix.
 
 %\cleardoublepage
 % \addcontentsline{toc}{chapter}{Literatura}

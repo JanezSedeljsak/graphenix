@@ -72,7 +72,9 @@ class ExpenseManager(toga.App):
     def display_expenses(self, search=None, order_by=None):
         query = Invoice.link(expense_type=ExpenseType)
         if search:
-            query = query.filter(Invoice.title.iregex(f'.*{search}.*'))
+            query = query.filter(
+                Invoice.title.iregex(f'.*{search}.*')
+            )
 
         match order_by:
             case 'Title':
@@ -84,8 +86,7 @@ class ExpenseManager(toga.App):
         
         _, invoices = query.all()
         for invoice in invoices:
-            card = self.make_card(invoice)
-            self.items_box.add(card)
+            self.items_box.add(self.make_card(invoice))
 
     def do_refresh(self, widget):
         while self.items_box.children:
@@ -96,8 +97,10 @@ class ExpenseManager(toga.App):
         self.display_expenses(search=search_value, order_by=order_value)
 
     def refresh_stats(self):
-        agg_data = Invoice.agg(by=Invoice.expense_type, count=gx.AGG.count(), 
-                               amount=gx.AGG.sum(Invoice.amount), latest=gx.AGG.max(Invoice.day))
+        agg_data = Invoice.agg(by=Invoice.expense_type,
+                               count=gx.AGG.count(), 
+                               amount=gx.AGG.sum(Invoice.amount), 
+                               latest=gx.AGG.max(Invoice.day))
         
         data = sorted(agg_data, key=lambda x: -x.amount)
         searilized = [(self.expense_type_names[row.expense_type], datetime.fromtimestamp(row.latest).strftime('%d. %m. %Y %H:%M'), str(row.count), f"{row.amount}€") for row in data]
