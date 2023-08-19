@@ -1,10 +1,11 @@
 import toga
 from toga.style import Pack
-from toga.style.pack import COLUMN, ROW, CENTER
+from toga.style.pack import COLUMN, ROW, CENTER, RIGHT
 from datetime import datetime
 import graphenix as gx
 
 TBL_PLACEHOLDER = ' ' * 40
+PAGE_SIZE = 5
 
 class Invoice(gx.Model):
     title = gx.Field.String(size=20)
@@ -26,7 +27,7 @@ class ExpenseManager(toga.App):
         ), id=f'expense_{invoice.id}')
 
         top_label = toga.Label(f"{invoice.title} - {invoice.amount}€", style=Pack(padding=(5, 10), font_weight='bold'))
-        bottom_label = toga.Label(f"{invoice.expense_type.name} - {invoice.day.strftime('%d. %m. %Y')}", style=Pack(padding=(5, 10)))
+        bottom_label = toga.Label(f"{invoice.expense_type.name} - {invoice.day.strftime('%d. %m. %Y')}", style=Pack(padding=(0, 0, 5, 10)))
         
         delete_button = toga.Button('Delete', on_press=self.delete_invoice, id=f'delete_{invoice.id}', style=Pack(width=80, padding=(10, 10)))
         edit_button = toga.Button('Edit', on_press=self.edit_invoice, id=f'edit_{invoice.id}', style=Pack(width=80, padding=(10, 10)))
@@ -69,7 +70,7 @@ class ExpenseManager(toga.App):
             record = Invoice.get(actual_id)
             record.delete()
 
-    def display_expenses(self, search=None, order_by=None):
+    def display_expenses(self, search=None, order_by=None, page=0):
         query = Invoice.link(expense_type=ExpenseType)
         if search:
             query = query.filter(
@@ -84,17 +85,20 @@ class ExpenseManager(toga.App):
             case _:
                 query = query.order(Invoice.day.desc())
         
-        _, invoices = query.all()
+        _, invoices = query.offset(PAGE_SIZE * page)\
+            .limit(PAGE_SIZE).all()
+        
         for invoice in invoices:
             self.items_box.add(self.make_card(invoice))
 
     def do_refresh(self, widget):
+        self.page_num_lbl.text = self.page
         while self.items_box.children:
             self.items_box.remove(self.items_box.children[0])
 
         search_value = self.search.value
         order_value = self.order_by_options.value
-        self.display_expenses(search=search_value, order_by=order_value)
+        self.display_expenses(search=search_value, order_by=order_value, page=self.page)
 
     def refresh_stats(self):
         agg_data = Invoice.agg(by=Invoice.expense_type,
@@ -153,6 +157,14 @@ class ExpenseManager(toga.App):
             self.reset_form()
             self.on_go_home(None)
 
+    def on_next_page(self, widget):
+        self.page += 1
+        self.do_refresh(None)
+
+    def on_prev_page(self, widget):
+        self.page = max(self.page - 1, 0)
+        self.do_refresh(None)
+
     def startup(self):
         schema = gx.Schema('expensemanager_db', models=[Invoice, ExpenseType])
         if not schema.exists():
@@ -166,6 +178,7 @@ class ExpenseManager(toga.App):
         expense_types = expense_types
         self.expense_type_names = [et.name for et in expense_types]
         self.name2etype = {et.name: et.id for et in expense_types}
+        self.page = 0
 
         self.main_box = toga.Box(style=Pack(direction=COLUMN, padding=10))
         self.title_input = toga.TextInput(style=Pack(flex=1, padding=(5, 0)), placeholder='Title')
@@ -175,11 +188,26 @@ class ExpenseManager(toga.App):
         self.back_button = toga.Button('Cancel', on_press=self.on_go_home, style=Pack(flex=0.5, padding=(5, 0)))
         self.search = toga.TextInput(style=Pack(flex=1, padding=(5, 0)), placeholder='Search ...', on_change=self.do_refresh)
         self.items_box = toga.Box(style=Pack(direction=COLUMN, padding=(10, 0)))
-        self.scrollable = toga.ScrollContainer(content=self.items_box, style=Pack(height=400))
-        self.order_by_options = toga.Selection(style=Pack(flex=1, padding=(5, 0)), items=['Title', 'Amount', 'Date'], on_select=self.do_refresh)
+        self.scrollable = toga.ScrollContainer(content=self.items_box, style=Pack(height=345))
         
+        self.order_by_box = toga.Box(style=Pack(direction=ROW))
+        self.order_by_lbl = toga.Label('Sort', style=Pack(font_weight='bold', padding=(15, 10, 0, 0)))
+        self.order_by_options = toga.Selection(style=Pack(flex=1, padding=(5, 0)), items=['Title', 'Amount', 'Date'], on_select=self.do_refresh)
+        self.order_by_box.add(self.order_by_lbl)
+        self.order_by_box.add(self.order_by_options)
+
+        self.page_box = toga.Box(style=Pack(direction=ROW, padding=(5, 0), alignment=RIGHT))
+        self.next_page_btn = toga.Button('+', on_press=self.on_next_page, style=Pack(width=50, padding=(0, 0)))
+        self.page_num_lbl = toga.Label(f'{self.page}', style=Pack(padding=(10, 10), font_weight='bold'))
+        self.prev_page_btn = toga.Button('-', on_press=self.on_prev_page, style=Pack(width=50, padding=(0, 0)))
+        self.page_box.add(toga.Box(style=Pack(flex=1)))
+        self.page_box.add(self.prev_page_btn)
+        self.page_box.add(self.page_num_lbl)
+        self.page_box.add(self.next_page_btn)
+
         self.main_box.add(self.search)
-        self.main_box.add(self.order_by_options)
+        self.main_box.add(self.order_by_box)
+        self.main_box.add(self.page_box)
         self.main_box.add(self.scrollable)
 
         self.form = toga.Box(style=Pack(direction=COLUMN, padding=10))
