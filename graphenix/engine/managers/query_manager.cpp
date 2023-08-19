@@ -562,9 +562,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
         rows[i] = parsed_record;
     }
 
-    for (size_t i = 0; i < raw_rows.size(); i++)
-        delete[] raw_rows[i];
-
+    DEALLOCATE_RECORD(raw_rows);
     return rows;
 }
 
