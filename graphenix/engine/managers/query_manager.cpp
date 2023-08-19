@@ -61,14 +61,8 @@ inline void ix_read_with_constraints(std::fstream &ix_file,
     }
 }
 
-inline py::tuple build_record(const model_def &mdef, const py::bytes raw_record)
+inline py::tuple build_record(const model_def &mdef, char *raw_record)
 {
-    char *buffer = new char[mdef.record_size + IX_SIZE];
-    char *raw_record_data;
-    Py_ssize_t raw_rec_size;
-    PyBytes_AsStringAndSize(raw_record.ptr(), &raw_record_data, &raw_rec_size);
-    memcpy(buffer, raw_record_data, mdef.record_size + IX_SIZE);
-
     const int64_t fields_count = mdef.field_sizes.size();
     vector<char *> bin_values(fields_count);
     int64_t offset = 0;
@@ -80,7 +74,7 @@ inline py::tuple build_record(const model_def &mdef, const py::bytes raw_record)
             continue;
 
         char *field_buffer = new char[mdef.field_sizes[i]];
-        memcpy(field_buffer, buffer + offset, mdef.field_sizes[i]);
+        memcpy(field_buffer, raw_record + offset, mdef.field_sizes[i]);
         offset += mdef.field_sizes[i];
         bin_values[i] = field_buffer;
     }
@@ -91,10 +85,10 @@ inline py::tuple build_record(const model_def &mdef, const py::bytes raw_record)
         record[i] = record_vector[i - 1];
 
     int64_t ix;
-    memcpy(&ix, buffer + mdef.record_size, IX_SIZE);
+    memcpy(&ix, raw_record + mdef.record_size, IX_SIZE);
     record[0] = py::cast(ix);
 
-    delete[] buffer;
+    DEALLOCATE_RECORD(bin_values);
     return record;
 }
 
@@ -556,8 +550,7 @@ std::vector<py::tuple> QueryManager::execute_entity_query(const query_object &qo
     std::vector<py::tuple> rows(end);
     for (size_t i = 0; i < end; i++)
     {
-        py::bytes raw_record = py::bytes(raw_rows[i + qobject.offset], mdef.record_size + IX_SIZE);
-        py::tuple parsed_record = build_record(mdef, raw_record);
+        py::tuple parsed_record = build_record(mdef, raw_rows[i + qobject.offset]);
         // here -1 MARKS PK this is why we have -2 as default
         if (qobject.picked_index != -2)
         {
