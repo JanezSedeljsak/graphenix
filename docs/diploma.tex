@@ -596,9 +596,6 @@ class Message(gx.Model):
             \caption{Struktura podatkovne matrike in glave entitete s kazalci}
             \label{sl:mindmap}
         \end{figure}
-
-        \colorbox{BurntOrange}{Popravi sliko - izvedba v tikz Latex}
-        
         
         \subsection{Tipi podatkov}
         Znotraj razvitega DBMS podpiramo 7 podatkovnih tipov:
@@ -624,7 +621,7 @@ jane = User(name='Jane Doe').make()
 first_mesage = Message(
     content = 'Moje prvo sporočilo',
     date = datetime.now(),
-    sender = john
+    sender = john,
     reciever = jane
 ).make()
 \end{minted}
@@ -632,20 +629,18 @@ first_mesage = Message(
     \section{Indeksiranje z uporabo B+ dreves}
         \subsection{B+ drevesa in njihove značilnosti}
 
-        B+ drevesa so podatkovna struktura, uporabljena za učinkovito indeksiranje in iskanje podatkov.
-        Vsako vozišče ima lahko največ $M$ podatkov in $M+1$ kazalcev na nova vozlišča.
+        B+ drevesa so podatkovna struktura, uporabljena za učinkovit indeksiranje in iskanje podatkov. Vsako vozišče ima lahko največ $M$ podatkov in $M+1$ kazalcev na nova vozlišča.
 
-        V B+ drevesih so vsi nivoji razen listov drevesa, vmesna vozlišča, ki vsebujejo kazalce na nadaljnja vozlišča znotraj drevesa – služijo le kot povezave ter omogočajo učinkovitejše iskanje in navigacijo po strukturi. Medtem so podatki shranjeni v listih drevesa.
+        V B+ drevesih so vsi nivoji razen listov drevesa, vmesna vozlišča, ki vsebujejo kazalce na nadaljnja vozlišča znotraj drevesa. Vmesna vozlišča služijo le kot povezave ter omogočajo učinkovitejše iskanje in navigacijo po strukturi. Medtem so podatki shranjeni v listih drevesa.
 
-        Definicija strukture zahtevna tudi striktno uravnoteženost drevesa, torej da so vsi listi drevesa na istem nivoju.
+        Definicija strukture zahtevna tudi striktno uravnoteženost drevesa, torej, da so vsi listi drevesa na istem nivoju.
 
-        Kot dodatna optimizacija za iskanje intervalov znotraj drevesa je v naši implementaciji dodana še struktura dvojno povezanega seznama na nivoju listov drevesa. Tako ima vsak list kazalec na predhoden in naslednji list v drevesu. Na primeru podatkovne baze, je to zelo uporabno, ko iščemo npr. prvih petdeset uporabnikov razvrščenih po priimku. V prvi fazi je seveda potrebno imeti kreirano indeksno strukturo za iskan atribut. Zatem pa je iskanje zapisov dokaj trivialno, namreč sprehodimo se le do najbolj levega lista v drevesu, nato pa se sprehodimo po povezanem seznamu od leve proti desni in shranimo kazalce na želene zapise, jih nato le preberemo iz matrike podatkov, ter razvrstimo po ciljnem atributu.
+        Kot dodatna optimizacija za iskanje intervalov znotraj drevesa je v naši implementaciji dodana še struktura dvojno povezanega seznama na nivoju listov drevesa. Tako ima vsak list kazalec na predhoden in naslednji list v drevesu. Na primeru podatkovne baze, je to zelo uporabno, ko iščemo npr. za scenarij iskanja prvih petdeset uporabnikov razvrščenih po priimku.
 
-        Na sliki \ref{btree_example} je prikazan preprost primer B+ drevesa realiziran s stopnjo $M=2$:
-        \colorbox{BurntOrange}{Dodaj še kazalce iz posameznega zapisa v listu (slika)}
+        \subsubsection{Primer B+ drevesa}
+        Na sliki \ref{btree_example} je prikazan preprost primer B+ drevesa realiziran s stopnjo $M=2$.
         
-        \begin{figure}[h]
-        
+\begin{figure}[h]        
 \begin{center}
 \begin{tikzpicture}
 \tikzstyle{bplus}=[rectangle split,rectangle split horizontal, rectangle split parts = 3, rectangle split empty part width=0.01mm, rectangle split every empty part={\hspace{0.25cm}}, draw]
@@ -680,52 +675,31 @@ child {node (E){29\nodepart{two}31}}
             \label{btree_example}
         \end{figure}
 
-        
-
-        \newpage
         \subsection{Pravila, ki jih zahteva B+ drevesna struktura}
         \begin{enumerate}
             \item Vsako vozlišče ima največ $M$ podatkov in $M+1$ kazalcev – kapaciteta vozlišča.
             \item Listi drevesa so vsi na enakem nivoju.
-            \item Urejenost – vse vrednosti, ki se nahajajo levo morajo biti manjše ali enake trenutni; vse vrednosti desno, pa marajo biti večje ali enake.
+            \item Urejenost – vse vrednosti, ki se nahajajo levo morajo biti manjše ali enake trenutni. Vse vrednosti desno, pa marajo biti večje ali enake trenutni.
             \item Vozlišče je veljavno, kadar ima vsaj $M/2$ zapisov, kjer je $M$ kapaciteta oz. maksimalno število podatkov, ki jih lahko ima vozlišče.
         \end{enumerate}
 
-        \subsection{Implementacija iskanja v MySQL in SQLite DBMS}
-        \colorbox{BurntOrange}{https://dev.mysql.com/doc/refman/8.0/en/index-btree-hash.html}
+        \subsection{Implementacija B+ drevsa za shranjevanje na disk}
+        Razlog za uporabo B dreves znotraj podatkovnih baz je dokaj trivialen. Namreč iskalne strukture, ki so realizirane s pomočjo binarnih dreves na področju shranjevanja na disk vsebujejo izrazito ozko grlo.
 
-        \subsection{Implementacija B+ dreves za shranjevanje na disk}
-        Zakaj se na področju podatkovnih baz uporabljajo B drevesa. Ozadje je dokaj preprosto, saj klasične iskalne strukture s pomočjo dreves, ki so realizirane s pomočjo binarnih dreves vsebujejo izrazito ozko grlo. Ozko grlo je pride do izraza, ko je drevo shranjeno na disku in potrebujemo za vsako vozlišče izvesti eno branje iz diska.
+        Težava se pojavi pri branju in pisanju posameznih vozlišč, saj operacija nad enim vozliščem pomeni en dostop do diska oz. datoteke. B drevesa ta problem rešujejo s samo količino podatkov, ki je shranjena na nivoju enega vozlišča. Ob shranjevanju na klasične trde diske je velikost enega vozlišča bila določena, kot velikost sektorja na disku. To je pomenilo, da je branje vsakega vozlišča predstavljalo točno eno branje iz diska.
 
-        Ko beremo vozlišča pomeni eno branje vozlišča en dostop do diska in v primeru binarnega drevesa to pomeni, da je število dostopov do datoteke enako številu podatkov, ki smo jih prebrali - branje vsekakor predstavlja počasno operacijo in število teh branj želimo čim bolj minimizirati.
+        Klasičen način določanja velikosti posameznih vozlišč se je dokaj spremenil odkar so standard za shranjevanje podatkov postali hitrejši tipi diskov kot so SSD in v tem primeru velikost posameznega vozlišča ni več določena na podlagi strojne opreme. \textbf{}
 
-        B drevesa ta problem rešujejo s samo količino podatkov, ki je shranjena na nivoju enega vozlišča. V klasičnih trdih diskih je velikost enega vozlišča drevesa bila določena, kot velikost sektorja na trdem disku. To je pomenilo, da je branje vsakega vozlišča predstavljalo točno eno branje iz diska.
+        \subsection{Vnašanje v B+ drevo}
 
-        Klasičen način določanja velikosti posameznih vozlišč se je dokaj spremenil odkar so standard za shranjevanje podatkov postali hitrejši tipi diskov kot so SSD.
+        \textbf{TODO – predstavitev algoritma in scenarijev, do katerih pride tekom vnašanja.}
+
+        https://www.geeksforgeeks.org/insertion-in-a-b-tree/
+
+        \subsection{Podprte operacije filtriranja s pomočjo B+ drevesa}
         
-        \subsection{Uporaba B+ dreves v bazi podatkov (iskanje po indeksiranih podatkih)}
-        Na nivoju podatkovne baze se B+ drevesa uporabljajo za indeksiranje podatkov oz. zapisov glede na določen atribut npr. datum rojstva, ime, hišno številko itd. Gre za pristop, ki nam omogoča filtriranje posameznih zapisov s pomočjo binarnega iskanja v logaritmičnem času namesto linearnega iskanja skozi celotno matriko.
+        \textbf{TODO – EQUAL, BETWEEN (iskanje na intervalu), IS\_IN (preverjanje, če je element v seznamu)}
         
-        Določanje indeksov, pa je v klasičnih podatkovnih bazah lahko tudi malo bolj kompleksno, saj poleg iskanja po določenem atributu lahko iščemo tudi po izpeljanih vrednostih npr. po kombinaciji prve črke priimka in imena. V primeru našega DBMS to ni realizirano, lahko pa si sami kreiramo dodaten atribut na nivoju entitete in vanj shranjujemo želeno vrednost, ter nato direktno nad atributom kreiramo indeksno strukturo.
-        
-        \subsection{Dinamično nalaganje in ohranjanje posameznih segmentov drevesa v pomnilnik}
-        Za dodatno optimizacijo delovanja internih indeksov je dodana tudi implementacija predpomnilnika, kamor lahko shranjujemo posamezne segmente drevesa. Deluje, kot preprost zgoščevalni slovar, kjer je ključ odmik posameznega vozlišča v fizični datoteki vrednost, pa je dejansko vozlišče.
-
-        Omenjena implementacija nam omogoča preprosto upravljanje z vozlišči, saj je dostop do vsakega vozlišča omogočen preko skupnega vmesnika, ki sicer pomeni dodatno rabo pomnilnika vendar, pa bistveno dvigne varnost, ko želimo opravljati s posameznim zapisom.
-        
-        \subsection{Slabosti uporabe indeksov}
-
-        Sama raba indeksov je koristna, saj bistveno pohitri postopek iskanja posameznih zapisov glede na določen atribut. Ko govorimo v časovni zahtevnosti to pomeni pohitritev iz $O(N)$ na $O(log_M(N))$.
-
-        Na drugi strani pa se skriva kar nekaj lastnosti B+ dreves, ki jih moramo imeti v mislih ob dodajanju nepotrebnih indeksov v našo podatkovno bazo.
-        \begin{itemize}
-            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezni entiteti se zaradi vnašanja v B drevo z osnovo $M$ poveča iz $O(1)$ na $O(log_M(N) * X)$, kjer je $X$ število stolpcev z dodano indeksno strukturo. $N$ pa predstavlja število že obstoječih zapisov v posamezni entiteti.
-            \item Za vsak postavljen indeks se bistveno poveča poraba prostora na disku, saj shranjevanje drevesne strukture s seboj prinese podvajanje atributa, kot tudi dodatek kazalca na glavo entitete.
-        \end{itemize}
-
-        \subsection{Ostali pristopi indeksiranja podatkov}
-        \colorbox{BurntOrange}{Indeksiranje s pomočjo zgoščevalnih tabel ...}
-
     \newpage
     \section{Pomembni gradniki za optimalno izvedbo poizvedb}
         
