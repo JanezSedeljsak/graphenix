@@ -1334,7 +1334,7 @@ if not logging.exists():
 
     \subsection{Dekorator za dinamično dodajanje beleženja}
 
-    V namen beleženja znotraj vhodnih točk strežniške aplikacije bomo uporabili lasten dekorator.
+    V namen beleženja znotraj vhodnih točk strežniške aplikacije bomo uporabili pristop z uporabo dekoratorja.
     Dekorator je vzorec,  ki omogoča dinamično dodajanje funkcionalnost obstoječi funkciji, ne da bi spreminjali njeno strukturo. Tekom izvedbe notranje funkcije lahko argumente in različne segmente izvajanja prestrežemo in jih prilagodimo glede na naše zahteve.
     
 \begin{minted}[breaklines]{python}
@@ -1407,23 +1407,39 @@ route_stats = ReqInfo\
 \begin{minted}{python}
 count, api_errors = ReqInfo\
     .filter(
-        ReqInfo.resp_code >= 400,
-        ReqInfo.timestamp > datetime.now() - timedelta(days=1)
+        ReqInfo.resp_code.greater_or_equal(400),
+        ReqInfo.timestamp.greater(datetime.now() - timedelta(days=1))
     )\
     .order(ReqInfo.timestamp.desc())\
     .all()
 \end{minted}
 
-    \subsubsection{Izvoz vseh podatkov v .csv datoteko}
+    \subsubsection{Preslikava v podatkovne okvirje}
 
-    DBMS omogoča tudi izvoz v {\tt.csv} datoteko, ki za nekatere uporabnike lahko pomeni lažjo obdelavo podatkov, poleg tega, pa lahko predstavlja tudi varnostno kopijo podatkovne baze v ločeni datoteki.
-
-    Za izvoz potrebujemo najprej izvesti nabor vseh podatkov, nato pa s pomočjo privzetega pretvornika podatke izvozimo v datoteko s pomočjo metode ``dump2csv``, ki prejme dva parametra – podatke in naziv izvozne datoteke.
+    V namen podatkovne analitike v programskem jeziku Python najpogosteje uporabljamo knjižnice, ki za svoje delovanje uporabljajo podatkovne okvirje. Ena izmed teh knjižnic je že omenjeni Pandas \cite{PANDAS_GITHUB}.
     
+    Leta 2021 se je pojavila nova knjižnica za podatkovno analitiko - Polars \cite{POLARS}. Za svoje delovanje uporablja prevedeni programski jezik, vendar v tem primeru ne gre za C/C++, temveč za programski jezik Rust \cite{RUST}.
+
+    Prednost uporabe Graphenix knjižnice je v načinu nalaganju podatkov, saj podatke zlahka filtriramo in urejamo že pred kreiranju podatkovnega okvirja, kar klasične {\tt .csv} datoteke, ki pogosto predstavljajo format shranjenih podatkov ne omogočajo.
+
 \begin{minted}{python}
-_, all_reqs = ReqInfo.all()
-gx.ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
+import pandas as pd
+import polars as pl
+
+_, qview = ReqInfo.order(ReqInfo.timestamp)\
+    .filter(ReqInfo.timestamp.greater_or_equal(
+        datetime(2020, 1, 1)))\
+    .limit(10000)\
+    .all()
+
+pandas_df : pd.DataFrame = qview.as_pandas_df()
+polars_df : pl.DataFrame = qview.as_polars_df()
 \end{minted}
+
+    \noindent
+    V zgornjem primeru, tako v podatkovna okvirja naložimo le zapise, ki so bili ustvarjeni po začetku leta 2020 in od tega vzamemo prvih \num{10000} zapisov urejenih po datumu.
+
+    Od te točke dalje, pa lahko podatke v celoti obdelujemo s pomočjo knjižnic za podatkovno analitiko.
 
     \section{Namizna aplikacija za upravljanje stroškov}
 
@@ -1497,11 +1513,8 @@ def refresh_stats(self):
     
 \begin{minted}[breaklines]{python}
 def display_expenses(self, search=None, order_by=None, page=0):
-    query = Invoice.link(expense_type=ExpenseType)
-    if search:
-        query = query.filter(
-            Invoice.title.iregex(f'.*{search}.*')
-        )
+    query = Invoice.link(expense_type=ExpenseType).filter(
+        Invoice.title.iregex(f'.*{search or ""}.*'))
 
     match order_by:
         case 'Title':
@@ -1519,9 +1532,9 @@ def display_expenses(self, search=None, order_by=None, page=0):
 \end{minted}
 
     \noindent
-    Za prikazovanje vseh stroškov uporabljamo metodo ``display\_expenses``, ki prejme parameter za iskanje, urejanje in stran katero mora prikazati. Prikazan je kodni vzorec grajenja, kjer pogojno dodajamo dodatne atribute na objekt poizvedbe. 
+    Za prikazovanje vseh stroškov uporabljamo metodo ``display\_expenses``, ki prejme parameter za iskanje, urejanje in stran, katero mora prikazati. Prikazan je kodni vzorec grajenja, kjer postopoma dodajamo dodatne atribute na objekt poizvedbe. 
     \begin{enumerate}
-        \item Preverimo, če vrednost iskanja ni prazna in v tem primeru uporabimo neobčutljiv regex na male in velike črke. Pogoj zahteva, da naziv računa vsebuje iskani niz ``search``.
+        \item Na stroškev povežemo kategorije in za iskanje uporabimo neobčutljiv regex na male in velike črke, kjer pogoj zahteva, da naziv stroška vsebuje iskani niz ``search``.
         \item Parameter za urejanje preslikamo v določeno ureditev ali kot privzeto vrednost vzamemo padajoče urejanje po datumu.
         \item Določimo stran, ki jo želimo prikazati v ta namen imamo globalno konstanto $PAGE\_SIZE$, ki določa velikost strani in v poizvedbi določimo, da preskočimo $PAGE\_SIZE \cdot page$ stroškov, kjer $page$ določa stran, katero želimo prikazati. Hkrati, pa dodamo še omejitev števila zapisov (vzamemo le prvih $PAGE\_SIZE$ zapisov).
     \end{enumerate}

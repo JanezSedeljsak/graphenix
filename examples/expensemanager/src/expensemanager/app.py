@@ -71,11 +71,8 @@ class ExpenseManager(toga.App):
             record.delete()
 
     def display_expenses(self, search=None, order_by=None, page=0):
-        query = Invoice.link(expense_type=ExpenseType)
-        if search:
-            query = query.filter(
-                Invoice.title.iregex(f'.*{search}.*')
-            )
+        query = Invoice.link(expense_type=ExpenseType).filter(
+            Invoice.title.iregex(f'.*{search or ""}.*'))
 
         match order_by:
             case 'Title':
