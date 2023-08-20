@@ -411,13 +411,6 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
 \setcounter{page}{1}
 \pagestyle{fancy}
 
-% združimo uvod in kaj so relacijske podatkovne baze
-% 1. začnemo z brez podatkovnih baz dan danes negre (gre za trajen način shranjevanja podatkov itd.)
-% 2. različni tipi podatkovnih baz
-% 2.1 relacijske
-% 2.2 nosql
-% 3. relacijske in depth
-
 \chapter{Uvod}
     Živimo v dobi, kjer se spopadamo z izzivom obdelave izjemnih količin podatkov, ki jih poznamo kot velike podatke (velepodatki) in predstavljajo dragocen vir informacij. Ko razmišljamo o dolgoročnem shranjevanju teh podatkov, se osredotočamo na uporabo podatkovnih baz. Na tem področju prepoznavamo dve osnovni skupini – relacijske in nerelacijske podatkovne baze.
     \section{Paradigme v svetu podatkovnih baz}
@@ -444,7 +437,7 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
 
     Na sliki \ref{infsistem} je predstavljena standardna zasnova arhitekture za večino modernih informacijskih sistemov:
     \begin{figure}[h]
-        \centerline{\includegraphics[height=0.5\textwidth, angle=0]{webarchitecture.png}}
+        \centerline{\includegraphics[width=1\textwidth, angle=0]{webarchitecture.png}}
         \caption{Struktura sodobnega informacijskega sistema}
         \label{infsistem}
     \end{figure}
@@ -570,11 +563,11 @@ class User(gx.Model):
 
 class Task(gx.Model):
     content = gx.Field.String(size=100)
-    user = gx.Field.Link("User").as_index()
+    user = gx.Field.Link("User")
 
 class Message(gx.Model):
     content = gx.Field.String(size=50)
-    date = gx.Field.DateTime()
+    date = gx.Field.DateTime().as_index()
     sender = gx.Field.Link("User")
     reciever = gx.Field.Link("User")
 \end{minted}
@@ -613,7 +606,7 @@ class Message(gx.Model):
 
         Implementacija relacij med entitetami se izvaja s pomočjo uporabe tujih ključev, ki predstavljajo primarne ključe identificiranih zapisov in omogočajo povezavo med entitetami. Ti tujih ključi se shranijo kot atributi v entiteto, ki vzpostavlja povezavo, in kažejo na primarni ključ v povezani entiteti. Vzpostavitev povezave se izvede pri ustvarjanju modela na ravni programskega jezika Python.
 
-        Spodaj je predstavljen tudi preprost primer, kjer neko sporočilo vežemo na dva uporabnika, ki imata vlogo pošiljatelja in prejemnika:
+        Spodaj je predstavljen tudi preprost primer, kjer neko sporočilo vežemo na dva uporabnika, ki imata vlogo pošiljatelja in prejemnika.
 \begin{minted}{python}
 john = User(name='John Doe').make()
 jane = User(name='Jane Doe').make()
@@ -627,55 +620,29 @@ first_mesage = Message(
 \end{minted}
 
     \section{Indeksiranje z uporabo B+ dreves}
-        \subsection{B+ drevesa in njihove značilnosti}
+        \subsection{B+ drevesa in njihove karakteristike}
 
-        B+ drevesa so podatkovna struktura, uporabljena za učinkovit indeksiranje in iskanje podatkov. Vsako vozišče ima lahko največ $M$ podatkov in $M+1$ kazalcev na nova vozlišča.
+        B+ drevesa so podatkovna struktura, uporabljena za učinkovito indeksiranje in iskanje podatkov. Vsako vozišče ima lahko največ $M$ podatkov in $M+1$ kazalcev na nova vozlišča.
 
-        V B+ drevesih so vsi nivoji razen listov drevesa, vmesna vozlišča, ki vsebujejo kazalce na nadaljnja vozlišča znotraj drevesa. Vmesna vozlišča služijo le kot povezave ter omogočajo učinkovitejše iskanje in navigacijo po strukturi. Medtem so podatki shranjeni v listih drevesa.
+        V B+ drevesih so vsi nivoji razen listov drevesa, vmesna vozlišča, ki vsebujejo kazalce na nadaljnja vozlišča znotraj drevesa. Vmesna vozlišča služijo le kot povezave ter omogočajo učinkovitejše iskanje in navigacijo po strukturi, medtem, pa so podatki shranjeni le v listih drevesa.
 
-        Definicija strukture zahtevna tudi striktno uravnoteženost drevesa, torej, da so vsi listi drevesa na istem nivoju.
+        Sama struktura zahtevna tudi striktno uravnoteženost drevesa, torej, da so vsi listi drevesa na enakem nivoju.
 
-        Kot dodatna optimizacija za iskanje intervalov znotraj drevesa je v naši implementaciji dodana še struktura dvojno povezanega seznama na nivoju listov drevesa. Tako ima vsak list kazalec na predhoden in naslednji list v drevesu. Na primeru podatkovne baze, je to zelo uporabno, ko iščemo npr. za scenarij iskanja prvih petdeset uporabnikov razvrščenih po priimku.
+        Še ena izmed karakteristik B+ drevesa je povezava med vozlišči na enakem nivoju, saj to omogoča optimalno iskanje z intervalom in pripelje do časovne kompleksnosti $O(log_M(N) + k)$, kjer je $k$ širina intervala. Enaka poizvedba, bi v klasičnem B drevesu pomenila časovno kompleksnost $O(\frac{k}{M} \cdot log_M(N))$, saj bi zapise iz intervala iskali ločeno glede na posamezno vozlišče.
 
         \subsubsection{Primer B+ drevesa}
         Na sliki \ref{btree_example} je prikazan preprost primer B+ drevesa realiziran s stopnjo $M=2$.
         
-\begin{figure}[h]        
-\begin{center}
-\begin{tikzpicture}
-\tikzstyle{bplus}=[rectangle split,rectangle split horizontal, rectangle split parts = 3, rectangle split empty part width=0.01mm, rectangle split every empty part={\hspace{0.25cm}}, draw]
-\tikzstyle{every node}=[bplus]
-\tikzstyle{level 1}=[sibling distance=60mm]
-\tikzstyle{level 2}=[sibling distance=25mm]
-\node {19\nodepart{two}} [->]
-child {node {5\nodepart{two}11}
-child {node (A) {2\nodepart{two}3}}
-child {node (B) {5\nodepart{two}7}}
-child {node (C) {11\nodepart{two}17}}
-}
-child {node {29\nodepart{two}}
-child {node (D) {19\nodepart{two}23}}
-child {node (E){29\nodepart{two}31}}
-}
-;
-\draw [->] (A) -- (B);
-\draw [<-] (A) -- (B);
-\draw [->] (B) -- (C);
-\draw [<-] (B) -- (C);
-\draw [->] (C) -- (D);
-\draw [<-] (C) -- (D);
-\draw [->] (D) -- (E);
-\draw [<-] (D) -- (E);
-
-
-\end{tikzpicture}
-\end{center}
-
-            \caption{Primer B+ drevesa, kjer indeksiramo pošiljatelje sporočil}
+        \begin{figure}[h]        
+            \centerline{\includegraphics[width=0.9\textwidth, angle=0]{Bplustree.png}}
+            \caption{Primer B+ drevesa, povzeto po \cite{BPTREE}}
             \label{btree_example}
         \end{figure}
 
-        \subsection{Pravila, ki jih zahteva B+ drevesna struktura}
+        \noindent
+        Drevo vsebuje sedem zapisov, pri čemer vsak izmed zapisov poleg vrednosti še kazalec na zapis, katerega označimo z $d_i$. V primeru uporabe B+ drevesa za indeksiranje v podatkovni bazi ti kazalci kažejo na posamezen zapis v entiteti.
+        
+        \subsection{Pravila, ki jih zahteva B+ drevo}
         \begin{enumerate}
             \item Vsako vozlišče ima največ $M$ podatkov in $M+1$ kazalcev – kapaciteta vozlišča.
             \item Listi drevesa so vsi na enakem nivoju.
@@ -684,11 +651,23 @@ child {node (E){29\nodepart{two}31}}
         \end{enumerate}
 
         \subsection{Implementacija B+ drevsa za shranjevanje na disk}
-        Razlog za uporabo B dreves znotraj podatkovnih baz je dokaj trivialen. Namreč iskalne strukture, ki so realizirane s pomočjo binarnih dreves na področju shranjevanja na disk vsebujejo izrazito ozko grlo.
+        Razlog za uporabo B dreves znotraj podatkovnih baz je dokaj trivialen. Namreč iskalne strukture, ki so realizirane s pomočjo binarnih dreves na področju shranjevanja na disk vsebujejo izrazito ozko grlo. Težava se pojavi pri branju in pisanju posameznih vozlišč, saj operacija nad enim vozliščem pomeni en dostop do diska oz. datoteke. B drevesa ta problem rešujejo s samo količino podatkov, ki je shranjena na nivoju enega vozlišča. Ob shranjevanju na klasične trde diske je velikost enega vozlišča bila določena, kot velikost sektorja na disku. To je pomenilo, da je dostop do posameznega vozlišča predstavljal le en dostop na disk, ki je omogočal branje/pisanje $M$ vrednosti hkrati.
 
-        Težava se pojavi pri branju in pisanju posameznih vozlišč, saj operacija nad enim vozliščem pomeni en dostop do diska oz. datoteke. B drevesa ta problem rešujejo s samo količino podatkov, ki je shranjena na nivoju enega vozlišča. Ob shranjevanju na klasične trde diske je velikost enega vozlišča bila določena, kot velikost sektorja na disku. To je pomenilo, da je branje vsakega vozlišča predstavljalo točno eno branje iz diska.
+        Klasičen način določanja velikosti posameznih vozlišč se je dokaj spremenil odkar so standard za shranjevanje podatkov postali hitrejši tipi diskov kot so SSD in v tem primeru velikost posameznega vozlišča ni več določena izključno na podlagi strojne opreme.
 
-        Klasičen način določanja velikosti posameznih vozlišč se je dokaj spremenil odkar so standard za shranjevanje podatkov postali hitrejši tipi diskov kot so SSD in v tem primeru velikost posameznega vozlišča ni več določena na podlagi strojne opreme. \textbf{}
+        \subsection{Implementacija v MySQL DBMS}
+
+        MySQL je eden izmed mnogih DBMS-jev, ki za indeksiranje uporabljajo implementacijo B+ drevesa. Struktura, ki jo privzeto uporablja MySQL je prikazana na sliki \ref{btree_innodb}.
+
+        \begin{figure}[H]
+            \centerline{\includegraphics[width=1\textwidth, angle=0]{B_Tree_Structure.png}}
+            \caption{Primer B+ drevesa, povzeto po \cite{BPTREE_INNODB}}
+            \label{btree_innodb}
+        \end{figure}
+
+        Vsi nivoji vsebujejo kazalec na prejšnje in naslednje vozlišče v enakem nivoju, kar je tudi v skladu z implementacijo v Graphenix. Vsaka stran oz. vozlišče vsebuje ``Infimum``, ki predstavlja vrednost manjšo kot kateri koli zapis v vozlišču. Na drugi strani, pa je ``Supremum``, ki predstavlja vrednost večjo kot kateri koli zapis v vozlišču.
+
+        Gre še za malo bolj kompleksno implementacijo B+ drevesa, ki omogoča še nekaj dodatnih optimizaciji iz vidika shranjevanja podatkov in izvajanja iskanja.
 
         \subsection{Vnašanje v B+ drevo}
 
@@ -701,7 +680,7 @@ child {node (E){29\nodepart{two}31}}
         \textbf{TODO – EQUAL, BETWEEN (iskanje na intervalu), IS\_IN (preverjanje, če je element v seznamu)}
         
     \newpage
-    \section{Pomembni gradniki za optimalno izvedbo poizvedb}
+    \section{Optimizacije poizvedovanja}
         
         \subsection{Gručanje podatkov ob branju iz diska}
         
@@ -717,7 +696,7 @@ child {node (E){29\nodepart{two}31}}
   \def\vectorElements{{0, 64, 72, 256, 512, 528, 542, 1024}}
   
   % Set the node style
-  \tikzset{listnode/.style={circle, draw, minimum size=1.3cm}}
+  \tikzset{listnode/.style={circle, draw, minimum size=1.1cm}}
   
   % Draw the linked list nodes
   \foreach \i/\element in {0/0,1/64,2/72,3/256,4/512,5/528,6/534,7/1024}{
@@ -733,7 +712,7 @@ child {node (E){29\nodepart{two}31}}
 \end{center}
 \end{figure}
 
-\noindent Iz odmikov lahko hitro razberemo dve gruči, kateri bi želeli, da naš algoritem odkrije in branje nad odmikoma izvede v enem branju - to sta gruči $[64, 62]$, ter $[512, 528, 540]$. Optimalen pristop branja bi lahko barvno označili po naslednji konfiguraciji:
+\noindent Iz odmikov lahko hitro razberemo dve gruči, kateri bi želeli, da naš algoritem odkrije in branje odmikov izvede v enem koraku – to sta gruči $[64, 62]$, ter $[512, 528, 540]$. Optimalen pristop branja bi lahko barvno označili po naslednji konfiguraciji:
 
 \hfill \break
 \begin{figure}[H]
@@ -741,7 +720,7 @@ child {node (E){29\nodepart{two}31}}
 \begin{tikzpicture}[->, >=stealth, auto]
   \def\vectorElements{{0, 64, 72, 256, 512, 528, 542, 1024}}
   
-  \node[circle, draw, minimum size=1.3cm] (0) at (0,0) {0};
+  \node[circle, draw, minimum size=1.1cm] (0) at (0,0) {0};
   \node[circle, draw, fill=orange!30, minimum size=1.3cm] (1) at (1.5,0) {64};
   \node[circle, draw, fill=orange!30, minimum size=1.3cm] (2) at (3,0) {72};
   \node[circle, draw, fill=gray!30, minimum size=1.3cm] (3) at (4.5,0) {256};
@@ -783,7 +762,7 @@ child {node (E){29\nodepart{two}31}}
         Za zgornje tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja samega algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti, vse imajo namreč časovno zahtevnost vsaj $O(N)$. Bistveno bolj zanimiv, pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $\num{10000000}$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[500, 25000]$.
 
         \begin{figure}[H]
-            \centerline{\includegraphics[height=0.52\textwidth, angle=0]{prvih_k_elementov.png}}
+            \centerline{\includegraphics[height=0.45\textwidth, angle=0]{prvih_k_elementov.png}}
             \caption{Časovna primerjava pristopov za iskanje $K$ najmanjših elementov v seznamu.}
             \label{sl:k_smallest}
         \end{figure}
@@ -897,7 +876,6 @@ query = User.link(tasks=Task)
 }
 \end{minted}
 
-        \newpage
         \subsubsection{Algoirtem za poizvedovanje z uporabo relaciji}
 
         Spodaj je v obliki psevdokode predstavljen algoritem za poizvedovanje, kjer omogočamo nabor podatkov iz različnih entitet hkrati.
@@ -949,7 +927,6 @@ end fn
 
         Vse operacije so omejene nad striktno eno entiteto in enim stolpcem, kar pomeni, da lahko v eni poizvedbi poiščemo npr. iskanje najnovejšega sporočila med zapisi. V večini primerov agregaciji, pa ne iščemo globalno gledanega zapisa, ki najbolj ustreza našim kriterijem, ampak iščemo zapis glede na neko dodatno polje npr. iščemo najnovejše sporočilo za vsakega posameznega uporabnika. Kadar govorimo v smislu SQL poizvedb, to pomeni uporabo ``GROUP BY`` stavka.
 
-\newpage
 \begin{minted}[breaklines]{sql}
 SELECT MAX(messages.date) as 'latest' 
 FROM messages

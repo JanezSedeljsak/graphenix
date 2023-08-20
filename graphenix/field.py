@@ -104,6 +104,9 @@ class Field:
             self.default = default
             self.size = 1
 
+        def as_index(self: FO):
+            raise AttributeError("Bool attributes can't be indexed!")
+
         def __get__(self, instance, owner) -> bool:
             if not instance:
                 return self
@@ -235,3 +238,6 @@ class Field:
         def __set__(self, instance, value: list) -> None:
             # links should never be set on class instances
             return None
+        
+        def as_index(self: FO):
+            raise AttributeError("VirtualLink attributes can't be indexed!")
