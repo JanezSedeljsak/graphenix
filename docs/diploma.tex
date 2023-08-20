@@ -337,7 +337,6 @@ opis diplome v angleščini
 \noindent\begin{tabular}{p{0.14\textwidth}|p{.4\textwidth}|p{.4\textwidth}}
   {\bf kratica} & {\bf angleško}                              & {\bf slovensko} \\ \hline
   {\bf API} & application programming interface & aplikacijski programski vmesnik \\
-  {\bf BCNF} & Boyce-Codd normal form & normalna oblika, ki se uporablja pri normalizaciji podatkovne baze \\
   {\bf CI/CD} & continuous integration, continuous delivery & neprekinjena integracija in postavitev \\
   {\bf CLI} & command line interface & vmesnik za ukazno vrstico \\
   {\bf CRUD} & create, read, update, delete & ustvarjanje, branje, posodabljanje in brisanje \\
@@ -374,7 +373,7 @@ opis diplome v angleščini
 
 Sam razvoj namenske knjižnice je pripravljen v programskem jeziku C++, saj gre za nizko nivojski jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilniku. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba dobrih podatkovnih struktur in algoritmov, ki dobro izkoristijo I/O operacije, ki jih ponuja operacijski sistem in posledično pripeljejo do zanesljivega in optimalnega delovanja DBMS.
 
-V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije DBMS na različnih scenarijih, kjer razvito programsko opremo primerjamo z že obstoječimi DBMS – SQLite in MySQL.
+V zadnjem sklopu diplomskega dela smo pripravili analizo uspešnosti implementacije DBMS na različnih scenarijih, kjer razvito programsko opremo primerjamo z že obstoječima DBMS – SQLite in MySQL.
 \bigskip
 
 \noindent\textbf{Ključne besede:} \tkeywords.
@@ -420,24 +419,27 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
 % 3. relacijske in depth
 
 \chapter{Uvod}
-    Živimo v dobi, kjer se spopadamo z izzivom obdelave izjemnih količin podatkov, ki jih poznamo kot velike podatke (velepodatki). Ti podatki so razpršeni po različnih platformah in predstavljajo dragocen vir informacij. Ko razmišljamo o dolgoročnem shranjevanju teh podatkov, se osredotočamo na uporabo podatkovnih baz. Na tem področju prepoznavamo dve osnovni skupini – relacijske in nerelacijske podatkovne baze.
+    Živimo v dobi, kjer se spopadamo z izzivom obdelave izjemnih količin podatkov, ki jih poznamo kot velike podatke (velepodatki) in predstavljajo dragocen vir informacij. Ko razmišljamo o dolgoročnem shranjevanju teh podatkov, se osredotočamo na uporabo podatkovnih baz. Na tem področju prepoznavamo dve osnovni skupini – relacijske in nerelacijske podatkovne baze.
     \section{Paradigme v svetu podatkovnih baz}
         \subsection{Relacijske podatkovne baze}
-        Trenutno na trgu še vedno prevladujejo relacijske podatkovne baze, ki predstavljajo standardno izbiro. Te baze temeljijo na striktni strukturi entitet, kjer so podatki organizirani v smiselne entitete, ki vključujejo stolpce (atribute) in vrstice (zapiske). Posebej pomembne so logične povezave med posameznimi zapisi, ki omogočajo boljšo organizacijo in interpretacijo podatkov. Te povezave se uresničujejo s pomočjo tujih ključev, kar omogoča vzpostavitev trdnih relacij med različnimi entitetami.
-        \newline
-        \newline
-        \noindent
-        Gre za standard, ki se je prvič pojavil leta 1970, ko ga je razvil IBM \cite{IBM_DBMS_1970}. Razvita je bila prva družina relacijskih podatkovnih baz Db2, katero je razvil Edgar F. Codd – matematik izobražen na univerzi Oxford.
-        \textbf{TODO}
+        Trenutno na trgu še vedno prevladujejo relacijske podatkovne baze, ki predstavljajo standardno izbiro. Te baze temeljijo na striktni strukturi entitet, kjer so podatki organizirani v smiselne entitete, ki vključujejo stolpce (atribute) in vrstice (zapise). Posebej pomembne so logične povezave med posameznimi zapisi, ki omogočajo boljšo organizacijo in interpretacijo podatkov. Te povezave so realizirane s pomočjo tujih ključev, kar omogoča vzpostavitev trdnih relacij med različnimi entitetami.
+
+        \subsubsection{Kaj je DBMS in kakšna je njegova vloga v bazi podatkov?}
+
+        Kaj hitro, ko začnemo raziskovati interno delovanje relacijskih podatkovnih baz naletimo na pojem DBMS (sistem za uporabljanje podatkovnih baz). Gre za programsko rešitev, ki je zasnovana za upravljanje in organiziranje podatkov. Uporabnikom omogoča ustvarjanje, spreminjanje in poizvedovanje po bazi podatkov \cite{DBMS_G4G}.
+
+        Ko govorimo specifično o relacijskih podatkovnih bazah, pa lahko uporabimo tudi kratico RDBMS (relacijski sistem za uporabljanje podatkovnih baz). 
+
+        \subsubsection{Začetki relacijskih podatkovnih baz}
+        Gre za paradigmo podatkovnih baz, ki se je prvič pojavila leta 1970, ko je model za shranjevanje predstavil Edgar F. Codd – matematik izobražen na univerzi Oxford \cite{IBM_DBMS_1970}. Prva družina relacijskih podatkovnih baz, pa je bila razvita leta 1983 – Db2 \cite{DB2}, katero je izdal IBM. Tekom let je Db2 doživel, kar nekaj posodobitev - zadnja med njimi je bila leta 2022, ko je DBMS v svoje delovanje dodal še nekaj konceptov iz umetne inteligence za boljšo izrabo virov \cite{DB213}. Kljub temu je DBMS konceptualno ostal nespremenjen in še vedno uporablja zasnovo relacijskega modela.
         
         \subsection{Nerelacijske podatkovne baze}
-        Nerelacijske podatkovne baze predstavljajo novo kategorijo baz, ki temeljijo na bistveno drugačnih osnovah kot tradicionalne relacijske podatkovne baze. Te nove baze so se razvile kot odziv na izzive, s katerimi se srečujejo relacijske podatkovne baze. Kot je poudaril višji predavatelj Aljaž Zrnec, ``Podatkovne baze NoSQL niso bile ustvarjene z namenom popolne zamenjave relacijskih baz`` \cite{zrnec2011podatkovne}. Glavna ovira pri relacijskih podatkovnih bazah izvira iz njihove stroge strukture. V novi kategoriji podatkovnih baz, znanih kot NoSQL, je ključna lastnost prilagodljivost. Sama organizacija podatkov se bistveno razlikuje, pri čemer tradicionalne entitete in relacije med zapisi ustvarjalno nadomeščajo objekti in koncept dedovanja. Ta pristop prinaša tudi eno od glavnih prednosti, ki jih imajo nerelacijske podatkovne baze – sposobnost enkapsulacije posameznih zapisov omogoča učinkovito razporeditev celotne baze na več strežnikov (horizontalno skaliranje podatkov), ki ga tradicionalne relacijske podatkovne baze težje dosežejo.
+        Nerelacijske podatkovne baze predstavljajo novo kategorijo baz, ki temeljijo na bistveno drugačnih osnovah kot tradicionalne relacijske podatkovne baze. Te nove baze so se razvile kot odziv na izzive, s katerimi se srečujejo relacijske podatkovne baze. Glavna ovira relacijskih podatkovnih baz izvira iz njihove stroge strukture. V novi kategoriji podatkovnih baz, znanih kot NoSQL, je ključna lastnost prilagodljivost. Sama organizacija podatkov se bistveno razlikuje, pri čemer tradicionalne entitete in relacije med zapisi nadomeščajo objekti in koncept dedovanja. Ta pristop prinaša tudi eno od glavnih prednosti, ki jih imajo nerelacijske podatkovne baze – sposobnost enkapsulacije posameznih zapisov, ki omogoča učinkovito razporeditev celotne baze na več strežnikov (horizontalno skaliranje podatkov), ki ga tradicionalne relacijske podatkovne baze težje dosežejo.
     
     \section{Kje se danes uporabljajo relacijske podatkovne baze?}
 
     Relacijske podatkovne baze so že desetletja temeljna komponenta informacijskih sistemov in njihova uporaba se je v današnjem sodobnem poslovnem okolju še povečala. Kljub pojavu novejših tehnologij in podatkovnih modelov imajo relacijske podatkovne baze številne aplikacije, kjer izstopajo zaradi svoje strukture, zanesljivosti in možnosti za kompleksno analizo.
 
-    \newpage
     \subsection{Vloga DBMS v informacijskih sistemih}
 
     Na sliki \ref{infsistem} je predstavljena standardna zasnova arhitekture za večino modernih informacijskih sistemov:
@@ -448,37 +450,35 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
     \end{figure}
 
     \noindent
-    
-    Diagram je sestavljen iz treh ključnih komponent. Na eni strani so odjemalci, ki vključujejo mobilne, spletne aplikacije  ... Ti odjemalci s strežniškim delom aplikacije komunicirajo preko standardiziranih metod na nivoju API komponente.
+    Diagram je sestavljen iz treh ključnih komponent. Na eni strani so odjemalci, ki vključujejo mobilne, spletne aplikacije  ... Ti odjemalci s strežniškim delom aplikacije komunicirajo preko standardiziranih HTTP metod na nivoju povezovalne API komponente.
 
-    Večji del informacijskega sistema oz. spletne aplikacije se nahaja v ozadju, kjer je realizirana poslovna logika in upravljanje s podatki – podatkovno bazo. V sodobnih informacijskih sistemih za dodaten nivo varnosti in lažjo manipulacijo podatkov pogosto uporabimo še ORM. Gre za objektno predstavitev posameznih entitet znotraj podatkovne baze in predstavitev zapisov, kot instance objektov. ORM predstavlja dodaten nivo abstrakcije, ki programerju med drugim omogoči tudi avtomatske migracije podatkovne baze, kot tudi lažjo integracijo podatkovne baze znotraj uporabljenega programskega jezika.
+    Večji del informacijskega sistema, pa se nahaja v uporabniku skritem delu, kjer je realizirana poslovna logika in upravljanje s podatki oz. bazo podatkov. V sodobnih informacijskih sistemih za dodaten nivo varnosti in lažjo manipulacijo podatkov pogosto uporabimo še ORM (objektno relacijska preslikava). Gre za kos programske opreme, ki omogoča lažjo delo s podatkovno bazo. Entitete znotraj ORM se preslikajo v razrede, zapisi znotraj entitete, pa so predstavljeni kot instance teh razredov. ORM predstavlja dodaten nivo abstrakcije, ki programerju med drugim omogoči tudi avtomatske migracije podatkovne baze, kot tudi lažjo integracijo podatkovne baze znotraj uporabljenega programskega jezika.
 
     \section{Motivacija za razvoj lastnega DBMS in ORM vmesnika}
-    Glavna motivacija za razvoj izhaja iz želje po boljšem razumevanju notranjega delovanja podatkovnih baz, ter njihovega vpliva na delovanje modernih aplikaciji. Kot programerji se pogosto osredotočamo le na izgradnjo funkcionalnosti, pri čemer podatkovno bazo pogosto spregledamo oz. spregledamo vpliv podatkovnega sloja na delovanje celotne aplikacije.
+    Glavna motivacija za razvoj lastnega DBMS izhaja iz želje po boljšem razumevanju notranjega delovanja podatkovnih baz, ter njihovega vpliva na delovanje modernih aplikaciji. Kot programerji se pogosto osredotočamo le na izgradnjo funkcionalnosti, pri čemer podatkovno bazo pogosto spregledamo oz. spregledamo vpliv le-te na delovanje celotne aplikacije.
     
-    Podatkovna baza s seboj prinese visoko raven abstrakcije, ki je podprta z obsežno množico algoritmov in konceptov, ki omogočijo zanesljivo, hitro in varno izvajanje operaciji nad podatki. Tekom raziskave je cilj spoznati tudi te koncepte, ki sicer ostajajo skriti v abstrakciji, ki jo prinašata DBMS in jezik SQL.
+    Podatkovna baza s seboj prinese visoko raven abstrakcije, ki je podprta z obsežno množico algoritmov in konceptov, ki omogočijo zanesljivo, hitro in varno izvajanje operaciji nad podatki. Tekom razvoja je cilj spoznati tudi te koncepte, ki sicer ostajajo skriti v abstrakciji, ki jo prinašata DBMS in jezik SQL, ki programerju predstavlja način komuniciranja z bazo podatkov.
 
-    Pomembnost podatkovnega sloja postane očitna, predvsem ko se aplikacija začne odzivati počasneje. Pogost razlog je obsežna količina podatkov v posamezni entiteti, kar za uporabnika hitro pomeni nesprejemljiv čas odzivnosti celotnega sistema.
+    Pomembnost podatkovnega sloja, ki vključuje podatkovno bazo, kot tudi del aplikacije, ki je odgovorna za delo s podatki postane očitna, predvsem ko se aplikacija začne odzivati počasneje. Pogost razlog je obsežna količina podatkov v posamezni entiteti, kar za uporabnika hitro pomeni nesprejemljiv čas odzivnosti celotnega sistema.
 
-    Ob iskanju pristopov za optimizacijo podatkovnega sloja, hitro naletimo na koncept indeksiranja podatkov.
-    Ta pristop ni omejen zgolj na relacijske podatkovne baze, temveč se pojavlja širom računalniške znanosti. Osnovna ideja za optimizacijo je ustvarjanje iskalne strukture, ki omogoča izrazito hitrejše iskanje podatkov z izrabo učinkovite podatkovne organizacije.
+    Pri iskanju pristopov za optimizacijo podatkovnega sloja hitro naletimo na koncept indeksiranja podatkov. Ta pristop ni omejen zgolj na relacijske podatkovne baze, temveč se pojavlja širom računalniške znanosti. Osnovna ideja za optimizacijo je ustvarjanje iskalne strukture, ki omogoča izrazito hitrejše iskanje podatkov z izrabo učinkovite podatkovne strukture.
     
-    Dve bolj pogosti podatkovni strukturi za izvedbo indeksiranja predstavljajo zgoščevalne tabele in drevesa. Na področju relacijskih podatkovnih baz se najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B-drevesa). Drevo, je sestavljeno iz vozlišč, kjer ima vsako največ $M$ zapisov in $M+1$ kazalcev na nadaljnja vozlišča. S pomočjo dodajanja indeksov lahko linearno iskanje, ki je definirano z $O(N)$ notacijo bistveno pohitrimo. Z uporabo B-drevesa pomeni časovno zahtevnost $O(log_M(N))$, kjer je $N$ število vseh zapisov v drevesu.
+    Dve bolj pogosti podatkovni strukturi za izvedbo indeksiranja sta zgoščevalne tabele in drevesa. Na področju relacijskih podatkovnih baz se najpogosteje uporablja več nivojsko indeksiranje, ki je realizirano prav z drevesi (v večini primerov gre za B drevo). B drevo je tip drevesa, ki je sestavljeno iz vozlišč, kjer ima vsako največ $M$ zapisov in $M+1$ kazalcev na nadaljnja vozlišča. S pomočjo dodajanja indeksov lahko linearno iskanje, ki ima časovno kompleksnost $O(N)$, kjer je $N$ število vseh zapisov bistveno pohitrimo. Z uporabo B drevesa, namreč dosežemo časovno kompleksnost $O(log_M(N))$, kjer je $N$ število vseh zapisov v drevesu.
     \newline
     \newline
     \noindent
-    Pomembno je poudariti, da cilj implementacije lastne rešitve ne vključuje razvoja kompleksnega in dovršenega DBMS, ki bi se primerjal z naprednimi in vzpostavljenimi rešitvami. Naš cilj je razviti knjižnico, ki bo vsebovala temeljne funkcionalnosti in bo primerna za uporabo v manjših aplikacijah. Osredotočili se bomo predvsem na izgradnjo preprostega in intuitivnega načina za upravljanja s podatki.
+    Pomembno je poudariti, da cilj implementacije lastne rešitve ne vključuje razvoja kompleksnega in dovršenega DBMS, ki bi se primerjal z naprednimi in vzpostavljenimi rešitvami. Naš cilj je razviti knjižnico, ki bo vsebovala temeljne funkcionalnosti in bo primerna za uporabo v manjših aplikacijah. Osredotočili se bomo predvsem na izgradnjo preprostega in intuitivnega načina za upravljanje s podatki.
 
 \chapter{Sorodna dela}
 
-    Prve podatkovne baze so se razvile že pred petdesetimi leti in ob tem tudi ogromno različnih pristopov za komunikacijo med programskimi jeziki in DBMS. V računalništvu je izbor orodja ključnega pomena in izbor tehnologij znotraj podatkovnega sloja nikakor ne predstavlja izjeme.
+    Prve podatkovne baze so se razvile že pred več kot štiridesetimi leti in ob tem tudi ogromno različnih pristopov za komunikacijo med programskimi jeziki in DBMS. V računalništvu je izbor orodja ključnega pomena in izbor tehnologij znotraj podatkovnega sloja nikakor ne predstavlja izjeme.
 
     \section{Izbor DBMS}
-    Pri izbiri relacijske podatkovne baze se soočimo z različnimi možnostmi, med katerimi izstopajo standardi, kot sta DB2, Oracle, ter Microsoft SQL Server (MSSQL), ki predstavljajo največje in najbolj skalabilne DBMS-je. Kljub temu je izbor DBMS-ja, podobno kot pri večini področij v računalništvu, odvisen od zahtev naše aplikacije in narave podatkov, ki jih bomo shranjevali.
+    Pri izbiri DBMS se soočimo z različnimi možnostmi, med katerimi izstopajo DBMS-ji, kot so Db2 \cite{DB2}, Oracle \cite{ORACLE}, ter Microsoft SQL Server (MSSQL) \cite{MSSQL}, ki predstavljajo največje in najbolj skalabilne DBMS-je. Kljub temu je izbor DBMS-ja, podobno kot pri večini področij v računalništvu, odvisen od zahtev naše aplikacije in narave podatkov, ki jih bomo shranjevali.
 
-    Za mnoge primere morda zadostujeta bolj preprosta DBMS-ja, kot sta PostgreSQL ali MySQL, ki ponujata enostavno upravljanje in predstavljata dobro izbiro tudi za shranjevanje obsežnih količin podatkov. 
+    Za mnoge primere morda zadostujeta bolj preprosta DBMS-ja, kot sta PostgreSQL \cite{POSTGRESQL} in MySQL \cite{MYSQL}, ki ponujata enostavno upravljanje in predstavljata dobro izbiro tudi za shranjevanje obsežnih količin podatkov. 
     
-    V določenih scenarijih, ko imamo opravka z bolj preprosto in manj obsežno strukturo podatkov (npr. pri razvoju mobilnih aplikaciji), se za najprimernejšo izbiro izkaže SQLite. Gre za minimalističen DBMS, ki za razliko od prej omenjenih izbir za potrebe shranjevanja podatkov uporablja zgolj datoteko, ki jo zlahka enkapsuliramo v izolirano okolje, kot je mobilna naprava. V področje manjših podatkovnih baz, pa lahko uvrstimo tudi razvit DBMS – Graphenix\cite{GRAPHENIX_GITHUB}.
+    V določenih scenarijih, ko imamo opravka z bolj preprosto in manj obsežno strukturo podatkov (npr. pri razvoju mobilnih aplikaciji), se za najprimernejšo izbiro izkaže SQLite \cite{SQLITE}. Gre za minimalističen DBMS, ki za razliko od prej omenjenih izbir za potrebe shranjevanja podatkov uporablja zgolj datoteko, ki jo zlahka enkapsuliramo v izolirano okolje, kot je mobilna naprava. V področje manjših podatkovnih baz, pa lahko uvrstimo tudi razvit DBMS – Graphenix \cite{GRAPHENIX_GITHUB}.
     
     \section{Statističen pregled Python ORM knjižnic}
 
@@ -499,9 +499,9 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
     \noindent
     Glede na zgornjo tabelo izluščimo, da v ekosistemu prevladujejo naslednje tri ORM knjižnice:
     \begin{itemize}
-        \item \textbf{Django ORM \cite{DJANGO_GITHUB}} je vgrajen sistem v Django knjižnico za izdelavo spletnih aplikaciji. Omogoča zelo širok nabor operaciji nad podatkovno bazo, poleg tega ima vgrajen tudi svoj CLI. S tem celotno ogrodje bistveno pospeši produktivnost razvijalcev, a hkrati kot ogrodje doda, kar 8.9 MB dodatne teže. Knjižnica podpira pet podatkovnih sistemov, to so PostgreSQL, MariaDB, MySQL, Oracle, SQLite.
-        \item \textbf{SQLalchemy \cite{SQLALCHEMY_GITHUB}} gre za eno najbolj fleksibilnih in uporabljenih knjižnic znotraj programskega jezika. Sama fleksibilnost pomeni, da številne operacije, ki so znotraj Django ORM že avtomatizirane so tukaj prepuščene implementaciji razvijalca. Fleksibilnost, pa s seboj prinaša tudi bistveno prednost, saj lahko kot razvijalec, ki dobro pozna ozadje delovanja uporabljenega DBMS uporabimo različne pristope optimizaciji, ki jih znotraj Django ORM ni mogoče realizirati oz. je implementacija bistveno težja. Knjižnica zaradi lahkotne abstrakcije podpira SQLite, MySQL, Oracle, MS-SQL in še ostale DBMS sisteme.
-        \item \textbf{Peewee \cite{PEEWEE_GITHUB}} je ena izmed preprostejših knjižnic, ki predstavlja lahkoten nivo abstrakcije. Knjižnica podpira 3 relacijske podatkovne sisteme, to so PostgreSQL, MySQL in SQLite. Gre za dokaj omejen nabor podprtih relacijskih podatkovnih sistemov, vendar zaradi svoje preprostosti knjižnica ima svojo ciljno skupino razvijalcev, ki razvijajo preproste sisteme in ne potrebujejo kompleksnosti, ki jih s seboj prineseta Django ORM in SQLalchemy.
+        \item \textbf{Django ORM \cite{DJANGO_GITHUB}} je vgrajen del širše Django knjižnice, ki je namenjena izdelavi spletnih aplikaciji. Omogoča zelo širok nabor operaciji nad podatkovno bazo, poleg tega ima vgrajen tudi svoj CLI (vmesnik za ukazno vrstico). S tem celotno ogrodje bistveno pospeši produktivnost razvijalcev, a hkrati kot ogrodje doda, kar 8.9 MB dodatne teže. Knjižnica podpira pet DBMS-jev, to so PostgreSQL \cite{POSTGRESQL}, MariaDB \cite{MARIADB}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE} in SQLite \cite{SQLITE}. Pomembno je izpostaviti, da je število prenosov nekoliko zavajajoče, saj uporaba Django knjižnice v primerih, ko ne potrebujemo trajnega shranjevanja podatkov ne pomeni uporabe Django ORM.
+        \item \textbf{SQLalchemy \cite{SQLALCHEMY_GITHUB}} gre za eno najbolj fleksibilnih in uporabljenih knjižnic znotraj programskega jezika. Sama fleksibilnost pomeni, da številne operacije, ki so znotraj Django ORM že avtomatizirane so tukaj prepuščene implementaciji razvijalca. Fleksibilnost, pa s seboj prinaša tudi bistveno prednost, saj lahko kot razvijalec, ki dobro pozna ozadje delovanja uporabljenega DBMS izkoristimo različne pristope optimizaciji, ki jih znotraj Django ORM ni mogoče realizirati oz. je implementacija bistveno težja. Knjižnica zaradi lahkotne abstrakcije podpira SQLite \cite{SQLITE}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE}, MSSQL \cite{MSSQL} in še mnogo drugih DBMS-jev.
+        \item \textbf{Peewee \cite{PEEWEE_GITHUB}} je ena izmed preprostejših knjižnic, ki predstavlja lahkoten nivo abstrakcije. Knjižnica podpira 3 relacijske podatkovne baze, to so PostgreSQL \cite{POSTGRESQL}, MySQL \cite{MYSQL} in SQLite \cite{SQLITE}. Gre za dokaj omejen nabor, saj je knjižnica dokaj minimalistična in s seboj ne prinese kompleksnosti, kot to storita Django ORM in SQLalchemy.
     \end{itemize}
 
     \noindent
@@ -510,10 +510,11 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
     \subsection{Slabost uporabe ORM knjižnic na nivoju poizvedb}
     Kljub vsem dobrim lastnostim omenjenih knjižnic, pa tudi vsaka izmed njih prinaša dodaten nivo abstrakcije in razvijalcu skrije veliko možnosti za optimizacijo delovanja DBMS. V algoritmih je pogost kompromis med hitrostjo in porabo prostora, ko pa govorimo o ORM knjižnicah in programskih jezikih, pa višji nivo abstrakcije pomeni kompromis hitrosti delovanja.
 
-    Narava relacijskih podatkovnih baz in združevanja tabel je usmerjena v skupen rezultat v obliki ene matrike, kjer imamo kartezičen produkt zapisov različnih entitet, katerega filtriramo glede na povezava, ki so realizirane s pomočjo tujih ključev. Pogosto, pa kot ciljni uporabniki ne želimo tega, temveč želimo drugačno strukturo podatkov, ki pa ni v skladu z osnovno idejo relacijskih baz. V ta namen ORM knjižnice izvedejo več različnih poizvedb in potem znotraj jedra knjižnice združujejo zapise in kreirajo ciljno strukturo ali pa izvedejo eno kompleksnejšo poizvedbo in pridobljene podatke nato pretvorijo v končno strukturo. Primer, take preproste naloge je: ``Za vse uporabnike pridobi njihove naloge in zadnjih pet sporočil, ki jih je vsak izmed teh uporabnikov poslal``.
-
-    \noindent
-    Za nalogo je SQLAlchemy jedro pripravilo naslednjo poizvedbo:
+    Narava relacijskih podatkovnih baz in združevanja tabel je usmerjena v skupen rezultat v obliki ene matrike, kjer imamo kartezičen produkt zapisov različnih entitet, katerega filtriramo glede na relacije, ki so realizirane s pomočjo tujih ključev.
+    
+    Kot ciljni uporabniki pogosto želimo drugačno strukturo, ki pa ni v skladu z osnovno idejo relacijskih baz. V ta namen ORM knjižnice izvedejo več različnih poizvedb in potem znotraj jedra knjižnice združujejo zapise in kreirajo ciljno strukturo ali pa izvedejo eno kompleksnejšo poizvedbo in pridobljene podatke nato preoblikujejo v končno strukturo.
+    
+    Za primer lahko vzamemo naslednjo nalogo: ``Za vse uporabnike pridobi njihova opravila in sporočila``. Za nalogo je SQLAlchemy \cite{SQLALCHEMY_GITHUB} izvedel naslednjo SQL poizvedbo:
     \begin{minted}{sql}
 SELECT * FROM users
 LEFT OUTER JOIN tasks AS t ON users.id = t.user_id
@@ -521,33 +522,31 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
     \end{minted}
 
     \noindent
-    Zgornji pristop pomeni, da za vsakega uporabnika prenesemo $T_i \cdot M_i$ zapisov, kjer je $T_i$ število nalog $i$-tega uporabnika in $M_i$ število sporočil $i$-tega uporabnika.
-    $N$ pa določa število uporabnikov.
+    Zgornji pristop pomeni, da za vsakega uporabnika prenesemo $\max(T_i, 1) \cdot \max(M_i, 1)$ zapisov, kjer je $T_i$ število opravil $i$-tega uporabnika in $M_i$ število sporočil $i$-tega uporabnika. $N$ pa določa skupno število uporabnikov.
 
-    \begin{izrek}
-        \label{iz:1}
-        Skupno število zapisov, ki jih pridobimo, je definirano s pomočjo naslednje vsote
-        \begin{equation}
-            \sum_{i=1}^{N} T_i \cdot M_i
-        \label{eq:1}
-        \end{equation}
-    \end{izrek}
-
-    \begin{izrek}
-        \label{iz:2}
-        Skupno število zapisov, ob idealnih pogojih (brez podvajanja podatkov)
-        \begin{equation}
-            N + \sum_{i=1}^{N} T_i + M_i
-        \label{eq:2}
-        \end{equation}
-    \end{izrek}
+    Končno število zapisov, ki jih pridobimo lahko izračunamo s pomočjo vsote ~\eqref{data_sum_first}.
+    
+    \begin{equation}
+        \sum_{i=1}^{N} \max(T_i, 1) \cdot \max(M_i, 1)
+    \label{data_sum_first}
+    \end{equation}
 
     \noindent
-    Torej najprej potrebujemo $N$ zapisov za vsakega uporabnika, nato pa za vsakega uporabnika pridobimo še $T_i$ nalog in $M_i$ nalog. Če predpostavimo, da imamo podatkovno bazo, kjer imamo sto uporabnikov in ima vsak izmed njih tisoč sporočil, ter dvesto nalog pomeni, da bomo v primeru prve poizvedbe ~\eqref{eq:1} prenesli, kar $100 \cdot 1000 \cdot 200$ oz. $\num{20000000}$ zapisov.
+    Skupno število zapisov, kjer bi vsak zapis iz posamezne entitete pridobili le 1x, pa lahko napišemo kot vsoto ~\eqref{data_sum_second}.
 
-    Medtem, ko v primeru druge poizvedbe ~\eqref{eq:2} to pomeni prenos bistveno manjše strukture ($100 \cdot (1000 + 200)$ oz. $\num{120000}$. Kar predstavlja le $0.6\%$ količine podatkov, ki jih je potrebno prenesti iz podatkovne baze do naše ORM implementacije.
+    \begin{equation}
+        N + \sum_{i=1}^{N} (T_i + M_i)
+    \label{data_sum_second}
+    \end{equation}
 
-    Ozko grlo, pa se pojavi še v enem segmentu, namreč pripravljanje končne strukture, ki jo vrne ORM je v vseh treh omenjenih knjižnicah izvedeno na nivoju programskega jezika Python, ki sam po sebi ni optimiziran za filtriranje in združevanje zapisov oz. ne omogoča pristopov, ki jih lahko uporabimo znotraj prevedenih jezikov in tako bistveno pohitrimo kreiranje končne strukture, ki predstavlja glavni rezultat poizvedbe.
+    \noindent
+    Torej najprej potrebujemo $N$ zapisov za vsakega uporabnika, nato pa za vsakega uporabnika pridobimo še $T_i$ opravil in $M_i$ sporočil.
+    
+    Če predpostavimo, da imamo podatkovno bazo, kjer imamo \num{100} uporabnikov in ima vsak izmed njih \num{1000} sporočil, ter \num{200} opravil pomeni, da bomo v primeru prve vsote~\eqref{data_sum_first} prenesli, kar $(100 \cdot 1000 \cdot 200) = \num{20000000}$ zapisov.
+
+    Medtem, ko v primeru druge vsote~\eqref{data_sum_second} to pomeni prenos bistveno manjše količine podatkov ($(100 \cdot (1000 + 200)) = \num{120000}$. Kar predstavlja le $0.6\%$ podatkov v primerjavi s prvo vsoto.
+
+    Ozko grlo, pa se pojavi še v enem segmentu, namreč pripravljanje končne strukture, ki jo vrne ORM je v vseh treh omenjenih knjižnicah izvedeno na nivoju programskega jezika Python, ki sam po sebi ni optimiziran za filtriranje in združevanje zapisov oz. ne omogoča pristopov, ki jih lahko uporabimo znotraj prevedenih jezikov in tako bistveno pohitrimo kreiranje končne strukture.
 
 \chapter{Razvoj jedra DBMS}
 \label{ch0}
@@ -561,21 +560,23 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
     \noindent
     Skozi poglavje bodo vsi primeri dela z DBMS na nivoju programskega jezika Python uporabljali preprost ER model z uporabniki, nalogami in sporočili. Uporabnik lahko ima več nalog in sporočil – pri sporočilih, pa imamo še dodatno vlogo, saj je lahko uporabnik pošiljatelj/prejemnik.
 \begin{minted}{python}
-class User(Model):
-    name = Field.String()
-    tasks = Field.VirtualLink("user")
-    sent_msgs = Field.VirtualLink("sender")
-    recieved_msgs = Field.VirtualLink("reciever")
+import graphenix as gx
 
-class Task(Model):
-    content = Field.String(size=100)
-    user = Field.Link("User").as_index()
+class User(gx.Model):
+    name = gx.Field.String()
+    tasks = gx.Field.VirtualLink("user")
+    sent_msgs = gx.Field.VirtualLink("sender")
+    recieved_msgs = gx.Field.VirtualLink("reciever")
 
-class Message(Model):
-    content = Field.String(size=50)
-    date = Field.DateTime()
-    sender = Field.Link("User")
-    reciever = Field.Link("User")
+class Task(gx.Model):
+    content = gx.Field.String(size=100)
+    user = gx.Field.Link("User").as_index()
+
+class Message(gx.Model):
+    content = gx.Field.String(size=50)
+    date = gx.Field.DateTime()
+    sender = gx.Field.Link("User")
+    reciever = gx.Field.Link("User")
 \end{minted}
     
     \section{Struktura shranjevanja podatkov}
@@ -718,7 +719,7 @@ child {node (E){29\nodepart{two}31}}
 
         Na drugi strani pa se skriva kar nekaj lastnosti B+ dreves, ki jih moramo imeti v mislih ob dodajanju nepotrebnih indeksov v našo podatkovno bazo.
         \begin{itemize}
-            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezni entiteti se zaradi vnašanja v B-drevo z osnovo $M$ poveča iz $O(1)$ na $O(log_M(N) * X)$, kjer je $X$ število stolpcev z dodano indeksno strukturo. $N$ pa predstavlja število že obstoječih zapisov v posamezni entiteti.
+            \item Časovna zahtevnost vnašanja in posodabljanja zapisov v posamezni entiteti se zaradi vnašanja v B drevo z osnovo $M$ poveča iz $O(1)$ na $O(log_M(N) * X)$, kjer je $X$ število stolpcev z dodano indeksno strukturo. $N$ pa predstavlja število že obstoječih zapisov v posamezni entiteti.
             \item Za vsak postavljen indeks se bistveno poveča poraba prostora na disku, saj shranjevanje drevesne strukture s seboj prinese podvajanje atributa, kot tudi dodatek kazalca na glavo entitete.
         \end{itemize}
 
@@ -998,18 +999,18 @@ query = Message.agg(
 \chapter{Sodoben pristop razvoja programske opreme}
 \label{ch1}
 
-    V poglavju bomo predstavili izbrane metodologije, ki so ključne za razvoj naše izbrane programske opreme. Jasno se zavedamo, da kakovostna zasnova predstavlja temelj celotnega sistema. Za zagotovitev pravilnega delovanja te zasnove pa se danes pogosto poslužujemo postopka avtomatskega testiranja programske opreme, ki vključuje teste enot in integracijsko testiranje.
+    V poglavju bomo predstavili izbrane metodologije, ki so ključne za razvoj naše izbrane programske opreme. Jasno se zavedamo, da kakovostna zasnova predstavlja temelj celotnega sistema. Za zagotovitev pravilnega delovanja te zasnove, pa se danes pogosto poslužujemo postopka avtomatskega testiranja programske opreme, ki vključuje teste enot in integracijsko testiranje.
 
     \section{Razvoj knjižnice za programski jezik \newline Python}
 
     V svetu programiranja je razvoj knjižnic ključnega pomena za širjenje funkcionalnosti posameznega programskega jezika. Python je jezik, ki že sam po sebi vključuje zelo obsežno standardno knjižnico, ki pokriva ogromno funkcionalnosti, ki jih v ostalih programskih jezikih dobimo le z uporabo eksternih modulov/knjižnic.
 
-    V namen upravljanja z eksternimi moduli programskega jezika se pogosto srečamo z upravljavci paketov (ang. package manager). Gre za orodje, ki omogoča enostaven način nameščanja, posodabljanja in odstranjevanja uvoženih knjižnic. Programski jezik Python v svoji dokumentaciji \cite{PY_PM} predlaga uporabo PIP upravljalnika paketov za distribucijo knjižnic, ki niso del standardnega modula programskega jezika.
+    V namen upravljanja z eksternimi moduli programskega jezika se pogosto srečamo z upravljavci paketov (ang. package manager). Gre za orodje, ki omogoča enostaven način nameščanja, posodabljanja in odstranjevanja uvoženih knjižnic. Programski jezik Python v svoji dokumentaciji \cite{PY_PM} predlaga uporabo PIP \cite{PIP} upravljalnika paketov za distribucijo knjižnic, ki niso del standardnega modula programskega jezika.
    
     \subsection{Uporaba Python.h za razvoj knjižnice}
    Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike in strežniških aplikaciji. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede do strojnega jezika. Python ima za zagon kode, še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku.
 
-   Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od prevedenih jezikov. Poleg tega jezik tudi nima striktnih tipov, kar pomeni, da je za vsako spremenljivko v jeziku ob izvajanju programske kode potrebno preveriti, za kateri tip gre, kar ponovno prinese časovne zakasnitve.
+   Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od prevedenih jezikov. Poleg tega jezik tudi nima striktnih tipov, kar pomeni, da je za vsako spremenljivko ob izvajanju programske kode potrebno preveriti, za kateri tip gre, kar ponovno prinese časovne zakasnitve.
 
     Področji umetne inteligence in podatkovne analitike temeljita na obdelavi masovnih podatkov, kar posledično pomeni, da Python ni najbolj optimalen jezik za izvedbo teh nalog. Zaradi teh omejitev so nastale knjižnice, ki so v osnovi napisane v jezikih, ki so bistveno hitrejši (prevedeni). Med temi knjižnicami so pogosteje uporabljene:
     \begin{itemize}
@@ -1019,7 +1020,7 @@ query = Message.agg(
     \end{itemize}
 
     \noindent
-    Vse te knjižnice so v osnovi napisane s pomočjo Python.h vmesnika. Lahko bi rekli, da gre za most, ki poveže jezika Python in C. Na nivoju programskega jezika C je vsak tip iz programskega jezika Python predstavljen s strukturo PyObject \cite{PY_OBJECT}, katerega lahko neposredno uporabljamo na nivoju programskega jezika C. 
+    Vse te knjižnice so v osnovi napisane s pomočjo Python.h vmesnika. Lahko bi rekli, da gre za most, ki poveže jezika Python in C. Na nivoju programskega jezika C je vsak tip iz programskega jezika Python predstavljen s strukturo PyObject \cite{PY_OBJECT}, katerega lahko neposredno uporabljamo in manipuliramo na nivoju programskega jezika C. 
 
     \subsection{Naprednejša knjižnica za lažji prehod med jezikoma}
 
@@ -1027,7 +1028,7 @@ query = Message.agg(
     
     Za še lažji prehod med jezikoma smo se odločili za razvoj knjižnice s pomočjo programskega jezika C++, ki ima poleg tega tudi bistveno širši nabor struktur v standardni knjižnici. 
 
-    Za prehod uporabljamo PyBind11 \cite{PYBIND11_GITHUB} knjižnico, ki deluje na nivoju višje in za svoje delovanje v ozadju uporablja Python.h. Gre za knjižnico, ki med drugim bistveno olajša pretvorbe podatkovnih struktur med jezikoma npr. std::vector \cite{CPP_VECTOR}, se samodejno pretvori v strukturo seznama na nivoju programskega jezika Python.
+    Za prehod smo uporabili PyBind11 \cite{PYBIND11_GITHUB} knjižnico, ki deluje na nivoju višje in za svoje delovanje v ozadju uporablja Python.h. Gre za knjižnico, ki med drugim bistveno olajša pretvorbe podatkovnih struktur med jezikoma npr. std::vector \cite{CPP_VECTOR}, se samodejno pretvori v strukturo seznama na nivoju programskega jezika Python.
 
     Poleg avtomatskih pretvorb, pa imamo že vseeno možnost uporabe vseh tipov, ki so vključeni v Python.h vmesnik.
 
@@ -1068,7 +1069,7 @@ print(total) # prints 15
     \end{figure}
 
     \noindent
-    Sama knjižnica je sestavljena iz dveh ključnih komponent. To sta ORM, ki je napisan s pomočjo programskega jezika Python in predstavlja tudi vhodno točko za uporabnike knjižnice. Na drugi strani, pa je jedro DBMS, ki z ORM komunicira preko prej omenjene PyBind11 knjižnice.
+    Sama knjižnica je sestavljena iz dveh ključnih komponent. To sta ORM, ki je napisan s pomočjo programskega jezika Python in predstavlja tudi vhodno točko za uporabnike knjižnice. Na drugi strani, pa je jedro DBMS, ki z ORM komunicira preko prej omenjene PyBind11 \cite{PYBIND11_GITHUB} knjižnice.
 
     Jedro vsebuje vse performančno gledano kritične operacije in podatke shranjuje v {\tt .bin} datoteke, ki predstavljajo zunanjo komponento sistema.
     
@@ -1094,19 +1095,19 @@ print(total) # prints 15
    
    \subsection{Integracija avtomatskega testiranja z GitHub}
 
-   Platforma GitHub omogoča izvajanje različnih akciji ob spremembah znotraj repositorija. Najpogosteje v praksi to počnemo, kadar izvajamo združenje vej ali kar ob vsaki posodobitvi kode. V praksi se poleg avtomatskega testiranja na tem področju lahko izvajajo tudi avtomatske posodobitve strežniške aplikacije ali različne periodične naloge, kot npr. kreiranje rezervnih verziji podatkovne baze iz produkcijskega strežnika.
+   Platforma GitHub omogoča izvajanje različnih akciji ob spremembah znotraj repositorija. Najpogosteje v praksi to počnemo, kadar izvajamo združevanje vej ali kar ob vsaki posodobitvi kode. V praksi se poleg avtomatskega testiranja na tem področju lahko izvajajo tudi avtomatske posodobitve strežniške aplikacije ali različne periodične naloge, kot npr. kreiranje varnostnih kopiji podatkovne baze iz produkcijskega strežnika.
 
-   V našem primeru se ob vsaki posodobitvi kode izvede akcija za preverjanje pravilnega delovanja knjižnice. Akcija se izvede za dve verziji programskega jezika Python (v3.10 in v3.11), postavitev okolja pa se izvede na virtualnem Linux okolju.
+   V našem primeru se ob vsaki posodobitvi kode izvede akcija za preverjanje pravilnega delovanja knjižnice. Akcija se izvede za dve verziji programskega jezika Python (v3.10 in v3.11). Postavitev okolja pa se izvede na virtualnem Linux okolju.
 
    Ob vzpostavitvi okolja izvedemo zaporedje manjših akciji, ki postopno validairajo pravilno delovanje celotne knjižnice.
    \begin{enumerate}
        \item Zagon virtualnega okolja za programski jezik Python - venv \cite{PY_VENV_DOCS}.
-       \item Postavitev potrebnih knjižnic za delovanje jedra (PyBind11 \cite{PYBIND11_GITHUB}).
-       \item Namestitev jedra DBMS \& poskus klica testne metode.
+       \item Namestitev knjižnice PyBind11 \cite{PYBIND11_GITHUB}.
+       \item Namestitev jedra DBMS \& klic testne metode jedra.
        \item Namestitev knjižnice, ki vsebuje ORM in operira z jedrom.
-       \item Izvedba nizko nivojskih testov oz. testov enot v programskem jeziku C++
-       \item Izvedba integracijskih testov na nivoju programskega jezika Python
-       \item Izvedba performančnih testov
+       \item Izvedba nizko nivojskih testov oz. testov enot v programskem jeziku C++.
+       \item Izvedba integracijskih testov na nivoju programskega jezika Python.
+       \item Izvedba performančnih testov.
    \end{enumerate}
 
     \noindent
@@ -1124,7 +1125,7 @@ print(total) # prints 15
 
     V okviru prvega scenarija izvajamo postopek vstavljanja podatkov v entiteto uporabnikov. V tem procesu postopoma povečujemo število zapisov, ki jih sistematično vnašamo v podatkovno bazo.
 
-    Na grafu \ref{vnos} so prikazane normalizirane vrednosti. Za vsak pristop je prikazan čas vstavljanja 1000 zapisov, izražen v milisekundah.
+    Na grafu \ref{vnos} so prikazane normalizirane vrednosti. Za vsak pristop je prikazan čas vstavljanja 1000 zapisov izražen v milisekundah.
    
    \begin{figure}[H]
         \centerline{\includegraphics[width=0.70\textwidth, angle=0]{singleinsert.png}}
@@ -1137,7 +1138,7 @@ print(total) # prints 15
 
     Na splošno lahko opazimo, da je SQLite prevladujoč pri hitrosti vstavljanja. Razlog, da MySQL ni tako hiter, je dokaj enostaven. MySQL DBMS teče na strežniku in vso komunikacijo opravlja prek vgrajenega protokola, kjer se podatki prenašajo z uporabo TCP/IP paketov, kar ni tako učinkovito, kot uporaba I/O operaciji v SQLite.
 
-    V primeru Graphenix DBMS vstavljanje ni izvedeno v klasični množični obliki, saj je vsatvljanje vsakega zapisa ločen dostop do datoteke. V analizi sta predstavljena dva pristopa vnašanja z uporabo razvite knjižnice, v primeru množičnega vnašanja gre za direkten klic funkcije jedra za vnašanje podatkov in ne potrebujemo kreirati instanc objektov, kar je bilo tudi glavno ozko grlo pri vnašanju podatkov z uporabo ORM.
+    V primeru Graphenix DBMS vstavljanje ni izvedeno v klasični množični obliki, saj je vsatvljanje vsakega zapisa ločen dostop do datoteke. V analizi sta predstavljena dva pristopa vnašanja z uporabo razvite knjižnice. V primeru množičnega vnašanja gre za direkten klic funkcije jedra za vnašanje podatkov in ne potrebujemo kreirati instanc objektov, kar je bilo tudi glavno ozko grlo pri vnašanju podatkov z uporabo ORM.
 
     Pomemben dejavnik pri vnašanju podatkov je tudi dodatna varnost, ki jo zagotavljata SQLite in zlasti MySQL. Oba sistema imata dnevnike, ki v primeru napake omogočata povrnitev celotne baze podatkov v stanje pred vnašanjem. Posledično v primeru napake ali prekinitve v Graphenix DBMS tvegamo imeti neveljavne zapise v bazi podatkov.
 
@@ -1159,7 +1160,7 @@ print(total) # prints 15
     \section{Velikosti podatkovnih baz na disku}
     \label{size_analysis}
 
-    Glede na prva dva scenarija smo pripravili tudi stolpčni grafikon \ref{velikosti}, kjer primerjamo porabo prostora na disku posameznega DBMS.
+    Glede na prva dva scenarija smo pripravili tudi stolpčni grafikon \ref{velikosti}, kjer primerjamo porabo prostora na disku posameznega DBMS (gre za baze podatkov z milijon zapisi). 
     
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.7\textwidth, angle=0]{sizes.png}}
@@ -1168,13 +1169,13 @@ print(total) # prints 15
     \end{figure}
 
     \noindent
-    Iz grafa takoj opazimo, da je Graphenix DBMS najbolj potraten iz vidika porabe prostora. Razlog se skriva v načinu shranjevanja tekstovnih vrednosti. SQLite in MySQL uporabljata podatkovne strukture, ki ob shranjevanju uporabljata še dodatno optimizacijo porabe prostora, saj uporabita le toliko prostora kot je potrebno. V primeru Graphenix, pa je dolžina tekstovnih polji točno določena in v primeru, da polje definiramo kot ``Field.String(size=50)`` pomeni, da bo vsak zapis ne glede na dolžino zavzel 50 bajtov.
+    Iz grafa takoj opazimo, da je Graphenix DBMS najbolj potraten iz vidika porabe prostora. Razlog se skriva v načinu shranjevanja tekstovnih vrednosti. SQLite in MySQL uporabljata podatkovne strukture, ki ob shranjevanju prinesejo še dodatno optimizacijo porabe prostora, saj uporabita le toliko prostora kot je potrebno. V primeru Graphenix, pa je dolžina tekstovnih polji točno določena in v primeru, da polje definiramo kot ``Field.String(size=50)`` pomeni, da bo vsak zapis ne glede na dolžino zavzel 50 bajtov.
 
-    V temnem delu stolpca je prikazana razlika velikosti z in brez uporabe indeksne strukture. DBMS z najnižjo porabo prostora je SQLite. Razlog za nižjo porabo se nahaja v velikosti posameznega vozlišča in samem algoritmu vstavljanja v drevo, ki vpliva tudi na delitev vozlišč tekom vnašanja.
+    V temnem delu stolpca je prikazana razlika velikosti z in brez uporabe indeksne strukture. DBMS z najnižjo porabo prostora iz vidika velikosti indeksne strukture je SQLite. Razlog za nižjo porabo se nahaja v velikosti posameznega vozlišča in samem algoritmu vstavljanja v drevo, ki vpliva tudi na delitev vozlišč tekom vnašanja.
 
     \section{Primerjava poizvedb na eni entiteti}
 
-    Za tretji scenarij je pripravljena analiza, kjer izmerimo čas izvajanja na preprosti poizvedbi brez kakršnih koli omejitev.
+    Za tretji scenarij je pripravljena analiza, kjer izmerimo čas izvajanja na preprosti poizvedbi branja brez kakršnih koli omejitev.
     
 \begin{minted}[breaklines]{SQL}
 SELECT * FROM users
@@ -1188,7 +1189,7 @@ SELECT * FROM users
     \end{figure}
 
     \noindent
-    Iz grafa je jasno razvidno, da uporaba ORM ni dobro pripravljena za masovno nalaganje podatkov, saj se ponovno kreirajo instance, ki predstavljajo, več kot 70\% delež celotnega branja. V primeru MySQL se ponovno pojavi tudi nekaj dodatne zakasnitve zaradi načina prenosa podatkov preko TCP/IP protokola.
+    Iz grafa je jasno razvidno, da uporaba ORM ni dobro pripravljena za masovno nalaganje podatkov, saj se ponovno kreirajo instance, kar predstavljaj več kot 70\% delež celotnega branja. V primeru MySQL se ponovno pojavi tudi nekaj dodatne zakasnitve zaradi načina prenosa podatkov preko TCP/IP protokola.
 
     \subsection{Branje s filtriranjem, urejanjem in omejevanjem podatkov}
 
@@ -1210,7 +1211,6 @@ LIMIT 500
     \noindent
     Sam čas izvajanja posameznega branja je relativno nizek, v vseh primerih je bilo branje izvedeno v manj kot 100 ms. Opazimo, da zakasnitve kreiranja instanc pri ORM tukaj ne pridejo toliko do izraza, saj je potrebno kreirati le 500 instanc. Do večjega izraza pridejo zakasnitve, ki jo za prenos podatkov prinaša TCP/IP protokol, kar je videno v primerih uporabe MySQL.
 
-    \newpage
     \section{Primerjava poizvedb z uporabo relaciji}
     \label{join_lbl}
 
@@ -1222,7 +1222,7 @@ INNER JOIN tasks ON tasks.user_id = users.id
 \end{minted}
 
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{join.png}}
+        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{join.png}}
         \caption{Poizvedovanje podatkov iz dveh entitet hkrati – uporabniki in njihove naloge}
         \label{join}
     \end{figure}
@@ -1240,7 +1240,7 @@ INNER JOIN tasks ON tasks.user_id = users.id
     
     \section{Izvedba agregacijske poizvedbe}
 
-    V scenariju izvedbe agregacije uporabljamo strukturo, ki smo jo pripravili v prejšnje scenariju \ref{join_lbl}. Kreiramo strukturo uporabnikov in na vsakega uporabnika vežemo še 10 nalog.
+    V scenariju izvedbe agregacije uporabljamo strukturo, ki smo jo pripravili v prejšnjem scenariju \ref{join_lbl}.
 
     V poizvedbi naloge združujemo po uporabnikih in za vsakega uporabnika pridobimo število nalog, ki mora biti v vseh primerih 10. Poleg tega, pa glede na atribut ``created\_at`` pridobimo tudi datum zadnje naloge uporabnika.
     
@@ -1251,7 +1251,7 @@ FROM tasks GROUP BY user_id
 \end{minted}
 
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.75\textwidth, angle=0]{agg.png}}
+        \centerline{\includegraphics[width=0.6\textwidth, angle=0]{agg.png}}
         \caption{Uporaba agregacijskih metod}
         \label{agg}
     \end{figure}
@@ -1259,7 +1259,7 @@ FROM tasks GROUP BY user_id
     \noindent
     V tem scenariju rezultat poizvedbe ni predstavljen, kot instance objektov, saj vedno kreiramo prilagojen tip rezultata, ki vsebuje identifikator uporabnika, število nalog in zadnji datum naloge za vezanega uporabnika.
 
-    Rezultati sicer dobro sledijo trendom iz predhodnih scenarijev – MySQL zaradi načina prenosa podatkov potrebuje nekoliko več časa, poleg tega pa se ponovno pozna razlika uporabe ORM in uporaba SQL poizvedb. Graphenix, pa je ponovno primerljiv uporabi SQLite brez ORM.
+    Rezultati sicer dobro sledijo trendom iz predhodnih scenarijev – MySQL zaradi načina prenosa podatkov potrebuje nekoliko več časa, poleg tega pa se ponovno pozna razlika uporabe ORM in uporaba SQL poizvedb. Graphenix pa je ponovno primerljiv uporabi SQLite brez ORM.
 
     \section{Pohitritve s pomočjo indeksiranja}
 
@@ -1286,9 +1286,9 @@ WHERE points = 5432
 
     Zaradi bistveno slabšega rezultata pri iskanju smo se lotili profiliranja posameznih segmentov programske kode za nabor podatkov.
 
-    Kaj hitro smo prišli do ugotovitve, da težava ni bil proces iskanja v B drevesu, temveč je bila težava branje zaglavja entitete. Metoda za branje podatkov iz posamezne entitete je delovala, tako da je najprej prebrala celotno datoteko zaglavja entitete in za posamezen identifikator zapisa pridobila še odmik v matriki zapisov. Izkazalo se je, da je ta proces zavzel nekje $\approx 85$\% izvajalnega časa.
+    Kaj hitro smo prišli do ugotovitve, da težava ni bil proces iskanja v B drevesu, temveč je bila težava branje zaglavja entitete. Metoda za branje podatkov iz posamezne entitete je delovala, tako da je najprej prebrala celotno datoteko zaglavja entitete in za posamezen identifikator zapisa pridobila še odmik v matriki zapisov. Izkazalo se je, da je ta proces v zgornjem scenariju predstavljal nekje $\approx 85$\% izvajalnega časa.
 
-    V namen hitrejšega izvajanja se branja celotnega zaglavja, v primeru, da imamo že vnaprej določene identifikatorje, ki jih iščemo in je teh manj kot $IX\_THRESHOLD$ izognemo. Konstanta predstavlja mejo za branje celotnega zaglavja in je v trenutni implementaciji nastavljena na \num{100}.
+    V namen hitrejšega izvajanja se branja celotnega zaglavja v primeru, da imamo že vnaprej določene identifikatorje, ki jih iščemo in je teh manj kot $IX\_THRESHOLD$ izognemo. Konstanta predstavlja mejo za branje celotnega zaglavja in je v trenutni implementaciji nastavljena na \num{100}.
     
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.75\textwidth, angle=0]{indexing_speedup_100000_v2.png}}
@@ -1310,7 +1310,7 @@ WHERE points = 5432
     \end{figure}
 
     \noindent
-    Iz grafa razberemo, da v vseh treh izvedbah zapis najdemo v manj kot 2 ms, kar v vseh treh scenariji predstavlja več 100x pohitritev. Nekaj zakasnitve se sicer vseeno pojavi iz strani MySQL, kar je glede na predhodne scenarije pričakovano.
+    Iz grafa razberemo, da v vseh treh izvedbah zapis najdemo v manj kot 2 ms, kar tudi v vseh treh scenariji predstavlja več 100x pohitritev. Nekaj zakasnitve se sicer vseeno pojavi iz strani MySQL, kar je glede na predhodne scenarije pričakovano.
 
     \subsubsection{Idealni pogoji za indeksiranje}
     Pomembno je omeniti, da je scenarij zelo prilagojen uporabi indeksiranja, saj v scenariju iskanja, kjer vrednosti niso unikatne učinkovitost indeksa zelo hitro pade. Poleg tega je bilo iskanje izvedeno, kot iskanje specifične vrednosti v drevesu, medtem, ko če bi iskali širši interval vrednosti bi se ponovno oddaljili od časovne zahtevnosti $O(log_M(N))$ in približali $O(N)$.
@@ -1320,7 +1320,7 @@ WHERE points = 5432
 \chapter{Scenariji oz. primeri uporabe}
 \label{ch3}
 
-    V tem poglavju sta predstavljena dva primera uporabe knjižnice Graphenix. V prvem primeru se knjižnica uporablja kot dodatek strežniški aplikaciji v namen beleženje podatkov. V drugem scenariju, pa je predstavljen razvoj preproste namizne aplikacije, kjer knjižnico uporabljamo za trajno shranjevanje podatkov. Oba primera skušata na praktičen način predstaviti dobre strani uporabe knjižnice.
+    V tem poglavju sta predstavljena dva primera uporabe knjižnice Graphenix. V prvem primeru se knjižnica uporablja kot dodatek strežniški aplikaciji v namen beleženja podatkov. V drugem scenariju, pa je predstavljen razvoj preproste namizne aplikacije, kjer knjižnico uporabljamo za trajno shranjevanje podatkov. Oba primera skušata na praktičen način predstaviti dobre strani uporabe Graphenix knjižnice.
 
     \section{Strežniško beleženje podatkov}
 
@@ -1328,7 +1328,7 @@ WHERE points = 5432
 
     \subsection{Aplikacija, ki služi kot osnova za modul beleženja}
 
-    V prvi fazi si lahko za primer pripravimo preprosto strežniško aplikacijo, ki uporablja Flask \cite{FLASK_GITHUB} ogrodje. Znotraj aplikacije smo definirali vsega eno vhodno točko, in sicer ``get-range``, kjer lahko poljubno nastavljamo tri HTTP GET parametre, to so ``start``, ``end`` in ``step``, kjer ima vsak od teh argumentov tudi privzete vrednosti.
+    V prvi fazi si lahko za primer pripravimo preprosto strežniško aplikacijo, ki uporablja Flask \cite{FLASK_GITHUB} ogrodje. Znotraj aplikacije smo definirali vsega eno vhodno točko, in sicer ``get-range``, kjer lahko poljubno nastavljamo tri HTTP GET parametre, to so ``start``, ``end`` in ``step``, kjer ima vsak od teh parametrov tudi privzete vrednosti.
     
 \begin{minted}{python}
 app = Flask(__name__)
@@ -1398,11 +1398,8 @@ def route_with_log(route):
     \subsubsection{Izpis zadnjih treh zahtevkov}
 
 \begin{minted}{python}
-# izpis zadnjih treh zahtevkov
 _, reqs = ReqInfo.order(ReqInfo.timestamp.desc()).limit(3).all()
-\end{minted}
-
-\begin{minted}{python}
+... 
 ReqInfo(id=3, route=/get-range, timestamp=2023-07-16 03:02:15, 
     route_req={}, route_res={"Range":[0,1,2,3,4,5,6,7,8,9]},
     resp_code=200)
@@ -1447,16 +1444,16 @@ count, api_errors = ReqInfo\
 
     DBMS omogoča tudi izvoz v {\tt.csv} datoteko, ki za nekatere uporabnike lahko pomeni lažjo obdelavo podatkov, poleg tega, pa lahko predstavlja tudi varnostno kopijo podatkovne baze v ločeni datoteki.
 
-    Za izvoz potrebujemo najprej izvesti nabor vseh podatkov, nato pa s pomočjo privzetega pretvornika podatke izvozi v datoteko s pomočjo metode ``dump2csv``, ki prejme dva parametra – podatke in naziv izvozne datoteke.
+    Za izvoz potrebujemo najprej izvesti nabor vseh podatkov, nato pa s pomočjo privzetega pretvornika podatke izvozimo v datoteko s pomočjo metode ``dump2csv``, ki prejme dva parametra – podatke in naziv izvozne datoteke.
     
 \begin{minted}{python}
 _, all_reqs = ReqInfo.all()
 gx.ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
 \end{minted}
 
-    \section{Namizna aplikacija za beleženje stroškov}
+    \section{Namizna aplikacija za upravljanje stroškov}
 
-    V tem sklopu je predstavljen razvoje preproste namizne aplikacije za beleženje stroškov. Aplikacija omogoča pregled stroškov, vnašanje, urejanje in brisanje, ter statističen pregled, kjer so stroški grupirani glede na kategorije.
+    V tem sklopu je predstavljen razvoje preproste namizne aplikacije za upravljanje stroškov. Aplikacija omogoča pregled stroškov, vnašanje, urejanje in brisanje, ter statističen pregled, kjer so stroški grupirani glede na kategorije.
 
     \subsection{Zaslonski pregled aplikacije}
     Na sliki \ref{home_screen} je prikazan začetni zaslon, kjer imamo v obliki seznama pregled vseh stroškov uporabnika in ob tem še zaslon za urejanje ali kreiranje novega stroška. 
@@ -1483,7 +1480,7 @@ gx.ViewSearilizer.default().dump2csv(all_reqs, 'export.csv')
 
     \subsection{Aplikacija iz vidika kode}
 
-    Grahepnix je dobra izbira, saj gre za relativno nezahtevno aplikacijo, kjer ne potrebujemo skrbeti za več hkratnih dostopov do baze podatkov, poleg tega pripravljen ORM omogoča tudi bistveno lažjo manipulacijo podatkov.
+    Grahepnix je dobra izbira, saj gre za relativno nezahtevno aplikacijo, kjer ne potrebujemo skrbeti za več hkratnih dostopov do baze podatkov, poleg tega pripravljen ORM omogoča zelo preprost pristop za manipulacijo podatkov.
 
     Za izris uporabniškega vmesnika aplikacija uporablja BeeWare \cite{BEE_WARE}, ki omogoča medplatformski razvoj programske opreme, kar pomeni, da lahko isto kodo uporabimo za več različnih operacijskih sistemov.
 
@@ -1502,7 +1499,7 @@ class ExpenseType(gx.Model):
 
     \noindent
     V namen beleženja stroškov je definirana entiteta ``Invoice``, kjer določimo naziv, ceno, datum in kategorijo posameznega stroška.
-    Poleg tega, pa imamo še tabelo, ki služi kot šifrant za kategorije stroškov. Podatki v kategorijah so vnaprej pripravljeni preko vnosa ob kreiranju podatkovne baze.
+    Poleg tega, pa imamo še tabelo, ki služi kot šifrant za kategorije stroškov. Podatki v kategorijah se samodejno napolnijo že ob kreiranju podatkovne baze.
 
     \subsubsection{Metoda za statistični nabor podatkov}
 
@@ -1552,8 +1549,8 @@ def display_expenses(self, search=None, order_by=None, page=0):
     \begin{enumerate}
         \item Preverimo, če vrednost iskanja ni prazna in v tem primeru uporabimo neobčutljiv regex na male in velike črke. Pogoj zahteva, da naziv računa vsebuje iskani niz ``search``.
         \item Parameter za urejanje preslikamo v določeno ureditev ali kot privzeto vrednost vzamemo padajoče urejanje po datumu.
-        \item Določimo stran, ki jo želimo prikazati v ta namen imamo globalno konstanto $PAGE\_SIZE$, ki določa velikost strani in v poizvedbi določimo, da preskočimo $PAGE\_SIZE \cdot page$ stroškov, kjer $page$ določa zaporedno stran. Hkrati, pa dodamo še omejitev števila zapisov (vzamemo le prvih \newline $PAGE\_SIZE$ zapisov).
-    \end{enumerate}  
+        \item Določimo stran, ki jo želimo prikazati v ta namen imamo globalno konstanto $PAGE\_SIZE$, ki določa velikost strani in v poizvedbi določimo, da preskočimo $PAGE\_SIZE \cdot page$ stroškov, kjer $page$ določa stran, katero želimo prikazati. Hkrati, pa dodamo še omejitev števila zapisov (vzamemo le prvih $PAGE\_SIZE$ zapisov).
+    \end{enumerate}
 
     \noindent
     Za konec se le še sprehodimo skozi rezultat poizvedbe in za vsak strošek kreiramo element na uporabniškem vmesniku.
@@ -1586,7 +1583,7 @@ def display_expenses(self, search=None, order_by=None, page=0):
         MySQL in SQLite sta že dva primera DBMS rešitev, ki ponujata prostorsko optimizacijo, kot je razvidno iz prostorske analize \ref{size_analysis}.
         \begin{itemize}
             \item SQLite nize definira s tipom ``TEXT``, ki besedilo shranjuje v ločeni strukturi od zapisov in po potrebi zapise v tej ločeni strukturi premika.
-            \item MySQL, pa ima možnost uporabe ``VARCHAR``, kjer lahko definiramo tudi maksimalno dolžino niza, vendar ta dolžina ne pomeni dejanske dolžine, ki jo niz porabi na disku, temveč tudi MySQL DBMS izvaja dinamično alokacijo za nize, ki s seboj poleg boljše izkoriščenega prostora na disku prinese tudi nekaj dodatnih korakov za branje teh zapisov.
+            \item MySQL ima možnost uporabe ``VARCHAR`` \cite{MYSQL_VARCHAR}, kjer lahko definiramo tudi maksimalno dolžino niza, vendar ta dolžina ne pomeni dejanske dolžine, ki jo niz porabi na disku, temveč tudi MySQL DBMS izvaja dinamično alokacijo za nize, ki s seboj poleg boljše izkoriščenega prostora na disku prinese tudi nekaj dodane kompleksnosti in dodatnih korakov za branje teh zapisov.
         \end{itemize}
     \end{enumerate}
     
@@ -1599,7 +1596,7 @@ def display_expenses(self, search=None, order_by=None, page=0):
     
     Spoznali smo, kako organizirati podatke za učinkovito izvedbo vseh operacij CRUD (ustvarjanje, branje, posodabljanje in brisanje). Za uspešno izvajanje je ključnega pomena tudi dobro poznavanje operacijskega sistema in načina, kako jedru DBMS omogočiti optimalno delo z datotekami.
     
-     Poudarek tekom razvoja je bil tudi na implementaciji indeksiranja z uporabo B drevesa. S tem smo uporabnikom namenske knjižnice omogočili možnost določanja indeksov, ki bistveno pospešijo operacije v sklopu filtriranja zapisov. Gre definitivno za najbolj kompleksen del celotnega sistema, saj je sami implementaciji drevesa z uporabo C++ kazalcev dodana še kompleksnost shranjevanja v datoteki. Posledično ostaja veliko funkcionalnosti, ki znotraj sklopa indeksiranja niso dobro ali sploh niso implementirane.
+     Poudarek tekom razvoja je bil tudi na implementaciji indeksiranja z uporabo B+ drevesa. S tem smo uporabnikom namenske knjižnice omogočili možnost določanja indeksov, ki bistveno pospešijo operacije v sklopu filtriranja zapisov. Gre definitivno za najbolj kompleksen del celotnega sistema, saj je sami implementaciji drevesa z uporabo C++ kazalcev dodana še kompleksnost shranjevanja v datoteki. Posledično ostaja veliko funkcionalnosti, ki znotraj sklopa indeksiranja niso dobro ali sploh niso implementirane.
     
     Poleg tega smo tekom razvoja dodali še lasten ORM, ki direktno komunicira z operacijami jedra, kar bistveno zmanjša kompleksnost, ki jo sicer prinese ORM, kjer moramo skrbeti še za dodatne preslikave med modeli in SQL poizvedbami. V našem DBMS je veliko operaciji prilagojenih objektnemu pristopu programiranja. V tem segmentu se delno oddaljimo od klasičnih relacijskih podatkovnih baz in se približamo NoSQL bazam podatkov.
     
