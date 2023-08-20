@@ -17,6 +17,17 @@ class QueryView(list):
         while counter < len(self):
             yield self[counter]
             counter += 1
+    
+    def as_pandas_df(self):
+        import pandas as pd
+        rows = self.view_obj.as_tuple()
+        cols = self.view_obj.field_names
+        return pd.DataFrame(rows, columns=cols)
+    
+    def as_polars_df(self):
+        import polars as pl
+        data_as_dict = self.view_obj.as_dict()
+        return pl.DataFrame(data_as_dict)
 
     def as_dict(self) -> list[dict]:
         return self.view_obj.as_dict()
