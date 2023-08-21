@@ -120,7 +120,7 @@ struct cond_object
             {
                 if (!py::isinstance<py::list>(value))
                 {
-                    throw std::runtime_error("You did not provide a list as the IN/NOT_IN argument");
+                    throw std::runtime_error("You did not provide a list as the IN argument");
                     return result;
                 }
 

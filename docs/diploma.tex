@@ -36,6 +36,8 @@
 						linkcolor=black, urlcolor=black,
 						pdfproducer={LaTeX}, pdfcreator={LaTeX}]{hyperref}
 
+\usepackage{newfloat}
+\usepackage{chngcntr}
 \usepackage{color}
 \usepackage{soul}
 \usepackage[dvipsnames]{xcolor}
@@ -49,6 +51,9 @@ backend=biber,
 style=numeric,
 sorting=nty,
 ]{biblatex}
+
+\DeclareFloatingEnvironment[fileext=loc,placement={!ht},name=Koda]{code}
+\renewcommand\listingscaption{Koda \thecode:}
 
 
 \addbibresource{literatura.bib} %Imports bibliography file
@@ -244,7 +249,7 @@ intelektualno lastnino, Streliška 1, 1000 Ljubljana.
 
 \vspace*{1cm}
 \begin{center}% 0.66 / 0.89 = 0.741573033707865
-%{ \CcImageCc{0.741573033707865}\hspace*{1ex}\CcImageBy{1}\hspace*{1ex}\CcImageSa{1}% }%
+\CcImageCc{0.741573033707865}\hspace*{1ex}\CcImageBy{1}\hspace*{1ex}\CcImageSa{1}%
 \end{center}
 }
 
@@ -300,10 +305,10 @@ opis diplome v angleščini
 \clearemptydoublepage
 
 % zahvala
-%\thispagestyle{empty}\mbox{}\vfill\null\it%
-%\noindent
-%Na tem mestu zapišite, komu se zahvaljujete za pomoč pri izdelavi diplomske naloge oziroma pri vašem študiju %nasploh. Pazite, da ne boste koga pozabili. Utegnil vam bo zameriti. Temu se da izogniti tako, da celotno %zahvalo izpustite.
-%$\rm\normalfont
+\thispagestyle{empty}\mbox{}\vfill\null\it%
+\noindent
+Zahvaljujem se svojemu mentorju doc. dr. Boštjanu Slivniku, za vso strokovno pomoč in svetovanje med implementacijo celotne rešitve ter pisanju diplomskega dela. Prav tako se zahvaljujem svoji družini in prijateljem za pomoč in podporo med študijem.
+\rm\normalfont
 
 % prazna stran
 \clearemptydoublepage
@@ -435,7 +440,7 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
 
     \subsection{Vloga DBMS v informacijskih sistemih}
 
-    Na sliki \ref{infsistem} je predstavljena standardna zasnova arhitekture za večino modernih informacijskih sistemov:
+    Na sliki \ref{infsistem} je predstavljena standardna zasnova arhitekture za večino modernih informacijskih sistemov.
     \begin{figure}[h]
         \centerline{\includegraphics[width=1\textwidth, angle=0]{webarchitecture.png}}
         \caption{Struktura sodobnega informacijskega sistema}
@@ -488,9 +493,9 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
           {\bf SQLObject \cite{SQLOBJECT_GITHUB}} & 133 & \num{27} tisoč & \num{6} tisoč \\
         \end{tabular}
     \end{center}
-
+    
     \noindent
-    Glede na zgornjo tabelo izluščimo, da v ekosistemu prevladujejo naslednje tri ORM knjižnice:
+    Glede na zgornjo tabelo izluščimo, da v ekosistemu prevladujejo naslednje SQLAlchemy, Django in Tortoise ORM.
     \begin{itemize}
         \item \textbf{Django ORM \cite{DJANGO_GITHUB}} je vgrajen del širše Django knjižnice, ki je namenjena izdelavi spletnih aplikaciji. Omogoča zelo širok nabor operaciji nad podatkovno bazo, poleg tega ima vgrajen tudi svoj CLI (vmesnik za ukazno vrstico). S tem celotno ogrodje bistveno pospeši produktivnost razvijalcev, a hkrati kot ogrodje doda, kar 8.9 MB dodatne teže. Knjižnica podpira pet DBMS-jev, to so PostgreSQL \cite{POSTGRESQL}, MariaDB \cite{MARIADB}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE} in SQLite \cite{SQLITE}. Pomembno je izpostaviti, da je število prenosov nekoliko zavajajoče, saj uporaba Django knjižnice v primerih, ko ne potrebujemo trajnega shranjevanja podatkov ne pomeni uporabe Django ORM.
         \item \textbf{SQLalchemy \cite{SQLALCHEMY_GITHUB}} gre za eno najbolj fleksibilnih in uporabljenih knjižnic znotraj programskega jezika. Sama fleksibilnost pomeni, da številne operacije, ki so znotraj Django ORM že avtomatizirane so tukaj prepuščene implementaciji razvijalca. Fleksibilnost, pa s seboj prinaša tudi bistveno prednost, saj lahko kot razvijalec, ki dobro pozna ozadje delovanja uporabljenega DBMS izkoristimo različne pristope optimizaciji, ki jih znotraj Django ORM ni mogoče realizirati oz. je implementacija bistveno težja. Knjižnica zaradi lahkotne abstrakcije podpira SQLite \cite{SQLITE}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE}, MSSQL \cite{MSSQL} in še mnogo drugih DBMS-jev.
@@ -535,23 +540,23 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
     \noindent
     Torej najprej potrebujemo $N$ zapisov za vsakega uporabnika, nato pa za vsakega uporabnika pridobimo še $T_i$ opravil in $M_i$ sporočil.
     
-    Če predpostavimo, da imamo podatkovno bazo, kjer imamo \num{100} uporabnikov in ima vsak izmed njih \num{1000} sporočil, ter \num{200} opravil pomeni, da bomo v primeru prve vsote~\eqref{data_sum_first} prenesli, kar $(100 \cdot 1000 \cdot 200) = \num{20000000}$ zapisov.
+    Če predpostavimo, da imamo podatkovno bazo, kjer imamo \num{100} uporabnikov in ima vsak izmed njih \num{1000} sporočil, ter \num{200} opravil pomeni, da bomo v primeru prve vsote~\eqref{data_sum_first} prenesli, kar $(100 \cdot 1000 \cdot 200) = 2 \times 10^7$ zapisov.
 
-    Medtem, ko v primeru druge vsote~\eqref{data_sum_second} to pomeni prenos bistveno manjše količine podatkov ($(100 \cdot (1000 + 200)) = \num{120000}$. Kar predstavlja le $0.6\%$ podatkov v primerjavi s prvo vsoto.
+    Medtem, ko v primeru druge vsote~\eqref{data_sum_second} to pomeni prenos bistveno manjše količine podatkov ($(100 \cdot (1000 + 200)) = 1.2 \times 10^5$. Kar predstavlja le $0.6\%$ podatkov v primerjavi s prvo vsoto.
 
     Ozko grlo, pa se pojavi še v enem segmentu, namreč pripravljanje končne strukture, ki jo vrne ORM je v vseh treh omenjenih knjižnicah izvedeno na nivoju programskega jezika Python, ki sam po sebi ni optimiziran za filtriranje in združevanje zapisov oz. ne omogoča pristopov, ki jih lahko uporabimo znotraj prevedenih jezikov in tako bistveno pohitrimo kreiranje končne strukture.
 
 \chapter{Razvoj jedra DBMS}
 \label{ch0}
     V poglavju predstavimo razvoj jedra DBMS s pomočjo programskega jezika C++. V prvi fazi je predstavljena celotna struktura podatkov in način shranjevanja na disk. Za tem predstavimo razvoj B+ drevesne strukture za optimalno indeksiranje podatkov. Nato se spustimo v predstavitev optimizaciji oz. algoritmov, ki omogočajo hitrejše branje podatkov in za zaključek še predstavitev funkcionalnosti, ki jih naš DBMS podpira.
-    \newline
-    \newline
-    \noindent
+
     Vsa izvorna koda je dostopna na GitHub repozitoriju \cite{GRAPHENIX_GITHUB}.
 
-    \newpage
-    \noindent
-    Skozi poglavje bodo vsi primeri dela z DBMS na nivoju programskega jezika Python uporabljali preprost ER model z uporabniki, nalogami in sporočili. Uporabnik lahko ima več nalog in sporočil – pri sporočilih, pa imamo še dodatno vlogo, saj je lahko uporabnik pošiljatelj/prejemnik.
+    \subsubsection{ER model za predstavitev funkcionalnosti}
+    Skozi poglavje bodo vsi primeri dela z DBMS na nivoju programskega jezika Python uporabljali preprost ER model z uporabniki, nalogami in sporočili. Uporabnik lahko ima več nalog in sporočil – pri sporočilih, pa imamo še dodatno vlogo, saj je lahko uporabnik pošiljatelj ali prejemnik.
+
+
+\newpage
 \begin{minted}{python}
 import graphenix as gx
 
@@ -563,24 +568,27 @@ class User(gx.Model):
 
 class Task(gx.Model):
     content = gx.Field.String(size=100)
-    user = gx.Field.Link("User")
+    user = gx.Field.Link()
 
 class Message(gx.Model):
     content = gx.Field.String(size=50)
     date = gx.Field.DateTime().as_index()
-    sender = gx.Field.Link("User")
-    reciever = gx.Field.Link("User")
+    sender = gx.Field.Link()
+    reciever = gx.Field.Link()
 \end{minted}
+% \label{er_model_def}
+% \caption{Definicija modelov za predstavitev funkcionalnosti}
+% \end{code}
     
     \section{Struktura shranjevanja podatkov}
         \subsection{Datotečna struktura za shranjevanje podatkov znotraj entitet}
-        Za vsako posamezno entiteto se privzeto kreirata 2 datoteki $ix\_<naziv\_entitete>.bin$ in $<naziv\_entitete>.bin$.
+        Za vsako posamezno entiteto se privzeto kreirata dve datoteki {\tt ix\_<naziv\_entitete>.bin} in {\tt <naziv\_entitete>.bin}.
         \begin{enumerate}
-            \item $<naziv\_entitete>.bin$ (matrika podatkov) – je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v entiteti. Posamezen stolpec matrike predstavlja posamezne atribute v matriki.
-            \item $ix\_<naziv\_entitete>.bin$ (glava entitete s kazalci) – gre za vektorsko strukturo, kjer vsaka zaporedna vrstica vsebuje kazalec na dejanski zapis v matriki podatkov – ta kazalec je realiziran, kot celoštevilski odmik zapisa v matriki. Poleg kazalcev struktura vsebuje tudi kazalec na prvo prosto vrstico v matriki:
+            \item {\tt <naziv\_entitete>.bin} (matrika podatkov) – je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v entiteti. Posamezen stolpec matrike predstavlja posamezne atribute v matriki.
+            \item {\tt ix\_<naziv\_entitete>.bin} (glava entitete s kazalci) – gre za vektorsko strukturo, kjer vsaka zaporedna vrstica vsebuje kazalec na dejanski zapis v matriki podatkov – ta kazalec je realiziran, kot celoštevilski odmik zapisa v matriki. Poleg kazalcev struktura vsebuje tudi kazalec na prvo prosto vrstico v matriki, ki je definiran po pravilu:
             \begin{itemize}
-                \item Matrika je polna – kazalec na konec datoteke
-                \item V matriki podatkov obstaja fragmentacija – kazalec na prvo prosto vrstico v matriki 
+                \item Matrika je polna – kazalec na konec datoteke.
+                \item V matriki podatkov obstaja fragmentacija – kazalec na prvo prosto vrstico v matriki.
             \end{itemize}
         \end{enumerate}
 
@@ -593,18 +601,18 @@ class Message(gx.Model):
         \subsection{Tipi podatkov}
         Znotraj razvitega DBMS podpiramo 7 podatkovnih tipov:
         \begin{enumerate}
-            \item Cela števila (ang. Int) – v tem primeru gre za vrednost, ki je na nivoju C++ programskega jezika shranjena kot int64\_t oziroma predznačeno celo število. Velikost za posamezno vrednost je 8B. Sam razpon vrednosti, ki jih lahko shranimo v posamezen zapis je $[-2^{63}, 2^{63} - 1]$.
-            \item Realna števila (ang. Float) – zaradi lažje implementacije je velikost realnih števil enaka, kot velikost celih števil – torej 64 bitov. Vrednost je na nivoju podatkov realizirana, kot ``dvojni float`` oz. ``double``. Gre za zaporedje bitov, ki so po standardu IEEE 754 \cite{kahan1996ieee} ločeni v predznak, eksponent in mantiso.
-            \item Nizi (ang. String) – Gre za zaporedje znakov, kjer na nivoju posamezne entitete določimo maksimalno dovoljeno dolžino posameznega zapisa. Torej velikost posameznega zapisa je $N * 1B$, kjer je $N$ maksimalna dolžina podatka. 
-            \item Logične vrednosti (ang. Bool) – je najmanjši podatkovni tip, ki ga vsebuje naš DBMS in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot je to definirano v programskem jeziku Python.
-            \item Datumi (ang. Datetime) – gre za podatkovni tip, ki je ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu \cite{EPOCH_FORMAT} – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970. 
-            \item Povezava (ang. Link) – gre za vgrajen tip relacije, kjer je podatek kazalec na drug zapis v določeni entiteti. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
-            \item Virtualna povezava (ang. VirtualLink) – gre za navidezno polje v entiteti, ki ne zavzame nobenega dodatnega prostora. Polje je pomembno za kreiranje povezave ob poizvedbah, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
+            \item Cela števila ({\tt Int}) – v tem primeru gre za vrednost, ki je na nivoju C++ programskega jezika shranjena kot int64\_t oziroma predznačeno celo število. Velikost za posamezno vrednost je 8B. Sam razpon vrednosti, ki jih lahko shranimo v posamezen zapis je $[-2^{63}, 2^{63} - 1]$.
+            \item Realna števila ({\tt Float}) – zaradi lažje implementacije je velikost realnih števil enaka, kot velikost celih števil – torej 64 bitov. Vrednost je na nivoju podatkov realizirana, kot ``dvojni float`` oz. ``double``. Gre za zaporedje bitov, ki so po standardu IEEE 754 \cite{kahan1996ieee} ločeni v predznak, eksponent in mantiso.
+            \item Nizi ({\tt String}) – Gre za zaporedje znakov, kjer na nivoju posamezne entitete določimo maksimalno dovoljeno dolžino posameznega zapisa. Torej dolžina posameznega zapisa je $N$ bajtov, kjer je $N$ maksimalna dolžina niza. 
+            \item Logične vrednosti ({\tt Bool}) – je najmanjši podatkovni tip, ki ga vsebuje naš DBMS in zavzame vsega 1B; drži pa lahko vrednosti $0/1$ oz. True/False, kot je to definirano v programskem jeziku Python.
+            \item Datumi ({\tt Datetime}) – gre za podatkovni tip, ki je ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu \cite{EPOCH_FORMAT} – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970. 
+            \item Povezava ({\tt Link}) – gre za vgrajen tip relacije, kjer je podatek kazalec na drug zapis v določeni entiteti. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
+            \item Virtualna povezava ({\tt VirtualLink}) – gre za navidezno polje v entiteti, ki ne zavzame nobenega dodatnega prostora. Polje je pomembno za kreiranje povezave ob poizvedbah, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
         \end{enumerate}
         
-        \subsection{Realizacija relaciji med entitetami}
+        \subsection{Implementacija relaciji}
 
-        Implementacija relacij med entitetami se izvaja s pomočjo uporabe tujih ključev, ki predstavljajo primarne ključe identificiranih zapisov in omogočajo povezavo med entitetami. Ti tujih ključi se shranijo kot atributi v entiteto, ki vzpostavlja povezavo, in kažejo na primarni ključ v povezani entiteti. Vzpostavitev povezave se izvede pri ustvarjanju modela na ravni programskega jezika Python.
+        Implementacija relacij med entitetami se izvaja s pomočjo uporabe tujih ključev, ki predstavljajo primarne identifikatorje zapisov, katere želimo povezati in omogočajo povezavo med entitetami. Vzpostavitev povezave se izvede pri ustvarjanju modela na ravni programskega jezika Python, ko na modelu nastavimo povezavo se v polje shrani identifikator zapisa, ki smo ga povezali.
 
         Spodaj je predstavljen tudi preprost primer, kjer neko sporočilo vežemo na dva uporabnika, ki imata vlogo pošiljatelja in prejemnika.
 \begin{minted}{python}
@@ -620,7 +628,6 @@ first_mesage = Message(
 \end{minted}
 
     \section{Indeksiranje z uporabo B+ dreves}
-        \subsection{B+ drevesa in njihove karakteristike}
 
         B+ drevesa so podatkovna struktura, uporabljena za učinkovito indeksiranje in iskanje podatkov. Vsako vozišče ima lahko največ $M$ podatkov in $M+1$ kazalcev na nova vozlišča.
 
@@ -631,31 +638,32 @@ first_mesage = Message(
         Še ena izmed karakteristik B+ drevesa je povezava med vozlišči na enakem nivoju, saj to omogoča optimalno iskanje z intervalom in pripelje do časovne kompleksnosti $O(log_M(N) + k)$, kjer je $k$ širina intervala. Enaka poizvedba, bi v klasičnem B drevesu pomenila časovno kompleksnost $O(\frac{k}{M} \cdot log_M(N))$, saj bi zapise iz intervala iskali ločeno glede na posamezno vozlišče.
 
         \subsubsection{Primer B+ drevesa}
-        Na sliki \ref{btree_example} je prikazan preprost primer B+ drevesa realiziran s stopnjo $M=2$.
+        Na sliki \ref{btree_example} je prikazan preprost primer B+ drevesa realiziran s stopnjo $M=3$, kar pomeni, da lahko ima v enem vozlišču največ tri zapise.
         
-        \begin{figure}[h]        
+        \begin{figure}[H]        
             \centerline{\includegraphics[width=0.9\textwidth, angle=0]{Bplustree.png}}
             \caption{Primer B+ drevesa, povzeto po \cite{BPTREE}}
             \label{btree_example}
         \end{figure}
 
         \noindent
-        Drevo vsebuje sedem zapisov, pri čemer vsak izmed zapisov poleg vrednosti še kazalec na zapis, katerega označimo z $d_i$. V primeru uporabe B+ drevesa za indeksiranje v podatkovni bazi ti kazalci kažejo na posamezen zapis v entiteti.
+        Drevo vsebuje sedem različnih vrednosti, pri čemer vsaka izmed vrednosti še kazalec na zapis, katerega označimo z $d_i$. V primeru uporabe B+ drevesa za indeksiranje v podatkovni bazi ti kazalci kažejo na posamezen zapis v entiteti.
         
-        \subsection{Pravila, ki jih zahteva B+ drevo}
-        \begin{enumerate}
-            \item Vsako vozlišče ima največ $M$ podatkov in $M+1$ kazalcev – kapaciteta vozlišča.
-            \item Listi drevesa so vsi na enakem nivoju.
+        \subsection{Lastnosti B+ drevesa}
+        \begin{itemize}
+            \item Vsako vozlišče ima največ $M$ podatkov in $M+1$ kazalcev, kjer je $M$ kapaciteta vozlišča.
+            \item Listi drevesa so vsi na enakem nivoju in tvorijo povezan seznam.
             \item Urejenost – vse vrednosti, ki se nahajajo levo morajo biti manjše ali enake trenutni. Vse vrednosti desno, pa marajo biti večje ali enake trenutni.
-            \item Vozlišče je veljavno, kadar ima vsaj $M/2$ zapisov, kjer je $M$ kapaciteta oz. maksimalno število podatkov, ki jih lahko ima vozlišče.
-        \end{enumerate}
+            \item Vozlišče je veljavno, kadar ima vsaj $\lceil \frac{M}{2}\rceil - 1$ zapisov in $\frac{M}{2}$ kazalcev na nadaljnja vozlišča.
+        \end{itemize}
 
-        \subsection{Implementacija B+ drevsa za shranjevanje na disk}
+        \subsection{Implementacija za shranjevanje na disk}
         Razlog za uporabo B dreves znotraj podatkovnih baz je dokaj trivialen. Namreč iskalne strukture, ki so realizirane s pomočjo binarnih dreves na področju shranjevanja na disk vsebujejo izrazito ozko grlo. Težava se pojavi pri branju in pisanju posameznih vozlišč, saj operacija nad enim vozliščem pomeni en dostop do diska oz. datoteke. B drevesa ta problem rešujejo s samo količino podatkov, ki je shranjena na nivoju enega vozlišča. Ob shranjevanju na klasične trde diske je velikost enega vozlišča bila določena, kot velikost sektorja na disku. To je pomenilo, da je dostop do posameznega vozlišča predstavljal le en dostop na disk, ki je omogočal branje/pisanje $M$ vrednosti hkrati.
 
         Klasičen način določanja velikosti posameznih vozlišč se je dokaj spremenil odkar so standard za shranjevanje podatkov postali hitrejši tipi diskov kot so SSD in v tem primeru velikost posameznega vozlišča ni več določena izključno na podlagi strojne opreme.
 
         \subsection{Implementacija v MySQL DBMS}
+        \label{MYSQL_BPTREE}
 
         MySQL je eden izmed mnogih DBMS-jev, ki za indeksiranje uporabljajo implementacijo B+ drevesa. Struktura, ki jo privzeto uporablja MySQL je prikazana na sliki \ref{btree_innodb}.
 
@@ -665,21 +673,64 @@ first_mesage = Message(
             \label{btree_innodb}
         \end{figure}
 
-        Vsi nivoji vsebujejo kazalec na prejšnje in naslednje vozlišče v enakem nivoju, kar je tudi v skladu z implementacijo v Graphenix. Vsaka stran oz. vozlišče vsebuje ``Infimum``, ki predstavlja vrednost manjšo kot kateri koli zapis v vozlišču. Na drugi strani, pa je ``Supremum``, ki predstavlja vrednost večjo kot kateri koli zapis v vozlišču.
+        \noindent
+        Znotraj MySQL implementacije B+ drevesa vsi nivoji vsebujejo kazalec na prejšnje in naslednje vozlišče na enakem nivoju, kar je tudi v skladu z implementacijo v Graphenix. Vsaka stran oz. vozlišče vsebuje ``Infimum``, ki predstavlja vrednost manjšo kot kateri koli zapis v vozlišču. Na drugi strani, pa je ``Supremum``, ki predstavlja vrednost večjo kot kateri koli zapis v vozlišču.
 
         Gre še za malo bolj kompleksno implementacijo B+ drevesa, ki omogoča še nekaj dodatnih optimizaciji iz vidika shranjevanja podatkov in izvajanja iskanja.
 
-        \subsection{Vnašanje v B+ drevo}
+        \subsection{Vstavljanje v B+ drevo}
 
-        \textbf{TODO – predstavitev algoritma in scenarijev, do katerih pride tekom vnašanja.}
+        Ko govorimo o kompleksnosti implementaciji posamezne operacije znotraj B+ drevesa, sta brisanje in vstavljanje definitivno bistveno bolj kompleksna, kot pa iskanje. Ob dobri sestavi drevesa je iskanja zapisov skoraj trivialen postopek, ki je tudi bolj intuitiven.
 
-        https://www.geeksforgeeks.org/insertion-in-a-b-tree/
+        Algoritem za vstavljanje je povzet po implementaciji na spletni platformi ``GeeksforGeeks`` \cite{G4G_BINSERT}. Pristop vstavljanja je narejen na primeru, ki podpira le celoštevilsko indeksiranje, hkrati pa drevo shranjuje le na nivoju pomnilnika. V naši implementaciji je bilo potrebno oba scenarija pokriti. Tip indeksiranja smo rešili s pristopom uporabe ``generikov``, ki omogočajo poljuben podatkovni pri shranjevanju vrednost. Kljub uporabi pristopa smo morali ročno pokriti še branje in pisanje v datoteko, saj pristop za pisanje števil in nizov ni povsem enak.
+        %Ne glede na razlike, pa lahko preverjanje ob času izvajanja %vstavljanja s pomočjo C++ prevajalnika odstranimo, saj z uporabo {\tt %constexpr} omogočimo, da prevajalnik vstavljanje prilagodi že pred %samim izvajanjem.
 
-        \subsection{Podprte operacije filtriranja s pomočjo B+ drevesa}
+        \subsubsection{Koraki za vstavljanje}
+
+        \begin{enumerate}
+            \item S pristopom iskanja poiščemo mesto, kamor bi morali vstaviti vrednost.
+            \item Poskusimo z vnašanjem, če je list poln vozlišče razdelimo na dva dela in kreiramo novo vozlišče, katerega povežemo na starša. V primeru, da 
+            \item Če pride do preliva v vmesnem vozlišču, to vozlišče ponovno razdelimo na dva vozlišča in prevežemo nadaljnja vozlišča, kot tudi starša.
+        \end{enumerate}
+
+        \noindent
+        Koraki za vstavljanje so zelo okrnjeni in poenostavljeni, saj celoten algoritem za vstavljanje vsebuje tudi rekurzivne dele metode, kot tudi operacije za prevezovanje dveh zaporednih vozlišč.
+
+        \subsection{Podprte operacije filtriranja}
         
-        \textbf{TODO – EQUAL, BETWEEN (iskanje na intervalu), IS\_IN (preverjanje, če je element v seznamu)}
+        Znotraj razvitega DBMS B+ drevo uporabljamo za tri različne operacije filtriranja.
+        \begin{itemize}
+            \item Najbolj preprosta izmed operaciji je iskanje zapisa po enakosti, kjer v drevesu po vrednosti preprosto poiščemo zapise in vrnemo identifikatorje teh zapisov oz. zapisa.
+            \item Preverjanje ali je element v seznamu podanih elementov, kjer za vsak element v seznamu izvedemo iskanje zapisa znotraj B+ drevesa (večkrat izvedemo iskanje po enakosti).
+            \item Zadnja podprta operacija je iskanje vrednosti na intervalu, kjer podamo spodnjo in zgornjo mejo. Ob filtriranju najprej izvedemo iskanje po spodnji meji in, nato izvedemo sprehod skozi povezana vozlišča, dokler ne presežemo zgornje meje. Postopek je reliziran z metodo, ki prejme delni rezultat v obliki vektorja vozlišč in desno mejo {\tt load\_up\_to\_right(nodes, right\_limit)}. Metoda tekom iskanja vozlišča dodaja v vektor {\tt nodes}.
+        \end{itemize}
+
+        \noindent
+        Pri uporabi indeksiranja ostaja ogromno ne pokritih operaciji, ki jih sicer klasični DBMS-ji podpirajo. Vendar zaradi osnovne strukture pri nekaterih optimizacijah ne bi dosegli bistvene izboljšave in bi v določenih scenarijih celo upočasnili poizvedbo.
+
+        \subsubsection{Filtriranje pred branjem matrične datoteke}
+
+        Pred začetkom branja matrične datoteke moramo najprej dobiti vse odmike. V primeru, da nimamo nobenih omejitev preprosto preberemo vse odmike in preberemo vse veljavne zapise znotraj matrike podatkov. Za optimizacijo branja, pa imamo tri scenarije, ki lahko že pred začetkom branja izločijo neveljavne zapise.
+
+        \begin{enumerate}
+            \item Pogoji direktno nad primarnim identifikatorjem zapisov.
+            \item Že definirani identifikatorji ({\tt qobject.ix\_constraints}), kadar gre za poizvedbo, ki ni v korenu drevesa poizvedb.
+            \item Kadar imamo pogoje, ki uporabljajo filtriranje z indeksiranjem.
+        \end{enumerate}
+
+        \noindent
+        V naslednjem koraku kreiramo presek vseh identifikatorjev, ki smo jih dobili iz zgornje akcije. Vse akcije namreč vračajo zgoščeno tabelo identifikatorjev. Za konec moramo pred branjem le še preveriti, kateri identifikatorji se pojavijo v preseku in lahko nadaljujemo na branje matrične datoteke, ki vsebuje dejanske zapise.
+
+
+        \subsection{Ostali pristopi indeksiranja}
+
+        MySQL omogoča dva bolj pogosta pristopa za indeksiranje podatkov. Prvi pristop je s prej omenjenim B+ drevesom \ref{MYSQL_BPTREE}. Z uporabo B+ drevesa omogočimo optimizacijo poizvedb, kjer uporabljamo pogoje {\tt =, >, >=, <, <=, BETWEEN} delno, pa je pokrit tudi operator {\tt like}, kjer je iskanje s pomočjo drevesa izvedeno v primerih, ko iščemo začetek niza \cite{TREE_HASH_MYSQL}.
+
+        DBMS poleg dreves podpira tudi indeksiranje s pomočjo zgoščevalnih tabel. Gre za pristop, ki se uporablja le za preverjanje enakosti, saj zgoščene vrednosti ne moremo primerjati po velikosti.
+        Prednost uporabe zgoščevalnih tabel se skriva v sami hitrosti iskanja po specifični vrednosti, saj ima ta proces časovno kompleksnost $O(1)$ oz. konstanto časovno kompleksnost.
         
-    \newpage
+        Pristop, je tako zelo uporaben, kadar imamo polje, ki vsebuje vrednoti iz omejenega nabora vrednosti npr. pri indeksiranju pošiljatelja sporočila bi z uporabo zgoščevalne tabele zelo hitro lahko poiskali pošiljatelja, hkrati pa za ta atribut načeloma ne izvajamo ostalih operaciji filtriranja in v večini scenarijev le iščemo zapise točno določenega uporabnika.
+
     \section{Optimizacije poizvedovanja}
         
         \subsection{Gručanje podatkov ob branju iz diska}
@@ -699,7 +750,7 @@ first_mesage = Message(
   \tikzset{listnode/.style={circle, draw, minimum size=1.1cm}}
   
   % Draw the linked list nodes
-  \foreach \i/\element in {0/0,1/64,2/72,3/256,4/512,5/528,6/534,7/1024}{
+  \foreach \i/\element in {0/0,1/64,2/72,3/256,4/512,5/528,6/542,7/960}{
     \node[listnode] (\i) at (\i*1.5,0) {\element};
   }
   
@@ -712,22 +763,22 @@ first_mesage = Message(
 \end{center}
 \end{figure}
 
-\noindent Iz odmikov lahko hitro razberemo dve gruči, kateri bi želeli, da naš algoritem odkrije in branje odmikov izvede v enem koraku – to sta gruči $[64, 62]$, ter $[512, 528, 540]$. Optimalen pristop branja bi lahko barvno označili po naslednji konfiguraciji:
+\noindent Iz odmikov lahko hitro razberemo dve gruči, kateri bi želeli, da naš algoritem odkrije in branje odmikov izvede v enem koraku – to sta gruči $[64, 62]$ ter $[512, 528, 542]$. Optimalen pristop branja bi lahko barvno označili po naslednji konfiguraciji:
 
 \hfill \break
 \begin{figure}[H]
 \begin{center}
 \begin{tikzpicture}[->, >=stealth, auto]
-  \def\vectorElements{{0, 64, 72, 256, 512, 528, 542, 1024}}
+  \def\vectorElements{{0, 64, 72, 256, 512, 528, 542, 960}}
   
   \node[circle, draw, minimum size=1.1cm] (0) at (0,0) {0};
-  \node[circle, draw, fill=orange!30, minimum size=1.3cm] (1) at (1.5,0) {64};
-  \node[circle, draw, fill=orange!30, minimum size=1.3cm] (2) at (3,0) {72};
-  \node[circle, draw, fill=gray!30, minimum size=1.3cm] (3) at (4.5,0) {256};
-  \node[circle, draw, minimum size=1.3cm, fill=red!30] (4) at (6,0) {512};
-  \node[circle, draw, minimum size=1.3cm, fill=red!30] (5) at (7.5,0) {528};
-  \node[circle, draw, minimum size=1.3cm, fill=red!30] (6) at (9,0) {534};
-  \node[circle, draw, minimum size=1.3cm, fill=black!30] (7) at (10.5,0) {1024};
+  \node[circle, draw, fill=orange!30, minimum size=1.1cm] (1) at (1.5,0) {64};
+  \node[circle, draw, fill=orange!30, minimum size=1.1cm] (2) at (3,0) {72};
+  \node[circle, draw, fill=gray!30, minimum size=1.1cm] (3) at (4.5,0) {256};
+  \node[circle, draw, minimum size=1.1cm, fill=red!30] (4) at (6,0) {512};
+  \node[circle, draw, minimum size=1.1cm, fill=red!30] (5) at (7.5,0) {528};
+  \node[circle, draw, minimum size=1.1cm, fill=red!30] (6) at (9,0) {542};
+  \node[circle, draw, minimum size=1.1cm, fill=black!30] (7) at (10.5,0) {960};
 
   \draw (0) -- (1);
   \draw (1) -- (2);
@@ -737,7 +788,7 @@ first_mesage = Message(
   \draw (5) -- (6);
   \draw (6) -- (7);
 \end{tikzpicture}
-\caption{Zaporedje odmikov za poizvedbo iz matrične datoteke z obarvanjem gruč}
+\caption{Zaporedje odmikov z obarvanjem gruč}
 \end{center}
 \end{figure}
         
@@ -759,7 +810,7 @@ first_mesage = Message(
         \end{enumerate}
 
         \noindent
-        Za zgornje tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja samega algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti, vse imajo namreč časovno zahtevnost vsaj $O(N)$. Bistveno bolj zanimiv, pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $\num{10000000}$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[500, 25000]$.
+        Za zgornje tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja samega algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti, vse imajo namreč časovno zahtevnost vsaj $O(N)$. Bistveno bolj zanimiv, pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $1 \times 10^7$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[500, 25000]$.
 
         \begin{figure}[H]
             \centerline{\includegraphics[height=0.45\textwidth, angle=0]{prvih_k_elementov.png}}
@@ -772,7 +823,7 @@ first_mesage = Message(
 
         Izkaže se, da je algoritem z uporabo prioritetne vrste najbolj optimalen pristop, kar pokažejo tudi perfomančni testi, ki se izvajajo na platformi GitHub, saj smo z uporabo omenjenega pristopa dobili do 4x pohitritev izvedbe nabora podatkov iz ene entitete.
 
-        \subsection{Uporaba podatkovnih okvirjev ob poizvedovanju podatkov}
+        \subsection{Uporaba podatkovnih okvirjev}
 
         Akcija za poizvedovanje ob prvi implementaciji deluje po naslednjih korakih:
         \begin{enumerate}
@@ -793,14 +844,14 @@ first_mesage = Message(
             \item Po optimizaciji, pa celoten čas branja zahteva povprečno $\approx 1.3$ sekunde. Kar v podanem scenariju pomeni, kar 5x pohitritev izvedbe branja.
         \end{itemize}
 
-    \section{Podprte funkcionalnosti na nivoju vgrajenega ORM sistema}
+    \section{Poizvedovanje z uporabo ORM}
     \begin{itemize}
-        \item \textbf{Filtriranje podatkov – funkcija ``filter`` (DBMS – where).}
+        \item \textbf{Filtriranje podatkov – funkcija {\tt filter}}
         \newline
         \noindent
-        Parametri te funkcije se drevo, kjer je posamezno vozlišče drevesa predstavljeno z enim ali več pogoji, ki so oviti v AND ali OR pogoj.
+        Parametri te funkcije so drevo, kjer je posamezno vozlišče drevesa predstavljeno z enim ali več pogoji, kjer lahko vozlišče zahteva izpolnjenost vseh ali vsaj enega pogoja.
         
-        Vozlišče v katerem želimo, da vsi pogoji držijo kreiramo s pomočjo ``gx.every(...)`` metode, medtem ko za kreiranje vozlišča z vezavo ali uporabimo metodo ``gx.some(...)``.
+        Vozlišče v katerem želimo, da vsi pogoji držijo kreiramo s pomočjo {\tt gx.every(...)} metode, medtem ko za kreiranje vozlišča z vezavo ali uporabimo metodo {\tt gx.some(...)}.
         
 \begin{minted}[breaklines]{Python}
 john = User(name='John Doe').make()
@@ -819,13 +870,17 @@ query = Message.filter(
         \noindent
         V zgornjem primeru je sestavljena poizvedba, kjer izvedemo nabor sporočil, ki so bila poslana v zadnjih petih dneh, poleg tega pa želimo, da je izpolnjen vsaj eden izmed pogojev – pošiljatelj/prejemnik je ``John`` in prejemnik ni ``Jane``.
 
-        V sklopu filtriranja podpiramo 11 različnih operaciji. To so je enako, ni enako, večje, večje ali enako, manjše, manjše ali enako, regex, iregex (neobčutljiv regex na velike in male črke), je v (element je v seznamu), ni v (element ni v seznamu), med (vrednost je v intervalu).
+        V sklopu filtriranja podpiramo 11 različnih operaciji. To so je enako, ni enako, večje, večje ali enako, manjše, manjše ali enako, {\tt regex}, {\tt iregex} (neobčutljiv {\tt regex} na velike in male črke), je v (element je v seznamu), ni v (element ni v seznamu), med (vrednost je v intervalu).
         
-        \item \textbf{Omejitev števila zapisov + določanje odmikov – funkciji ``limit`` in ``offset`` (ekvivalentno, kot v DBMS)}. Gre za preprosta ukaza, ki sta namenjena omejevanju števila zapisov, ko iščemo le prvih nekaj zapisov oz. prvih nekaj zapisov z določenim odmikom. 
+        \item \textbf{Omejitev števila zapisov in določanje odmikov – funkciji {\tt limit} in {\tt offset}}
+        \newline
+        \noindent
+        Gre za preprosta ukaza, ki sta namenjena omejevanju števila zapisov, ko iščemo le prvih nekaj zapisov oz. prvih nekaj zapisov z določenim odmikom. 
 
         Pogost primer uporabe je implementacija strani (ang. paging). Razlog za implementacijo je optimizacija prikaza na način, da omejimo število zapisov, ki jih naenkrat prikažemo uporabniku. Lahko, pa gre tudi za čisto preprosto poizvedbo, kjer iščemo prvih nekaj zapisov glede na določene kriterije npr. zadnjih pet sporočil določenega uporabnika.
         
-        \item \textbf{Urejanje zapisov – funkcija ``order`` (DBMS – order by)}. 
+        \item \textbf{Urejanje zapisov – funkcija {\tt order}} 
+        \newline
         \noindent
         Izvedba urejanja podatkov je omejena na urejanje znotraj ene entitete oz. atributih ene entitete. Pri tem imamo možnost urejati po poljubnem številu atributov, pri čemer lahko izvajamo bodisi naraščajoče bodisi padajoče urejanje.
 
@@ -846,7 +901,8 @@ SELECT * FROM messages
 ORDER BY date DESC, content
 \end{minted}          
 
-        \item \textbf{Uporaba relaciji znotraj poizvedbe – funkcija ``link`` (DBMS – različne verzije JOIN stavka).}
+        \item \textbf{Uporaba relaciji znotraj poizvedbe – funkcija {\tt link}}
+        \newline
         \noindent
         Gre za malo drugačno izvedbo, kot je to pri klasičnih relacijskih sistemih, saj v našem primeru podatkov ne združujemo v eno matrično strukturo, temveč so podatki združeni v drevesno strukturo, kjer povezave realiziramo z dedovanjem. Sledečo SQL poizvedbo, kjer podatke naloge in uporabnike združimo preko tujega ključa v tabeli nalog.
 
@@ -863,18 +919,7 @@ query = User.link(tasks=Task)
 \end{minted}
 
         \noindent
-        V primeru zgornje izvedbe, bi za vsakega uporabnika dobili še seznam njegovih nalog. Posamezen zapis uporabnika, lahko predstavimo z naslednjo definicijo JSON strukture:
-\begin{minted}[breaklines]{javascript}
-{
-    name: string,
-    tasks: [
-        {
-            content: string,
-            user: number // id uporabnika
-        },
-    ]
-}
-\end{minted}
+        V primeru zgornje izvedbe, bi za vsakega uporabnika dobili še seznam njegovih nalog.
 
         \subsubsection{Algoirtem za poizvedovanje z uporabo relaciji}
 
@@ -914,18 +959,20 @@ end fn
         \end{enumerate}
 
         \item \textbf{Agregacija oz. združevanje podatkov}
+        \newline
         \noindent
-        Ko govorimo o agregaciji imamo v mislih poizvedbe, kjer iščemo različne statistične rezultate iz posamezne tabele. MySQL DBMS podpira kar nekaj različnih operaciji za agregacijo \cite{MYSQL_AGG} (AVG, COUNT, MAX, MIN, SUM, STD, STDDEV, VARIANCE ...).
+        Ko govorimo o agregaciji imamo v mislih poizvedbe, kjer iščemo različne statistične rezultate iz posamezne tabele. MySQL DBMS podpira kar nekaj različnih operaciji za agregacijo \cite{MYSQL_AGG} ({\tt AVG, COUNT, MAX, MIN, SUM, STD, STDDEV, VARIANCE} ...).
 
-        V našem DBMS podpiramo prvih pet operaciji iz zgornjega seznama:
+        V našem DBMS podpiramo prvih pet operaciji iz zgornjega seznama.
+        
         \begin{itemize}
-            \item \textbf{SUM} – operacija za seštevanje vrednosti v stolpcu.
-            \item \textbf{MIN} – iskanje najmanjše vrednosti v stolpcu.
-            \item \textbf{MAX} – iskanje maksimalne vrednosti v stolpcu.
-            \item \textbf{COUNT} – štetje zapisov.
+            \item {\tt SUM} – operacija za seštevanje vrednosti v stolpcu.
+            \item {\tt MIN} – iskanje najmanjše vrednosti v stolpcu.
+            \item {\tt MAX} – iskanje maksimalne vrednosti v stolpcu.
+            \item {\tt COUNT} – štetje zapisov.
         \end{itemize}
 
-        Vse operacije so omejene nad striktno eno entiteto in enim stolpcem, kar pomeni, da lahko v eni poizvedbi poiščemo npr. iskanje najnovejšega sporočila med zapisi. V večini primerov agregaciji, pa ne iščemo globalno gledanega zapisa, ki najbolj ustreza našim kriterijem, ampak iščemo zapis glede na neko dodatno polje npr. iščemo najnovejše sporočilo za vsakega posameznega uporabnika. Kadar govorimo v smislu SQL poizvedb, to pomeni uporabo ``GROUP BY`` stavka.
+        Vse operacije so omejene nad striktno eno entiteto in enim stolpcem, kar pomeni, da lahko v eni poizvedbi poiščemo npr. iskanje najnovejšega sporočila med zapisi. V večini primerov agregaciji, pa ne iščemo globalno gledanega zapisa, ki najbolj ustreza našim kriterijem, ampak iščemo zapis glede na neko dodatno polje npr. iščemo najnovejše sporočilo za vsakega posameznega uporabnika. Kadar govorimo v smislu SQL poizvedb, to pomeni uporabo {\tt GROUP BY} stavka.
 
 \begin{minted}[breaklines]{sql}
 SELECT MAX(messages.date) as 'latest' 
@@ -944,7 +991,7 @@ query = Message.agg(
 \end{minted}
 
         \noindent
-        Sintaksa je dokaj preprosta, da izvedemo agregacijsko poizvedbo preprosto uporabimo metodo ''agg'' nad eno izmed entitet. Kot parametre, pa lahko pošljemo polje po katerem združujemo (nadomestilo GROUP BY), nato pa lahko dodamo še poljubno število parametrov, ki izvajajo različne združevalne akcije.
+        Sintaksa je dokaj preprosta. Za izvedbo agregacijske poizvedbe preprosto uporabimo metodo {\tt .agg(...)} nad eno izmed entitet. Kot parametre pošljemo polje, po katerem združujemo (nadomestilo za {\tt GROUP BY}). Nato pa lahko dodamo še poljubno število parametrov, ki predstavljajo različne združevalne akcije.
 \end{itemize}
 
 \chapter{Sodoben pristop razvoja programske opreme}
@@ -1001,7 +1048,7 @@ PYBIND11_MODULE(my_math_module, m)
 \end{minted}
 
     \noindent
-    Pod pogojem, da je knjižnica pravilno nameščena, lahko na nivoju programskega jezika Python tudi uporabimo funkcijo ``custom\_sum``.
+    Pod pogojem, da je knjižnica pravilno nameščena, lahko na nivoju programskega jezika Python tudi uporabimo funkcijo {\tt custom\_sum}.
 \begin{minted}{python}
 import my_math_module
 total = my_math_module.custom_sum(5, 10)
@@ -1120,7 +1167,7 @@ print(total) # prints 15
     \end{figure}
 
     \noindent
-    Iz grafa takoj opazimo, da je Graphenix DBMS najbolj potraten iz vidika porabe prostora. Razlog se skriva v načinu shranjevanja tekstovnih vrednosti. SQLite in MySQL uporabljata podatkovne strukture, ki ob shranjevanju prinesejo še dodatno optimizacijo porabe prostora, saj uporabita le toliko prostora kot je potrebno. V primeru Graphenix, pa je dolžina tekstovnih polji točno določena in v primeru, da polje definiramo kot ``Field.String(size=50)`` pomeni, da bo vsak zapis ne glede na dolžino zavzel 50 bajtov.
+    Iz grafa takoj opazimo, da je Graphenix DBMS najbolj potraten iz vidika porabe prostora. Razlog se skriva v načinu shranjevanja tekstovnih vrednosti. SQLite in MySQL uporabljata podatkovne strukture, ki ob shranjevanju prinesejo še dodatno optimizacijo porabe prostora, saj uporabita le toliko prostora kot je potrebno. V primeru Graphenix, pa je dolžina tekstovnih polji točno določena in v primeru, da polje definiramo kot {\tt String(size=50)} pomeni, da bo vsak zapis ne glede na dolžino zavzel 50 bajtov.
 
     V temnem delu stolpca je prikazana razlika velikosti z in brez uporabe indeksne strukture. DBMS z najnižjo porabo prostora iz vidika velikosti indeksne strukture je SQLite. Razlog za nižjo porabo se nahaja v velikosti posameznega vozlišča in samem algoritmu vstavljanja v drevo, ki vpliva tudi na delitev vozlišč tekom vnašanja.
 
@@ -1222,11 +1269,11 @@ WHERE points = 5432
 \end{minted}
 
     \noindent
-    Na grafu \ref{old_speedup} je prikazano iskanje zapisa nad entiteto z \num{100000} zapisi.
+    Na grafu \ref{old_speedup} je prikazano iskanje zapisa nad entiteto z $ 1 \times 10^5$ zapisi.
 
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.7\textwidth, angle=0]{indexing_speedup_100000.png}}
-        \caption{Iskanje specifičnega zapisa ($N = \num{100000}$)}
+        \caption{Iskanje specifičnega zapisa ($N = 1 \times 10^5$)}
         \label{old_speedup}
     \end{figure}
 
@@ -1239,11 +1286,11 @@ WHERE points = 5432
 
     Kaj hitro smo prišli do ugotovitve, da težava ni bil proces iskanja v B drevesu, temveč je bila težava branje zaglavja entitete. Metoda za branje podatkov iz posamezne entitete je delovala, tako da je najprej prebrala celotno datoteko zaglavja entitete in za posamezen identifikator zapisa pridobila še odmik v matriki zapisov. Izkazalo se je, da je ta proces v zgornjem scenariju predstavljal nekje $\approx 85$\% izvajalnega časa.
 
-    V namen hitrejšega izvajanja se branja celotnega zaglavja v primeru, da imamo že vnaprej določene identifikatorje, ki jih iščemo in je teh manj kot $IX\_THRESHOLD$ izognemo. Konstanta predstavlja mejo za branje celotnega zaglavja in je v trenutni implementaciji nastavljena na \num{100}.
+    V namen hitrejšega izvajanja se branja celotnega zaglavja v primeru, da imamo že vnaprej določene identifikatorje, ki jih iščemo in je teh manj kot {\tt IX\_THRESHOLD} izognemo. Konstanta predstavlja mejo za branje celotnega zaglavja in je v trenutni implementaciji nastavljena na \num{100}.
     
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.75\textwidth, angle=0]{indexing_speedup_100000_v2.png}}
-        \caption{Iskanje specifičnega zapisa ($N = \num{1000000}$ z optimizacijo)}
+        \caption{Iskanje specifičnega zapisa ($N = 1 \times 10^5$ z optimizacijo)}
         \label{idx_speedup}
     \end{figure}
 
@@ -1252,11 +1299,11 @@ WHERE points = 5432
 
     \subsubsection{Analiza iskanja nad večjo bazo podatkov}
 
-    Na grafu \ref{idx_speedup_2} je prikazana še pohitritev enake poizvedbe, kot v zgornjem scenariju. V tem primeru, pa je število vseh uporabnikov \num{1000000}.
+    Na grafu \ref{idx_speedup_2} je prikazana še pohitritev enake poizvedbe, kot v zgornjem scenariju. V tem primeru, pa je število vseh uporabnikov $1 \times 10^6$.
     
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.75\textwidth, angle=0]{indexing_speedup_1000000_v2.png}}
-        \caption{Iskanje specifičnega zapisa ($N = \num{1000000}$ z optimizacijo)}
+        \caption{Iskanje specifičnega zapisa ($N = 1 \times 10^6$ z optimizacijo)}
         \label{idx_speedup_2}
     \end{figure}
 
@@ -1279,7 +1326,7 @@ WHERE points = 5432
 
     \subsection{Aplikacija, ki služi kot osnova za modul beleženja}
 
-    V prvi fazi si lahko za primer pripravimo preprosto strežniško aplikacijo, ki uporablja Flask \cite{FLASK_GITHUB} ogrodje. Znotraj aplikacije smo definirali vsega eno vhodno točko, in sicer ``get-range``, kjer lahko poljubno nastavljamo tri HTTP GET parametre, to so ``start``, ``end`` in ``step``, kjer ima vsak od teh parametrov tudi privzete vrednosti.
+    V prvi fazi si lahko za primer pripravimo preprosto strežniško aplikacijo, ki uporablja Flask \cite{FLASK_GITHUB} ogrodje. Znotraj aplikacije smo definirali vsega eno vhodno točko, in sicer ``get-range``, kjer lahko poljubno nastavljamo tri HTTP GET parametre, to so {\tt start}, {\tt end} in {\tt step}, kjer ima vsak od teh parametrov tudi privzete vrednosti.
     
 \begin{minted}{python}
 app = Flask(__name__)
@@ -1381,11 +1428,13 @@ route_stats = ReqInfo\
 
     Za nabor napak v zadnjem dnevu, lahko preprosto izvedemo poizvedbo, kjer zahtevamo, da je status odgovora $>= 400$, kar pri HTTP zahtevkih predstavlja razpon napak. Poleg tega, pa dodamo še zahtevo, da mora biti datum napake večji, kot včerajšnji datum ob enaki uri. Za konec zapise uredimo po datumu napake.
     
-\begin{minted}{python}
+\begin{minted}[breaklines]{python}
 count, api_errors = ReqInfo\
     .filter(
         ReqInfo.resp_code.greater_or_equal(400),
-        ReqInfo.timestamp.greater(datetime.now() - timedelta(days=1))
+        ReqInfo.timestamp.greater(
+            datetime.now() - timedelta(days=1)
+        )
     )\
     .order(ReqInfo.timestamp.desc())\
     .all()
@@ -1465,7 +1514,7 @@ class ExpenseType(gx.Model):
 \end{minted}
 
     \noindent
-    V namen beleženja stroškov je definirana entiteta ``Invoice``, kjer določimo naziv, ceno, datum in kategorijo posameznega stroška.
+    V namen beleženja stroškov je definirana entiteta {\tt Invoice}, kjer določimo naziv, ceno, datum in kategorijo posameznega stroška.
     Poleg tega, pa imamo še tabelo, ki služi kot šifrant za kategorije stroškov. Podatki v kategorijah se samodejno napolnijo že ob kreiranju podatkovne baze.
 
     \subsubsection{Metoda za statistični nabor podatkov}
@@ -1509,11 +1558,11 @@ def display_expenses(self, search=None, order_by=None, page=0):
 \end{minted}
 
     \noindent
-    Za prikazovanje vseh stroškov uporabljamo metodo ``display\_expenses``, ki prejme parameter za iskanje, urejanje in stran, katero mora prikazati. Prikazan je kodni vzorec grajenja, kjer postopoma dodajamo dodatne atribute na objekt poizvedbe. 
+    Za prikazovanje vseh stroškov uporabljamo metodo {\tt display\_expenses}, ki prejme parameter za iskanje, urejanje in stran, katero mora prikazati. Prikazan je kodni vzorec grajenja, kjer postopoma dodajamo dodatne atribute na objekt poizvedbe. 
     \begin{enumerate}
-        \item Na stroškev povežemo kategorije in za iskanje uporabimo neobčutljiv regex na male in velike črke, kjer pogoj zahteva, da naziv stroška vsebuje iskani niz ``search``.
+        \item Na stroškev povežemo kategorije in za iskanje uporabimo neobčutljiv {\tt regex} na male in velike črke, kjer pogoj zahteva, da naziv stroška vsebuje iskani niz {\tt search}.
         \item Parameter za urejanje preslikamo v določeno ureditev ali kot privzeto vrednost vzamemo padajoče urejanje po datumu.
-        \item Določimo stran, ki jo želimo prikazati v ta namen imamo globalno konstanto $PAGE\_SIZE$, ki določa velikost strani in v poizvedbi določimo, da preskočimo $PAGE\_SIZE \cdot page$ stroškov, kjer $page$ določa stran, katero želimo prikazati. Hkrati, pa dodamo še omejitev števila zapisov (vzamemo le prvih $PAGE\_SIZE$ zapisov).
+        \item Določimo stran, ki jo želimo prikazati v ta namen imamo globalno konstanto {\tt PAGE\_SIZE}, ki določa velikost strani in v poizvedbi določimo, da preskočimo {\tt PAGE\_SIZE} $\times$ {\tt page} stroškov, kjer {\tt page} določa stran, katero želimo prikazati. Hkrati, pa dodamo še omejitev števila zapisov (vzamemo le prvih {\tt PAGE\_SIZE} zapisov).
     \end{enumerate}
 
     \noindent
@@ -1546,8 +1595,8 @@ def display_expenses(self, search=None, order_by=None, page=0):
         \noindent
         MySQL in SQLite sta že dva primera DBMS rešitev, ki ponujata prostorsko optimizacijo, kot je razvidno iz prostorske analize \ref{size_analysis}.
         \begin{itemize}
-            \item SQLite nize definira s tipom ``TEXT``, ki besedilo shranjuje v ločeni strukturi od zapisov in po potrebi zapise v tej ločeni strukturi premika.
-            \item MySQL ima možnost uporabe ``VARCHAR`` \cite{MYSQL_VARCHAR}, kjer lahko definiramo tudi maksimalno dolžino niza, vendar ta dolžina ne pomeni dejanske dolžine, ki jo niz porabi na disku, temveč tudi MySQL DBMS izvaja dinamično alokacijo za nize, ki s seboj poleg boljše izkoriščenega prostora na disku prinese tudi nekaj dodane kompleksnosti in dodatnih korakov za branje teh zapisov.
+            \item SQLite nize definira s tipom {\tt TEXT}, ki besedilo shranjuje v ločeni strukturi od zapisov in po potrebi zapise v tej ločeni strukturi premika.
+            \item MySQL ima možnost uporabe {\tt VARCHAR} \cite{MYSQL_VARCHAR}, kjer lahko definiramo tudi maksimalno dolžino niza, vendar ta dolžina ne pomeni dejanske dolžine, ki jo niz porabi na disku, temveč tudi MySQL DBMS izvaja dinamično alokacijo za nize, ki s seboj poleg boljše izkoriščenega prostora na disku prinese tudi nekaj dodane kompleksnosti in dodatnih korakov za branje teh zapisov.
         \end{itemize}
     \end{enumerate}
     
