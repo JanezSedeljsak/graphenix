@@ -42,8 +42,8 @@ def main():
         orm_avg.append(np.average([col[1], col[2]]))
         no_orm_avg.append(np.average([col[0], col[3], col[4]]))
 
-    ax.plot(x_values + width * 1.5, orm_avg, marker="o", linewidth=3, label="ORM povprečje", color='#C25BAA')
-    ax.plot(x_values - width, no_orm_avg, marker="o", linewidth=3, label="Povprečje \ ORM", color='#C7573E')
+    #ax.plot(x_values + width * 1.5, orm_avg, marker="o", linewidth=3, label="ORM povprečje", color='#C25BAA')
+    #ax.plot(x_values - width, no_orm_avg, marker="o", linewidth=3, label="Povprečje \ ORM", color='#C7573E')
 
     # Set labels and title
     ax.set_xlabel('Št. zapisov')
