@@ -1,6 +1,7 @@
 name: Graphenix - Continuous Integration (CI)
 
 on:
+  workflow_dispatch
   push:
     paths:
       - 'graphenix/**'
