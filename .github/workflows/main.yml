@@ -55,7 +55,7 @@ jobs:
       - name: Try importing graphenix module
         run: python -c "import graphenix;"
 
-      - name: Run CPP Low level uni tests & benchmarks
+      - name: Run CPP Low level unit tests & benchmarks
         run: |
           chmod +x cpp_tests.sh
           ./cpp_tests.sh
