@@ -179,12 +179,15 @@ class Query:
         view = ge2.execute_query(self.query_object, 0)
         return view.size(), QueryView(self.base_model, view)
 
-    def first(self) -> T | None:
+    def first(self, as_view=False) -> T | None:
         self.query_object.limit = 1
         self.base_model.make_cache()
         data = QueryView(self.base_model, ge2.execute_query(self.query_object, 0))
         if not data:
             return None
+        
+        if as_view:
+            return data[0]
         
         return self.base_model.from_view(data[0])
 
@@ -257,8 +260,8 @@ class ModelQueryMixin:
         return Query(cls).all()
 
     @classmethod
-    def first(cls):
-        return Query(cls).first()
+    def first(cls, as_view=False):
+        return Query(cls).first(as_view=as_view)
     
     @classmethod
     def link(cls, **link_map):

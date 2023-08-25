@@ -7,6 +7,6 @@
 *.egg*/
 *.so
 *.o
-/graphenix_db/*
+**/graphenix_db/*
 main.py
 test.py
