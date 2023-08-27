@@ -84,9 +84,9 @@ struct View
     }
 
     static View make_view(const std::vector<std::string> &fieldnames,
-                           const std::vector<py::tuple> &rows,
-                           const std::vector<int> date_indexes,
-                           const std::string &modelname)
+                          const std::vector<py::tuple> &rows,
+                          const std::vector<int> date_indexes,
+                          const std::string &modelname)
     {
         View *view_instance = new View;
         view_instance->model_name = modelname;

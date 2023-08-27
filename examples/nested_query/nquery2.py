@@ -18,9 +18,9 @@ class User(gx.Model):
     recieved_msgs = gx.Field.VirtualLink("reciever")
 
     @classmethod
-    def get_messages_and_last_n_tasks(cls, user_id: int, n: int):
+    def get_last_n_msgs_and_tasks(cls, user_id: int, n: int = 3):
         ''' Returns last <n> messages and tasks for a specific user '''
-        user_data = cls.link(
+        user_view = cls.link(
             tasks = Task.limit(n),
             recieved_msgs = Message
                 .link(sender = cls.link(tasks = Task.limit(n)))
@@ -30,7 +30,7 @@ class User(gx.Model):
         .filter(cls.equals(user_id))\
         .first(as_view=True)
 
-        return user_data
+        return user_view
     
 class TaskSearilizer(gx.ViewSearilizer):
     fields = ('id', 'content')
@@ -65,7 +65,7 @@ def main():
             reciever=user2
         ).make()
 
-    user_data = User.get_messages_and_last_n_tasks(1, 5)
+    user_data = User.get_last_n_msgs_and_tasks(1, n=5)
     searilized = UserDetailSearilizer.jsonify(user_data) 
     print(searilized)
 

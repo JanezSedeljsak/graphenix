@@ -443,7 +443,7 @@ In the final part of the thesis, a performance analysis of the implemented DBMS 
     \section{Kje se danes uporabljajo relacijske podatkovne baze?}
 
     Relacijske podatkovne baze so že desetletja temeljna komponenta informacijskih sistemov in njihova uporaba se je v današnjem sodobnem poslovnem okolju še povečala. Kljub pojavu novejših tehnologij in podatkovnih modelov imajo relacijske podatkovne baze številne aplikacije, kjer izstopajo zaradi svoje strukture, zanesljivosti in možnosti za kompleksno analizo.
-    
+
     \newpage
     \subsection{Vloga podatkovne baze v informacijskem sistemu}
 
@@ -603,7 +603,7 @@ class Message(gx.Model):
         \end{enumerate}
 
         \begin{figure}[h]
-            \centerline{\includegraphics[width=0.8\textwidth, angle=0]{struktura_entitet.png}}
+            \centerline{\includegraphics[width=0.95\textwidth, angle=0]{struktura_entitet.png}}
             \caption{Struktura podatkovne matrike in glave entitete s kazalci}
             \label{sl:mindmap}
         \end{figure}
@@ -894,7 +894,9 @@ query = Message.filter(
     gx.some(
         Message.sender.equals(john),
         Message.reciever.equals(john),
-        Message.reciever.is_not(jane)))
+        Message.reciever.is_not(jane)
+    )
+)
 \end{minted}    
 
         \noindent
@@ -952,6 +954,7 @@ query = User.link(tasks=Task)
         V primeru zgornje izvedbe, bi za vsakega uporabnika dobili še seznam njegovih nalog.
 
         \subsubsection{Algoirtem za poizvedovanje z uporabo relaciji}
+        \label{query_execution}
 
         Spodaj je v obliki psevdokode predstavljen algoritem za poizvedovanje, kjer omogočamo nabor podatkov iz različnih entitet hkrati.
 
@@ -988,6 +991,39 @@ end fn
             \item V zaključni fazi algoritma vmesne rezultate iz zgoščevalne tabele združimo v rezultat korenske poizvedbe – to je tudi rezultat celotne metode, ki je predstavljen v obliki podatkovnega okvirja.
         \end{enumerate}
 
+        \subsubsection{Globoko vgnezdene poizvedbe}
+
+        Razvit DBMS s funkcijo {\tt execute\_query}~\ref{query_execution} omogoča tudi globoko vgnezdene poizvedbe, ki v eni poizvedbi omogočajo nabor vgnezdene strukture podatkov (kar klasične SQL poizvedbe ne omogočajo). V nadaljevanju je predstavljen enostaven primer take poizvedbe, ki je sestavljena iz štirih nivojev.
+
+\begin{minted}[breaklines]{python}
+user_view = User.link(
+        tasks = Task.limit(N),
+        recieved_msgs = Message
+            .link(sender = User.link(
+                tasks = Task.limit(N))
+            )
+            .order(Message.date.desc())
+            .limit(N)
+    )\
+    .filter(User.equals(user_id))\
+    .first(as_view=True)
+\end{minted}
+
+        Poizvedba za uporabnika, ki ga poiščemo preko primarnega identifikatorja pridobi še zadnjih {\tt N} nalog in sporočil. Za nabor sporočil se spustimo globlje v rekurzivno funkcijo in za vsako sporočilo pridobimo še podatke pošiljateljev, nato pa še za vsakega izmed pošiljateljev preberemo {\tt N} nalog.
+
+        \begin{figure}[H]
+            \centerline{\includegraphics[width=0.7\textwidth, angle=0]{nquery.png}}
+            \caption{Koraki za nabor podatkov globoko vgnezdene poizvedbe.}
+            \label{deep_nested_query}
+        \end{figure}
+
+        Ob naboru podatkov izvedemo pristop od zgoraj navzdol, saj najprej preberemo podatke za korensko entiteto in se nato spuščamo v nižje nivoje.
+
+        Vsako vozlišče drevesa iz slike \ref{deep_nested_query} predstavlja ločeno branje matrične datoteke podatkov. Tekom nabora tako dvakrat izvedemo branje datoteke s podatki ``nalog`` ({\tt Task}). Pristop zgornjega nabora v klasičnih SQL poizvedbah ni mogoč, saj dobimo kartezičen produkt in moramo rezultate potem še naknadno obdelati.
+
+        Ob naboru podatkov iz dveh različnih nivojev vezavo izvedemo na nivoju programskega jezika C++, kjer uporabimo strukturo zgoščevalnih tabel za grupiranje zapisov po identifikatorju starša. Posledično sestava končne strukture steče bistveno hitreje, kot ob pristopu združevanja v programskem jeziku Python.
+
+        \newpage
         \item \textbf{Agregacija oz. združevanje podatkov}
         \newline
         \noindent
