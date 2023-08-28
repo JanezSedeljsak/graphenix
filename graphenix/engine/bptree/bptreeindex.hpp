@@ -411,7 +411,6 @@ public:
         shared_ptr<BPTreeNode<T>> parent;
         int64_t keys_count = current->keys.size();
 
-        //  cout << "Search for leaf" << endl;
         while (!current->is_leaf)
         {
             parent = current;
@@ -447,10 +446,13 @@ public:
             current->keys.resize(keys_count + 1);
             current->data.resize(keys_count + 1);
 
-            for (int64_t j = keys_count + 1; j > i; j--)
+            if (keys_count > 1)
             {
-                current->keys[j] = current->keys[j - 1];
-                current->data[j] = current->data[j - 1];
+                for (int64_t j = keys_count + 1; j > i; j--)
+                {
+                    current->keys[j] = current->keys[j - 1];
+                    current->data[j] = current->data[j - 1];
+                }
             }
 
             current->data[i] = record_id;

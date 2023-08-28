@@ -202,9 +202,13 @@ public:
                 string str_key(buffer_ptr, key_size);
                 keys.push_back(str_key);
             }
-            else
+            else if constexpr (is_same_v<T, int64_t>)
             {
                 keys.push_back(*reinterpret_cast<int64_t *>(buffer_ptr));
+            }
+            else
+            {
+                keys.push_back(*reinterpret_cast<double *>(buffer_ptr));
             }
 
             buffer_ptr += key_size;

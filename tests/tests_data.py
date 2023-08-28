@@ -30,6 +30,10 @@ class IndexedSubTask(Model):
     name = Field.String(size=40)
     parent_task = Field.Link().as_index()
 
+class IndexedTower(Model):
+    name = Field.String(size=40)
+    height = Field.Double().as_index()
+
 class UserBasicSearilizer(ViewSearilizer):
     fields = ('id', 'first_name', 'last_name', 'is_admin')
 
@@ -49,4 +53,4 @@ class DeepUserSearilizer(ViewSearilizer):
     tasks = TaskSearilizer
     city = CitySearilizer
 
-mock_schema = Schema('mock_schema', models=[User, City, Task, SubTask, IndexedSubTask])
+mock_schema = Schema('mock_schema', models=[User, City, Task, SubTask, IndexedSubTask, IndexedTower])

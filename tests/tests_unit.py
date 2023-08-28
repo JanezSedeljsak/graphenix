@@ -658,6 +658,37 @@ class GraphenixUnitTests(CommonTestBase):
                 _, view = IndexedSubTask.filter(IndexedSubTask.parent_task.equals(task)).all()
                 self.assertEqual(0, len(view))
 
+    @CommonTestBase().prepare_and_destroy
+    def test_indexed_double_and_search(self):
+        """ Test generics on B+ tree with double search """
+        towers = [
+            IndexedTower(name='Eiffel Tower', height=432.43),
+            IndexedTower(name='Burj Khalifa', height=828.0),
+            IndexedTower(name='CN Tower', height=553.3),
+            IndexedTower(name='Tokyo Skytree', height=634.0),
+            IndexedTower(name='Shanghai Tower', height=632.0),
+            IndexedTower(name='Petronas Towers', height=451.9),
+            IndexedTower(name='One World Trade Center', height=541.3),
+            IndexedTower(name='Lotus Tower', height=350.0),
+            IndexedTower(name='Ostankino Tower', height=540.1),
+            IndexedTower(name='Space Needle', height=184.0)
+        ]
+
+        for t in towers:
+            t.save()
+
+        _, view = IndexedTower.filter(IndexedTower.height.equals(828.0)).all()
+        self.assertEqual(1, len(view))
+        self.assertEqual('Burj Khalifa', view[0].name)
+
+        _, view = IndexedTower.filter(IndexedTower.height.is_in([
+            10.5, 634.0, 541.3, 184.0, 4324.4
+        ])).all()
+
+        self.assertEqual(3, len(view))
+
+        
+
 
 if __name__ == '__main__':
     unittest.main()

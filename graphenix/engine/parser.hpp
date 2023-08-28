@@ -158,9 +158,98 @@ struct cond_object
                 throw std::runtime_error("Invalid index operation");
             }
         }
-        // case STRING:
-        // {
-        // }
+        case STRING:
+        {
+            BPTreeIndex<std::string> bpt(mdef.db_name, mdef.model_name, field_name);
+            switch (operation_index)
+            {
+            case IS_IN:
+            {
+                if (!py::isinstance<py::list>(value))
+                {
+                    throw std::runtime_error("You did not provide a list as the IN argument");
+                    return result;
+                }
+
+                for (py::handle item : value)
+                {
+                    const std::string current_key = py::cast<std::string>(item);
+                    const auto &found = bpt.find(current_key);
+                    const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                    result.insert(flatten.begin(), flatten.end());
+                }
+                return result;
+            }
+            case EQUAL:
+            {
+                const std::string current_key = py::cast<std::string>(value);
+                const auto &found = bpt.find(current_key);
+                const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                result.insert(flatten.begin(), flatten.end());
+                return result;
+            }
+            case BETWEEN:
+            {
+                py::tuple interval = py::cast<py::tuple>(value);
+                const std::string low = py::cast<std::string>(interval[0]);
+                const std::string high = py::cast<std::string>(interval[1]);
+
+                auto found = bpt.find(low);
+                bpt.load_up_to_right(found, high);
+                const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                result.insert(flatten.begin(), flatten.end());
+                return result;
+            }
+            default:
+                throw std::runtime_error("Invalid index operation");
+            }
+        }
+        case DOUBLE:
+        {
+            BPTreeIndex<double> bpt(mdef.db_name, mdef.model_name, field_name);
+            switch (operation_index)
+            {
+            case IS_IN:
+            {
+                if (!py::isinstance<py::list>(value))
+                {
+                    throw std::runtime_error("You did not provide a list as the IN argument");
+                    return result;
+                }
+
+                for (py::handle item : value)
+                {
+                    const double current_key = py::cast<double>(item);
+                    const auto &found = bpt.find(current_key);
+                    const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                    result.insert(flatten.begin(), flatten.end());
+                }
+                return result;
+            }
+            case EQUAL:
+            {
+                const double current_key = py::cast<double>(value);
+                const auto &found = bpt.find(current_key);
+                const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                result.insert(flatten.begin(), flatten.end());
+                return result;
+            }
+            case BETWEEN:
+            {
+                py::tuple interval = py::cast<py::tuple>(value);
+                const double low = py::cast<double>(interval[0]);
+                const double high = py::cast<double>(interval[1]);
+
+                auto found = bpt.find(low);
+                bpt.load_up_to_right(found, high);
+                const auto &flatten = bpt.flatten_intervals_to_ptrs(found);
+                result.insert(flatten.begin(), flatten.end());
+                return result;
+            }
+            default:
+                throw std::runtime_error("Invalid index operation");
+            }
+        }
         default:
             throw std::runtime_error("Invalid type for indexing");
         }
@@ -894,6 +983,11 @@ inline std::vector<char *> PARSE_RECORD(const model_def &mdef, const py::list &p
         case DOUBLE:
             double_val = py::cast<double>(py_values[i]);
             memcpy(parsed_values[i], &double_val, sizeof(double));
+            if (ixaction == DO_INSERT && field_indexes[i])
+            {
+                BPTreeIndex<double> bpt(mdef.db_name, mdef.model_name, field_names[i]);
+                bpt.insert(double_val, record_id);
+            }
             break;
 
         case VIRTUAL_LINK:
