@@ -630,7 +630,7 @@ class GraphenixUnitTests(CommonTestBase):
     @CommonTestBase().prepare_and_destroy
     def test_indexed_insert(self):
         """ Tests indexed insert and search """
-        COUNT = 100
+        COUNT = 150
         for i in range(COUNT):
             task = Task(name=f'Task{i}').make()
             indexed_subtask = IndexedSubTask(name=f'SubTask{i}', parent_task=task).make()
@@ -646,7 +646,7 @@ class GraphenixUnitTests(CommonTestBase):
     @CommonTestBase().prepare_and_destroy
     def test_indexed_insert_and_delete(self):
         """ Tests indexed insert + delete and search """
-        COUNT = 1
+        COUNT = 150
         for i in range(COUNT):
             task = Task(name=f'Task{i}').make()
             indexed_subtask = IndexedSubTask(name=f'SubTask{i}', parent_task=task).make()
