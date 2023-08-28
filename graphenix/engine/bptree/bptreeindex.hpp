@@ -173,6 +173,9 @@ public:
         }
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
+        if (!ix_file.is_open())
+            throw std::runtime_error("Cannot open B+ tree file");
+
         int64_t offset = get_head_ptr(ix_file);
         if (offset != -1)
         {
@@ -806,25 +809,44 @@ public:
         return offsets;
     }
 
-    inline bool remove_from_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_id)
-    {
-        return true;
-    }
-
-    inline bool remove_from_internal(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_id)
-    {
-        return true;
-    }
-
-    bool remove(T &key, int64_t record_id)
+    bool remove(T key, int64_t record_id)
     {
         if (root == nullptr)
             read(); // loads root from file
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
-        return root->is_leaf
-                   ? remove_from_leaf(root, key, record_id)
-                   : remove_from_internal(root, key, record_id);
+        shared_ptr<BPTreeNode<T>> current = root;
+        shared_ptr<BPTreeNode<T>> parent;
+        int64_t keys_count = current->keys.size();
+        while (!current->is_leaf)
+        {
+            parent = current;
+            for (int64_t i = 0; i < keys_count; i++)
+            {
+                if (generic_less(key, current->keys[i]))
+                {
+                    BPTreeNode<T> *node_ptr = new BPTreeNode<T>(current->children[i], key_size);
+                    current = shared_ptr<BPTreeNode<T>>(node_ptr);
+                    current->read(ix_file);
+                    keys_count = current->keys.size();
+                    break;
+                }
+
+                if (i == keys_count - 1)
+                {
+                    BPTreeNode<T> *node_ptr = new BPTreeNode<T>(current->children[i + 1], key_size);
+                    current = shared_ptr<BPTreeNode<T>>(node_ptr);
+                    current->read(ix_file);
+                    keys_count = current->keys.size();
+                    break;
+                }
+            }
+        }
+
+        current->pop_item(key, record_id);
+        current->write(ix_file);
+        ix_file.close();
+        return true;
     }
 };
 

@@ -89,6 +89,20 @@ public:
         next = node->offset;
     }
 
+    void pop_item(T key, int64_t record_id)
+    {
+        auto itter = std::find(keys.begin(), keys.end(), key);
+        if (itter != keys.end())
+        {
+            const size_t data_idx = std::distance(keys.begin(), itter);
+            if (data_idx < data.size() && data[data_idx] == record_id)
+            {
+                keys.erase(itter);
+                data.erase(data.begin() + data_idx);
+            }
+        }
+    }
+
     void write(fstream &ix_file)
     {
         ix_file.seekp(offset, ios::beg);
@@ -226,7 +240,7 @@ public:
             cout << endl;
         }
 
-                cout << prefix << "-----------------" << endl;
+        cout << prefix << "-----------------" << endl;
         if (!is_recursive)
             return;
 

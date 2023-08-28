@@ -627,5 +627,37 @@ class GraphenixUnitTests(CommonTestBase):
         self.assertEqual(names[0], 'SubTask 5')
         self.assertEqual(names[1], 'SubTask 3')
 
+    @CommonTestBase().prepare_and_destroy
+    def test_indexed_insert(self):
+        """ Tests indexed insert and search """
+        COUNT = 100
+        for i in range(COUNT):
+            task = Task(name=f'Task{i}').make()
+            indexed_subtask = IndexedSubTask(name=f'SubTask{i}', parent_task=task).make()
+            _, view = IndexedSubTask.filter(IndexedSubTask.parent_task.equals(task)).all()
+            self.assertEqual(1, len(view))
+            self.assertEqual(indexed_subtask.id, view[0].id)
+
+        for i in range(COUNT):
+            _, view = IndexedSubTask.filter(IndexedSubTask.parent_task.equals(i)).all()
+            self.assertEqual(1, len(view))
+            self.assertEqual(i, view[0].parent_task)
+
+    @CommonTestBase().prepare_and_destroy
+    def test_indexed_insert_and_delete(self):
+        """ Tests indexed insert + delete and search """
+        COUNT = 1
+        for i in range(COUNT):
+            task = Task(name=f'Task{i}').make()
+            indexed_subtask = IndexedSubTask(name=f'SubTask{i}', parent_task=task).make()
+            _, view = IndexedSubTask.filter(IndexedSubTask.parent_task.equals(task)).all()
+            self.assertEqual(1, len(view))
+            self.assertEqual(indexed_subtask.id, view[0].id)
+            if i % 3 == 0:
+                indexed_subtask.delete()
+                _, view = IndexedSubTask.filter(IndexedSubTask.parent_task.equals(task)).all()
+                self.assertEqual(0, len(view))
+
+
 if __name__ == '__main__':
     unittest.main()
