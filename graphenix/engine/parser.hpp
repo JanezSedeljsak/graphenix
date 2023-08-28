@@ -463,6 +463,75 @@ struct query_object
         return true;
     }
 
+    void compare_and_update_bptree(const model_def &mdef, char *a, char *b,
+                                   const int64_t record_id)
+    {
+        const auto &field_indexes = mdef.field_indexes;
+        const auto &field_names = mdef.field_names;
+        const size_t len = field_indexes.size();
+
+        for (size_t i = 0; i < len; i++)
+        {
+            const int idx = field_indexes[i];
+            const bool not_pk = idx != -1;
+            if (!not_pk)
+                throw std::runtime_error("PK cannot be indexed!");
+
+            // if idx equals -1 it means the column is PK (primary key - id)
+            const int offset = not_pk ? mdef.field_offsets[idx] : mdef.record_size;
+            const int size = not_pk ? mdef.field_sizes[idx] : IX_SIZE;
+            const FIELD_TYPE type = not_pk ? static_cast<FIELD_TYPE>(mdef.field_types[idx]) : INT;
+
+            char *val_a = a + offset;
+            char *val_b = b + offset;
+
+            switch (type)
+            {
+            case INT:
+            case DATETIME:
+            case LINK:
+            {
+                int64_t int_a = *reinterpret_cast<int64_t *>(val_a);
+                int64_t int_b = *reinterpret_cast<int64_t *>(val_b);
+                if (int_a - int_b != 0)
+                {
+                    BPTreeIndex<int64_t> bpt(mdef.db_name, mdef.model_name, field_names[i]);
+                    bpt.remove(int_b, record_id);
+                    bpt.insert(int_b, record_id);
+                }
+                break;
+            }
+            case STRING:
+            {
+                if (std::memcmp(val_a, val_b, size) == 0)
+                {
+                    std::string updated_str(val_b);
+                    BPTreeIndex<string> bpt(mdef.db_name, mdef.model_name, field_names[i]);
+                    bpt.remove(updated_str, record_id);
+                    bpt.insert(updated_str, record_id);
+                }
+                break;
+            }
+            case DOUBLE:
+            {
+                double double_a = *reinterpret_cast<double *>(val_a);
+                double double_b = *reinterpret_cast<double *>(val_b);
+                if (double_a - double_b == 0.0)
+                {
+                    BPTreeIndex<double> bpt(mdef.db_name, mdef.model_name, field_names[i]);
+                    bpt.remove(double_b, record_id);
+                    bpt.insert(double_b, record_id);
+                }
+                break;
+            }
+
+            default:
+                throw std::runtime_error("Invalid type for indexing!");
+                break;
+            }
+        }
+    }
+
     bool validate_conditions_some(const int64_t record_id, char *record, cond_node &cnode)
     {
         if (cnode.btree_conditions.size() > 0 && cnode.tree_ixs.count(record_id) > 0)

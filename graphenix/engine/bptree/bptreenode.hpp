@@ -16,8 +16,10 @@ using namespace std;
 template <typename T>
 class BPTreeNode
 {
-    static_assert(is_same<T, string>::value || is_same<T, int64_t>::value,
-                  "T must be string or int64_t");
+    static_assert(is_same<T, string>::value ||
+                      is_same<T, int64_t>::value ||
+                      is_same<T, double>::value,
+                  "T must be string / int64_t / double");
 
 public:
     int64_t offset;
@@ -224,9 +226,7 @@ public:
             cout << endl;
         }
 
-        
-
-        cout << prefix << "-----------------" << endl;
+                cout << prefix << "-----------------" << endl;
         if (!is_recursive)
             return;
 

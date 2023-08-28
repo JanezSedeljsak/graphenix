@@ -15,8 +15,10 @@ using namespace std;
 template <typename T>
 class BPTreeIndex
 {
-    static_assert(is_same<T, string>::value || is_same<T, int64_t>::value,
-                  "T must be string or int64_t");
+    static_assert(is_same<T, string>::value ||
+                      is_same<T, int64_t>::value ||
+                      is_same<T, double>::value,
+                  "T must be string / int64_t / double");
 
 public:
     typedef pair<pair<int64_t, int64_t>, shared_ptr<BPTreeNode<T>>> LeafMatchInterval;
@@ -389,14 +391,14 @@ public:
         return nodes;
     }
 
-    // inline BPTreeNode<T> *insert_into_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
+    // inline BPTreeNode<T> *insert_into_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_id)
     // {
     // }
-    // inline BPTreeNode<T> *insert_into_internal(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
+    // inline BPTreeNode<T> *insert_into_internal(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_id)
     // {
     // }
 
-    void insert(T key, int64_t record_offset)
+    void insert(T key, int64_t record_id)
     {
         if (root == nullptr)
             read(); // loads root from file
@@ -448,7 +450,7 @@ public:
                 current->data[j] = current->data[j - 1];
             }
 
-            current->data[i] = record_offset;
+            current->data[i] = record_id;
             current->keys[i] = key;
             current->write(ix_file);
             if (keys_count == 0)
@@ -478,7 +480,7 @@ public:
             }
 
             tmp_keys[i] = key;
-            tmp_data[i] = record_offset;
+            tmp_data[i] = record_id;
 
             int64_t new_size = (current->get_capacity() + 1) - (current->get_capacity() + 1) / 2;
             keys_count = (current->get_capacity() + 1) / 2;
@@ -804,25 +806,25 @@ public:
         return offsets;
     }
 
-    inline bool remove_from_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
+    inline bool remove_from_leaf(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_id)
     {
         return true;
     }
 
-    inline bool remove_from_internal(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_offset)
+    inline bool remove_from_internal(shared_ptr<BPTreeNode<T>> node, T &key, int64_t record_id)
     {
         return true;
     }
 
-    bool remove(T &key, int64_t record_offset)
+    bool remove(T &key, int64_t record_id)
     {
         if (root == nullptr)
             read(); // loads root from file
 
         fstream ix_file(ix_filename, ios::binary | ios::in | ios::out);
         return root->is_leaf
-                   ? delete_from_leaf(root, key, record_offset)
-                   : delete_from_internal(root, key, record_offset);
+                   ? remove_from_leaf(root, key, record_id)
+                   : remove_from_internal(root, key, record_id);
     }
 };
 
