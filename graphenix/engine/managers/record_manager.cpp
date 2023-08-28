@@ -82,7 +82,7 @@ bool RecordManager::create_record(fstream &file, fstream &ix_file,
 }
 
 // return record_id, old_record and new_record
-tuple<shared_ptr<char>, shared_ptr<char>>
+tuple<char *, char *>
 RecordManager::update_record(const model_def &mdef, const vector<char *> &values, const int64_t record_id)
 {
     string file_name = get_file_name(mdef.db_name, mdef.model_name);
@@ -90,17 +90,6 @@ RecordManager::update_record(const model_def &mdef, const vector<char *> &values
 
     fstream file(file_name, ios::binary | ios::in | ios::out);
     fstream ix_file(ix_file_name, ios::binary | ios::in);
-
-    if (!file.is_open())
-    {
-        throw runtime_error("Failed to open binary file");
-    }
-
-    int num_values = values.size();
-
-    // don't update deleted_head_index field because it has to stay -1
-    char *record = new char[mdef.record_size];
-
     int64_t record_offset = get_record_offset(record_id, ix_file);
     if (record_offset == -1)
     {
@@ -108,10 +97,28 @@ RecordManager::update_record(const model_def &mdef, const vector<char *> &values
         throw runtime_error(msg);
     }
 
+    char *old_buffer = new char[mdef.record_size];
+    char *record = new char[mdef.record_size];
+    bool has_indexed_fields = std::any_of(mdef.field_indexes.begin(), mdef.field_indexes.end(),
+                                          [](bool value)
+                                          { return value; });
+
+    if (has_indexed_fields)
+    {
+        file.seekg(record_offset + IX_SIZE, ios::beg);
+        file.read(old_buffer, mdef.record_size);
+    }
+
+    if (!file.is_open())
+    {
+        throw runtime_error("Failed to open binary file");
+    }
+
+    // don't update deleted_head_index field because it has to stay -1
     file.seekp(record_offset + IX_SIZE);
 
     int field_offset = 0;
-    for (int i = 0; i < num_values; i++)
+    for (size_t i = 0; i < values.size(); i++)
     {
         // skip virtual links can only be created through queries
         if (mdef.field_types[i] == VIRTUAL_LINK)
@@ -126,10 +133,7 @@ RecordManager::update_record(const model_def &mdef, const vector<char *> &values
     file.close();
 
     ix_file.close();
-    // delete[] record;
-    shared_ptr<char> new_rec = shared_ptr<char>(record);
-    shared_ptr<char> old_rec = new_rec; // this should be updated
-    return make_tuple(old_rec, old_rec);
+    return make_tuple(old_buffer, record);
 }
 
 void RecordManager::delete_record(const model_def &mdef, const int64_t record_id)
@@ -142,6 +146,19 @@ void RecordManager::delete_record(const model_def &mdef, const int64_t record_id
 
     string file_name = get_file_name(mdef.db_name, mdef.model_name);
     fstream file(file_name, ios::binary | ios::in | ios::out);
+
+    bool has_indexed_fields = std::any_of(mdef.field_indexes.begin(), mdef.field_indexes.end(),
+                                          [](bool value)
+                                          { return value; });
+
+    if (has_indexed_fields)
+    {
+        file.seekg(record_offset + IX_SIZE, ios::beg);
+        char *buffer = new char[mdef.record_size];
+        file.read(buffer, mdef.record_size);
+        query_object::compare_and_update_bptree(mdef, buffer, buffer, record_id, DO_DELETE);
+        delete[] buffer;
+    }
 
     // read head offset
     ix_file.seekg(0, ios::beg);

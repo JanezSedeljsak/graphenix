@@ -43,7 +43,7 @@ void model_update_record(const model_def &mdef, const py::list &py_values, const
 {
     vector<char *> parsed_values = PARSE_RECORD(mdef, py_values, SKIP, id);
     const auto [old_rec, new_rec] = RecordManager::update_record(mdef, parsed_values, id);
-    // todo update the records in the bptrees
+    query_object::compare_and_update_bptree(mdef, old_rec, new_rec, id, DO_UPDATE);
     DEALLOCATE_RECORD(parsed_values);
 }
 

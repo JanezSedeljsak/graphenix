@@ -33,7 +33,7 @@ public:
         tuple<int64_t, int64_t> ixdata
     );
 
-    static tuple<shared_ptr<char>, shared_ptr<char>> update_record(
+    static tuple<char *, char *> update_record(
         const model_def& mdef,
         const vector<char*> &values,
         const int64_t record_id

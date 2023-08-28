@@ -66,7 +66,8 @@ enum INDEX_ACTION
 {
     SKIP = 0,
     DO_INSERT = 1,
-    DO_UPDATE = 2
+    DO_UPDATE = 2,
+    DO_DELETE = 3
 };
 
 struct aggregate_object
@@ -463,8 +464,9 @@ struct query_object
         return true;
     }
 
-    void compare_and_update_bptree(const model_def &mdef, char *a, char *b,
-                                   const int64_t record_id)
+    static void compare_and_update_bptree(const model_def &mdef, char *a, char *b,
+                                   const int64_t record_id,
+                                   const INDEX_ACTION ixaction)
     {
         const auto &field_indexes = mdef.field_indexes;
         const auto &field_names = mdef.field_names;
@@ -491,36 +493,61 @@ struct query_object
             case DATETIME:
             case LINK:
             {
+                if (ixaction == DO_DELETE)
+                {
+                    int64_t int_a = *reinterpret_cast<int64_t *>(val_a);
+                    BPTreeIndex<int64_t> bpt(mdef.db_name, mdef.model_name, field_names[i]);
+                    bpt.remove(int_a, record_id);
+                    break;
+                }
+
                 int64_t int_a = *reinterpret_cast<int64_t *>(val_a);
                 int64_t int_b = *reinterpret_cast<int64_t *>(val_b);
                 if (int_a - int_b != 0)
                 {
                     BPTreeIndex<int64_t> bpt(mdef.db_name, mdef.model_name, field_names[i]);
-                    bpt.remove(int_b, record_id);
-                    bpt.insert(int_b, record_id);
+                    bpt.remove(int_a, record_id);
+                    // bpt.insert(int_b, record_id);
                 }
                 break;
             }
             case STRING:
             {
+                if (ixaction == DO_DELETE)
+                {
+                    std::string old_str(val_a);
+                    BPTreeIndex<std::string> bpt(mdef.db_name, mdef.model_name, field_names[i]);
+                    bpt.remove(old_str, record_id);
+                    break;
+                }
+
                 if (std::memcmp(val_a, val_b, size) == 0)
                 {
+                    std::string old_str(val_a);
                     std::string updated_str(val_b);
-                    BPTreeIndex<string> bpt(mdef.db_name, mdef.model_name, field_names[i]);
-                    bpt.remove(updated_str, record_id);
-                    bpt.insert(updated_str, record_id);
+                    BPTreeIndex<std::string> bpt(mdef.db_name, mdef.model_name, field_names[i]);
+                    bpt.remove(old_str, record_id);
+                    // bpt.insert(updated_str, record_id);
                 }
                 break;
             }
             case DOUBLE:
             {
+                if (ixaction == DO_DELETE)
+                {
+                    double double_a = *reinterpret_cast<double *>(val_a);
+                    BPTreeIndex<double> bpt(mdef.db_name, mdef.model_name, field_names[i]);
+                    bpt.remove(double_a, record_id);
+                    break;
+                }
+
                 double double_a = *reinterpret_cast<double *>(val_a);
                 double double_b = *reinterpret_cast<double *>(val_b);
                 if (double_a - double_b == 0.0)
                 {
                     BPTreeIndex<double> bpt(mdef.db_name, mdef.model_name, field_names[i]);
-                    bpt.remove(double_b, record_id);
-                    bpt.insert(double_b, record_id);
+                    bpt.remove(double_a, record_id);
+                    // bpt.insert(double_b, record_id);
                 }
                 break;
             }
