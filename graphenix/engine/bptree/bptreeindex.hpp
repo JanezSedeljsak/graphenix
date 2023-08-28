@@ -446,13 +446,10 @@ public:
             current->keys.resize(keys_count + 1);
             current->data.resize(keys_count + 1);
 
-            if (keys_count > 1)
+            for (int64_t j = keys_count + 1; j > i; j--)
             {
-                for (int64_t j = keys_count + 1; j > i; j--)
-                {
-                    current->keys[j] = current->keys[j - 1];
-                    current->data[j] = current->data[j - 1];
-                }
+                current->keys[j] = current->keys[j - 1];
+                current->data[j] = current->data[j - 1];
             }
 
             current->data[i] = record_id;
