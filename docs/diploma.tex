@@ -628,9 +628,9 @@ class Message(gx.Model):
         
         \subsection{Implementacija relaciji}
 
-        Implementacija relacij med tabelami se izvaja s pomočjo uporabe tujih ključev, ki predstavljajo primarne identifikatorje zapisov, ki jih želimo povezati. Vzpostavitev povezave se izvede pri ustvarjanju modela na ravni programskega jezika Python. Ko na modelu nastavimo povezavo, se v polje shrani identifikator povezanega zapisa.
+        Implementacija relacij med tabelami se izvaja s pomočjo uporabe tujih ključev, ki predstavljajo primarne identifikatorje zapisov, ki jih želimo povezati. Vzpostavitev povezave se izvede pri ustvarjanju zapisa na ravni programskega jezika Python. Ko na zapisu nastavimo povezavo, se v polje shrani identifikator povezanega zapisa.
 
-        V programski kodi \ref{relation_code} je preprost prestavljen primer, kjer sporočilo vežemo na dva uporabnika, ki imata vlogo pošiljatelja in prejemnika.
+        V programski kodi \ref{relation_code} je preprost prestavljen primer, kjer sporočilo vežemo na dva uporabnika, ki imata vlogi pošiljatelja in prejemnika.
 
 \begin{code}
 \begin{minted}{python}
@@ -650,22 +650,22 @@ first_mesage = Message(
 
     \section{Indeksiranje z uporabo B+ dreves}
 
-        B+ drevesa so podatkovna struktura, uporabljena za učinkovito indeksiranje in iskanje podatkov. Vsako vozišče ima lahko največ $b - 1$ podatkov in $b$ kazalcev na nova vozlišča.
+        B+ drevesa so podatkovna struktura, uporabljena za učinkovito indeksiranje in iskanje podatkov. Vsako vozišče ima lahko največ $b - 1$ podatkov in $b$ kazalcev na naslednja vozlišča.
 
-        V B+ drevesu vsa interna vozlišča vsebujejo kazalce na nadaljnja vozlišča znotraj drevesa. Vmesna vozlišča služijo le kot povezave, ter omogočajo učinkovitejše iskanje in navigacijo po strukturi, medtem pa so podatki shranjeni le v listih drevesa.
+        V B+ drevesu vsa vmesna vozlišča vsebujejo kazalce na naslednja vozlišča znotraj drevesa. Vmesna vozlišča služijo le kot povezave, ter omogočajo učinkovitejše iskanje in navigacijo po strukturi, medtem pa so podatki shranjeni le v listih drevesa.
 
         Sama struktura zahtevna tudi striktno uravnoteženost drevesa, kar pomeni, da morajo biti vsi listi drevesa na enakem nivoju.
 
-        Še ena izmed karakteristik B+ drevesa je povezava med vozlišči na enakem nivoju, saj to omogoča optimalno iskanje z intervalom in pripelje do časovne zahtevnosti $O(log_b(N) + k)$, kjer je $k$ širina intervala. Enaka poizvedba bi v klasičnem B drevesu pomenila časovno zahtevnost $O(\frac{k}{b} \cdot log_b(N))$, saj bi zapise iz intervala iskali ločeno glede na posamezno vozlišče \cite{BPTREE}.
+        Še ena izmed karakteristik B+ drevesa je povezava med vozlišči na enakem nivoju, saj to omogoča optimalno iskanje na intervalu in pripelje do časovne zahtevnosti $O(log_b(N) + k)$, kjer je $k$ širina intervala. Enaka poizvedba bi v klasičnem B drevesu pomenila časovno zahtevnost $O(\frac{k}{b} \cdot log_b(N))$, saj bi zapise iz intervala iskali ločeno glede na posamezno vozlišče \cite{BPTREE}.
 
         \subsubsection{Lastnosti B+ drevesa}
-        Ko govorimo o definiciji strukture B+ drevesa se moramo držati naslednjih pravil \cite{goodrich2011data}:
+        Ko govorimo o definiciji strukture drevesa B+ se moramo držati naslednjih pravil \cite{goodrich2011data}:
 
         \begin{itemize}
             \item Vsako vozlišče ima največ $b - 1$ vrednosti in $b$ kazalcev, kjer je $b$ stopnja vozlišča.
             \item Listi drevesa so vsi na enakem nivoju in tvorijo povezan seznam.
             \item Urejenost – vse vrednosti, ki se nahajajo levo morajo biti manjše ali enake trenutni. Vse vrednosti desno, pa morajo biti večje ali enake trenutni.
-            \item Vozlišče je veljavno, kadar ima vsaj $\lceil \frac{b - 1}{2}\rceil$ zapisov. V primeru, da gre za notranje vozlišče mora to imeti vsaj $\lceil \frac{b}{2} \rceil$ kazalcev na nadaljnja vozlišča.
+            \item Vozlišče je veljavno, kadar ima vsaj $\lceil \frac{b - 1}{2}\rceil$ zapisov. V primeru, da gre za notranje vozlišče mora to imeti vsaj $\lceil \frac{b}{2} \rceil$ kazalcev na naslednja vozlišča.
         \end{itemize}
         
         \subsubsection{Primer B+ drevesa}
@@ -678,20 +678,22 @@ first_mesage = Message(
         \end{figure}
 
         \noindent
-        Drevo vsebuje sedem različnih vrednosti, pri čemer ima vsaka izmed vrednosti še kazalec na zapis, katerega označimo z $d_i$. V primeru uporabe B+ drevesa za indeksiranje v podatkovni bazi, ti kazalci kažejo na posamezen zapis v tabeli.
+        Drevo vsebuje sedem različnih vrednosti, pri čemer ima vsaka izmed vrednosti še kazalec na zapis, katerega označimo z $d_i$. V primeru uporabe B+ drevesa za indeksiranje v podatkovni bazi, ti kazalci kažejo na posamezen zapis v tabeli, kjer se nahaja indeksiran atribut.
 
         \subsection{Vstavljanje v B+ drevo}
 
         Ko govorimo o zahtevnosti implementacije posamezne operacije znotraj B+ drevesa, sta brisanje in vstavljanje definitivno bolj zahtevni operaciji od iskanja. Ob dobri definiciji strukture znotraj programskega jezika je iskanje zapisov relativno lahek postopek, ki je tudi bolj intuitiven.
 
-        Algoritem za vstavljanje je povzet po implementaciji na spletni platformi ``GeeksforGeeks`` \cite{G4G_BINSERT}. Pristop vstavljanja je narejen na primeru, ki podpira le celoštevilsko indeksiranje, hkrati pa drevo shranjuje le na nivoju pomnilnika. V naši implementaciji je bilo potrebno pokriti oba scenarija. Težavo z omejitvijo podatkovnih tipov smo rešili s pristopom uporabe ``generikov``, ki omogočajo izbiro poljubnega podatkovnega tipa pri kreiranju drevesa. Kljub temu smo morali ročno pokriti še branje in pisanje v datoteko, saj pristop za pisanje števil in nizov ni povsem enak.
+        Algoritem za vstavljanje je povzet po implementaciji na spletni platformi GeeksforGeeks \cite{G4G_BINSERT}. Pristop vstavljanja je narejen na primeru, ki podpira le celoštevilsko indeksiranje, hkrati pa drevo shranjuje le na nivoju pomnilnika.
+        
+        V naši implementaciji je bilo potrebno pokriti oba scenarija. Težavo z omejitvijo podatkovnih tipov smo rešili s pristopom uporabe ``generikov``, ki omogočajo izbiro poljubnega podatkovnega tipa pri kreiranju drevesa. Kljub temu smo morali ročno pokriti še branje in pisanje v datoteko, saj pristop za pisanje števil in nizov ni povsem enak.
 
         \subsubsection{Koraki za vstavljanje}
         
         \begin{enumerate}
             \item S pristopom iskanja poiščemo mesto, kamor bi morali vstaviti vrednost.
             \item Poskusimo z vnašanjem, če je list poln, vozlišče razdelimo na dva dela in kreiramo novo vozlišče, katerega povežemo na starša.
-            \item Če pride do preliva v vmesnem vozlišču, to vozlišče ponovno razdelimo na dva vozlišča in prevežemo nadaljnja vozlišča, kot tudi starša (spustimo se v rekurzivno posodabljanja drevesa).
+            \item Če pride do preliva v vmesnem vozlišču, to vozlišče ponovno razdelimo na dva vozlišča in prevežemo naslednja vozlišča, kot tudi starša (izvedemo rekurzivno posodobitev drevesa).
         \end{enumerate}
 
         \noindent
@@ -699,12 +701,12 @@ first_mesage = Message(
 
         \subsection{Brisanje iz B+ drevesa}
 
-        Pri izvedbi brisanja gre koračno gledano za zelo podoben postopek, kot je bilo to pri vstavljanju zapisa.
+        Pri izvedbi brisanja gre koračno gledano za zelo podoben postopek, kot pri vstavljanju zapisa.
 
         \begin{enumerate}
             \item Poiščemo vozlišče, ki vsebuje vrednost, ki jo bomo izbrisali, če ta ne obstaja, zaključimo.
-            \item Iz vozlišča odstranimo vrednost. V primeru, da v vozlišču obstaja vsaj še $\lceil \frac{b - 1}{2}\rceil$ zapisov, je brisanje končano. V scenariju, kjer pride do spodnje prekoračitve, moramo izvesti postopek združevanja vozlišč – zatem moramo pravilno nastaviti tudi kazalec iz starša.
-            \item Zagotoviti moramo, da so veljavna tudi vsa predhodna vozlišča (od brisane vrednosti, do korenskega vozlišča). V tem postopku ponovno izvajamo rekurziven sprehod in po potrebi posodabljamo drevo.
+            \item Iz vozlišča odstranimo vrednost. V primeru, da v vozlišču obstaja vsaj še $\lceil \frac{b - 1}{2}\rceil$ zapisov, je brisanje končano. V scenariju, kjer pride do spodnje prekoračitve, moramo izvesti postopek združevanja vozlišč. Zatem moramo pravilno nastaviti tudi kazalec starša.
+            \item Zagotoviti moramo, da so veljavna tudi vsa predhodna vozlišča (od brisanega vozlišča do korenskega vozlišča). V tem postopku ponovno izvajamo rekurziven sprehod in po potrebi posodabljamo drevo.
         \end{enumerate}
 
         \noindent
@@ -712,17 +714,17 @@ first_mesage = Message(
 
         \subsection{Posodabljanje v B+ drevesu}
 
-        Najbolj preprost način izvedbe posodabljanja v B+ drevesu je izvedba brisanja in nato vstavljanja nove vrednosti. Iz vidika števila operaciji lahko izvedemo bistveno optimizacijo, saj v primeru manjše spremembe v vrednosti, ki jo posodabljamo, lahko pogosto vrednost le premaknemo znotraj vozlišča. Optimizacija na časovno zahtevnost nima vpliva, lahko pa ima velik vpliv na številu I/O operaciji.
+        Najbolj preprost način izvedbe posodabljanja v B+ drevesu je izvedba brisanja in nato vstavljanja nove vrednosti. Iz vidika števila operaciji lahko izvedemo bistveno optimizacijo, saj v primeru manjše spremembe vrednosti, ki jo posodabljamo, lahko pogosto vrednost le premaknemo znotraj vozlišča. Optimizacija na časovno zahtevnost nima vpliva, lahko pa ima velik vpliv na število I/O operaciji.
 
         \subsection{Implementacija za shranjevanje na disk}
-        Razlog za uporabo B dreves znotraj podatkovnih baz je dokaj trivialen. Iskalne strukture, ki so realizirane s pomočjo binarnih dreves na področju shranjevanja na disk, namreč vsebujejo izrazito ozko grlo. Težava se pojavi pri branju in pisanju posameznih vozlišč, saj operacija nad enim vozliščem pomeni en dostop do diska oz. datoteke. B drevesa ta problem rešujejo s samo količino podatkov, ki je shranjena na nivoju enega vozlišča. Ob shranjevanju na klasične trde diske je bila velikost enega vozlišča določena, kot velikost sektorja na disku. To je pomenilo, da je dostop do posameznega vozlišča predstavljal le en dostop na disk, ki je omogočal branje/pisanje $b$ vrednosti hkrati \cite{goodrich2011data}.
+        Razlog za uporabo B dreves znotraj podatkovnih baz je dokaj trivialen. Iskalne strukture, ki so realizirane s pomočjo binarnih dreves na področju shranjevanja na disk, namreč vsebujejo izrazito ozko grlo. Težava se pojavi pri branju in pisanju posameznih vozlišč, saj operacija nad enim vozliščem pomeni en dostop do diska oz. datoteke. B drevesa ta problem rešujejo s samo količino podatkov, ki je shranjena v enem vozlišču. Ob shranjevanju na klasične trde diske je bila velikost enega vozlišča določena, kot velikost sektorja na disku. To je pomenilo, da je dostop do posameznega vozlišča predstavljal le en dostop na disk, ki je omogočal branje/pisanje $b$ vrednosti hkrati \cite{goodrich2011data}.
 
         Klasičen način določanja velikosti posameznih vozlišč se je delno spremenil odkar so standard za shranjevanje podatkov postali hitrejši tipi diskov kot so SSD in v tem primeru velikost posameznega vozlišča ni več določena izključno na podlagi strojne opreme. V primeru InnoDB se velikost posameznega vozlišča nastavi glede na sistemsko spremenljivko {\tt innodb\_page\_size}, ki je privzeto nastavljena na \num{16384} bajtov ({\tt 16 KB}) \cite{INOODB_PS}. Vrednost spremenljivke je možno določiti le ob kreiranju MySQL instance \cite{MYSQL_SETUP}, njeno vrednost pa lahko preverimo z ukazom {\tt SHOW VARIABLES LIKE 'innodb\_page\_size'}.
 
         \subsection{Implementacija v InnoDB}
         \label{MYSQL_BPTREE}
 
-        InnoDB je eden izmed privzeti mehanizmov za shranjevanje podatkov, ki za indeksiranje uporablja implementacijo B+ drevesa. Struktura je prikazana na sliki \ref{btree_innodb}.
+        InnoDB je privzeti mehanizem za shranjevanje podatkov v MySQL SUPB, ki med drugim za indeksiranje uporablja implementacijo B+ drevesa. Struktura je prikazana na sliki \ref{btree_innodb}.
 
         \begin{figure}[H]
             \centerline{\includegraphics[width=1\textwidth, angle=0]{B_Tree_Structure.png}}
@@ -731,11 +733,11 @@ first_mesage = Message(
         \end{figure}
 
         \noindent
-        Znotraj InnoDB implementacije B+ drevesa, vsi nivoji vsebujejo kazalec na prejšnje in naslednje vozlišče na enakem nivoju. Enak pristop je implementiran tudi v mehanizmu za shranjevaje rešitve Graphenix. 
+        Znotraj InnoDB implementacije B+ drevesa, vsi nivoji vsebujejo kazalec na prejšnje in naslednje vozlišče na enakem nivoju. Enak pristop je implementiran tudi v mehanizmu za shranjevanje v rešitvi Graphenix. 
         
         Vsaka stran oz. vozlišče vsebuje ``Infimum``, ki predstavlja vrednost manjšo kot kateri koli zapis v vozlišču. Na drugi strani pa je ``Supremum``, ki predstavlja vrednost večjo kot kateri koli zapis v vozlišču.
 
-        Gre še za malo bolj zahtevno implementacijo B+ drevesa, ki omogoča še nekaj dodatnih optimizaciji z vidika shranjevanja podatkov in izvajanja iskanja.
+        Gre še za malo bolj napredno implementacijo B+ drevesa, ki omogoča nekaj dodatnih optimizaciji z vidika shranjevanja podatkov in izvajanja iskanja \cite{BPTREE_INNODB}.
         
         \subsection{Podprte operacije filtriranja}
         
@@ -747,7 +749,7 @@ first_mesage = Message(
         \end{itemize}
 
         \noindent
-        Pri uporabi indeksiranja ostaja ogromno nepokritih operaciji, ki jih sicer klasični mehanizmi za shranjevanje podpirajo. Vendar zaradi osnovne strukture pri nekaterih optimizacijah ne bi dosegli bistvene izboljšave in bi v določenih scenarijih celo upočasnili poizvedbo.
+        Pri uporabi indeksiranja ostaja ogromno nepokritih operaciji, ki jih sicer klasični mehanizmi za shranjevanje podpirajo. Vendar zaradi osnovne strukture pri nekaterih operacijah ne bi dosegli bistvene izboljšave in bi v določenih scenarijih celo upočasnili poizvedbo.
 
         \subsubsection{Filtriranje pred branjem matrične datoteke}
 
@@ -755,7 +757,7 @@ first_mesage = Message(
 
         \begin{enumerate}
             \item Pogoji direktno nad primarnim identifikatorjem zapisov.
-            \item Že definirani identifikatorji ({\tt qobject.ix\_constraints}), kadar gre za poizvedbo, ki ni v korenu drevesa poizvedb.
+            \item Že definirani identifikatorji – {\tt qobject.ix\_constraints} (kadar gre za poizvedbo, ki ni v korenu drevesa poizvedb).
             \item Kadar imamo pogoje, ki uporabljajo filtriranje z indeksiranjem.
         \end{enumerate}
 
@@ -769,15 +771,15 @@ first_mesage = Message(
         SUPB poleg dreves podpira tudi indeksiranje s pomočjo zgoščevalnih tabel. Gre za pristop, ki se uporablja le za preverjanje enakosti, saj zgoščene vrednosti ne moremo primerjati po velikosti.
         Prednost uporabe zgoščevalnih tabel se skriva v hitrosti iskanja po specifični vrednosti, saj ima ta proces časovno zahtevnost $O(1)$ oz. konstanto časovno zahtevnost.
         
-        Pristop je tako zelo uporaben, kadar imamo polje, ki vsebuje vrednoti iz omejenega nabora vrednosti, npr. pri indeksiranju pošiljatelja sporočila bi z uporabo zgoščevalne tabele zelo hitro lahko poiskali pošiljatelja, hkrati pa za ta atribut načeloma ne izvajamo ostalih operaciji filtriranja in v večini scenarijev le iščemo zapise točno določenega uporabnika.
+        Pristop je tako zelo uporaben, kadar imamo polje, ki vsebuje omejen nabor vrednosti, npr. pri indeksiranju pošiljatelja sporočila bi z uporabo zgoščevalne tabele zelo hitro lahko poiskali pošiljatelja, hkrati pa za ta atribut načeloma ne izvajamo ostalih operaciji filtriranja in v večini scenarijev le iščemo zapise točno določenega uporabnika.
 
     \section{Optimizacije poizvedovanja}
         
         \subsection{Gručanje podatkov ob branju iz diska}
         
-        Kot je bilo že omenjeno v prejšnjih poglavjih, je največje ozko grlo, s katerim se srečujemo, I/O operacije (branje in pisanje na disk). V ta namen je tudi v segmentu prenosa podatkov iz datoteke v pomnilnik realizirano s čim manj dostopi do diska. Zato je ob prvi fazi nabora dodan algoritem za gručenje podatkov.
+        Kot je bilo že omenjeno v prejšnjih poglavjih, je največje ozko grlo, s katerim se srečujemo, I/O operacije (branje in pisanje na disk). V ta namen je tudi prenos podatkov iz datoteke v pomnilnik realiziran s čim manj dostopi do diska. Zato je ob prvi fazi nabora dodan algoritem za gručenje podatkov.
 
-        Definicija problema je zelo preprosta – imamo urejen vektor celih števil, kjer želimo vrednosti grupirati glede na posamezne odmike in najti skupine oz. gruče in te združiti v eno branje matrične datoteke s podatki. Za primer lahko vzamemo vektor odmikov v matrični datoteki prikazan na sliki \ref{clustering_no_color}.
+        Definicija problema je zelo preprosta: \textbf{``imamo urejen vektor celih števil, kjer želimo vrednosti grupirati glede na posamezne odmike in najti skupine oz. gruče in te združiti v eno branje matrične datoteke s podatki``}. Za primer lahko vzamemo vektor odmikov v matrični datoteki prikazan na sliki \ref{clustering_no_color}.
 
 \hfill \break
 \begin{figure}[h]
@@ -804,7 +806,7 @@ first_mesage = Message(
 \end{center}
 \end{figure}
 
-\noindent Iz odmikov lahko hitro razberemo dve gruči, za kateri bi želeli, da jih naš algoritem identificira in branje odmikov izvede v enem koraku – to sta gruči $[64, 62]$, ter $[512, 528, 542]$. Optimalen pristop branja bi lahko barvno označili po konfiguraciji, ki je prikazan na sliki \ref{colored_clusters}.
+\noindent Iz odmikov lahko hitro razberemo dve gruči, za kateri bi želeli, da jih naš algoritem identificira in branje odmikov izvede v enem koraku – to sta gruči $[64, 72]$, ter $[512, 528, 542]$. Optimalen pristop branja bi lahko barvno označili po konfiguraciji, ki je prikazana na sliki \ref{colored_clusters}.
 
 \hfill \break
 \begin{figure}[H]
@@ -835,54 +837,56 @@ first_mesage = Message(
 \end{figure}
         
         \subsubsection{Linearna izvedba gručenja nad urejenim seznamom}
-        Za izvedbo gručenja obstaja veliko algoritmov, ki nalogo opravijo zelo dobro, vendar s seboj prinesejo visoko časovno zahtevnost. V naši izvedbi gručenja smo želeli poiskati algoritem, kjer gručenje opravimo v linearnem času, saj ob testiranju ostalih algoritmov v večini primerov samo gručenje traja dlje, kot pa branje posameznih elementov v matriki. V ta namen smo pripravili preprost algoritem, ki se sprehodi skozi seznam in spremlja odmike, ter združuje elemente, v kolikor ne presežemo zgornje meje velikosti ene gruče in poleg tega zadovoljimo minimalno velikost za gručo.
+        Za izvedbo gručenja obstaja veliko algoritmov, ki nalogo opravijo zelo dobro, vendar s seboj prinesejo visoko časovno zahtevnost. V naši izvedbi gručenja smo želeli poiskati algoritem, kjer gručenje opravimo v linearnem času, saj ob testiranju ostalih algoritmov v večini primerov samo gručenje traja dlje, kot pa branje posameznih zapisov v matriki. V ta namen smo pripravili preprost algoritem, ki se sprehodi skozi seznam in spremlja odmike, ter jih združuje, v kolikor ne presežemo zgornje meje velikosti ene gruče ({\tt MAX\_CLUSTER\_SIZE}) in poleg tega zadovoljimo minimalno velikost za gručo ({\tt MIN\_CLUSTER\_SIZE}).
         
         \subsection{Uporaba prioritetne vrste za urejanje zapisov}
 
-        Ob implementaciji omejevanja števila rezultatov s pomočjo ukazov `limit` in `offset` moramo poskrbeti za časovno optimalno izvedbo poizvedbe, saj z vidika uporabnika SUPB pričakujemo, da z dodatkom ukaza `limit` čas izvajanja skrajšamo.
+        Ob implementaciji omejevanja števila rezultatov s pomočjo funkciji {\tt limit} in {\tt offset} moramo poskrbeti za časovno optimalno izvedbo poizvedbe, saj z vidika uporabnika SUPB pričakujemo, da z uporabo funkcije {\tt limit} čas izvajanja skrajšamo.
 
-        Tekom razvoja smo testirali nekaj različnih pristopov in podatkovnih struktur. Naš problem lahko definiramo, kot iskanje $K$ najmanjših elementov, kjer je $K$ sestavljen iz dveh komponent $L$ in $O$, pri čemer je $L$ maksimalno število elementov oz. limita, $O$ pa predstavlja odmik oz. število zapisov, ki jih želimo preskočiti.
+        Tekom razvoja smo testirali nekaj različnih pristopov in podatkovnih struktur. Naš problem lahko definiramo, kot: \textbf{``iskanje $K$ najmanjših elementov, kjer je $K$ sestavljen iz dveh komponent $L$ in $O$, pri čemer je $L$ maksimalno število elementov, $O$ pa predstavlja odmik oz. število zapisov, ki jih želimo preskočiti``}.
 
         Preizkusili smo tri različne pristope za iskanje $K$ najmanjših elementov v seznamu.
 
         \begin{enumerate}
-            \item Klasično vstavljanje v seznam in ureditev elementov ob koncu vnašanja, ter rezanje elementov od indeksa $O$, do vključno $O+L$. Časovna zahtevnost tega pristopa je $O(N \cdot log_2(N))$, prostorska zahtevnost pa je $O(N)$, saj moramo v pomnilniku držati vse potencialne elemente.
-            \item Postopno vstavljanje v urejen seznam, v tem primeru uporabimo vgrajeno {\tt std::vector} \cite{CPP_VECTOR} strukturo, kjer vstavljanje izvajamo s pomočjo binarnega iskanja. Težava pristopa se skriva v vstavljanju v začetni del seznama, saj moramo potem vse elemente zamikati za eno mesto v desno. Čeprav je časovna zahtevnost binarnega iskanja $O(log_2(N))$ zaradi premikanja elementov časovna zahtevnost postane $O(N)$. Tako je časovna zahtevnost celotnega postopka vstavljanja $O(N^2)$, v najboljšem primeru pa $O(N \cdot log_2(K))$. Glavna prednost algoritma pred pristopom urejanja na koncu se nahaja v prostorski zahtevnosti. Ta je namreč le $O(K)$, saj v pomnilniku ohranjamo maksimalno $K$ vrstic in jih po potrebi zamenjujemo ob iteraciji skozi vrstice matrike.
-            \item Za daleč najboljši pristop se je izkazalo vstavljanje v prioritetno vrsto, ki je realizirana kot kopica. Za podatkovno strukturo uporabimo vgrajeno C++ {\tt std::priority\_queue} \cite{CPP_PQUEUE}. V tem primeru je časovna zahtevnost posameznega vstavljanja $O(log_2(K))$, kar pomeni za $N$ vstavljanj $O(N \cdot log_2(K))$. Prostorska zahtevnost pa je enako kot v predhodnem primeru $O(K)$. Problem je zastavljen tako, da $K$ ne more nikoli biti večji od $N$ in je posledično časovna zahtevnost tega pristopa najbolj optimalna. Pomemben segment pri uporabi vgrajene prioritetne vrste je tudi izbor podatkovne strukture, ki jo vrsta uporablja za shranjevanje podatkov. Za najbolj optimalen pristop se je izkazal vgrajeni {\tt std::vector} \cite{CPP_VECTOR}, ki je na nivoju pomnilnika shranjen v enem kosu, kar omogoči prevajalniku in procesorju, da izrabita še optimizacijo z lokalnostjo.
+            \item Klasično vstavljanje v seznam in ureditev elementov ob koncu vnašanja, ter rezanje elementov od indeksa $O$, do vključno $O+L$. Časovna zahtevnost tega pristopa je $O(N \cdot log_2(N))$, prostorska zahtevnost pa je $O(N)$, kjer je $N$ število vseh zapisov, saj moramo v pomnilniku držati vse potencialne elemente.
+            \item Postopno vstavljanje v urejen seznam, v tem primeru uporabimo vgrajeno {\tt std::vector} \cite{CPP_VECTOR} strukturo, kjer vstavljanje izvajamo s pomočjo binarnega iskanja. Težava pristopa se skriva v vstavljanju v začetni del seznama, saj moramo potem vse elemente zamikati za eno mesto v desno. Čeprav je časovna zahtevnost binarnega iskanja $O(log_2(N))$ zaradi premikanja elementov časovna zahtevnost vstavljanja postane $O(N)$. Tako je časovna zahtevnost celotnega postopka vstavljanja $O(N^2)$, v najboljšem primeru pa $O(N \cdot log_2(K))$. Glavna prednost algoritma v primerjavi z urejanjem na koncu se nahaja v prostorski zahtevnosti. Ta je namreč le $O(K)$, saj v pomnilniku ohranjamo maksimalno $K$ vrstic in jih po potrebi zamenjujemo ob iteraciji skozi vrstice matrike.
+            \item Za daleč najboljši pristop se je izkazalo vstavljanje v prioritetno vrsto, ki je realizirana kot kopica (angl. \textit{heap}). Za podatkovno strukturo uporabimo vgrajeno prioritetno vrsto ({\tt std::priority\_queue}) \cite{CPP_PQUEUE}. V tem primeru je časovna zahtevnost posameznega vstavljanja $O(log_2(K))$, kar pomeni za $N$ vstavljanj $O(N \cdot log_2(K))$. Prostorska zahtevnost pa je enako kot v predhodnem primeru $O(K)$. Problem je zastavljen tako, da $K$ ne more nikoli biti večji od $N$ in je posledično časovna zahtevnost tega pristopa najbolj optimalna. Pomemben segment pri uporabi vgrajene prioritetne vrste je tudi izbor podatkovne strukture, ki jo vrsta uporablja za shranjevanje podatkov. Za najbolj optimalen pristop se je izkazal vgrajeni {\tt std::vector} \cite{CPP_VECTOR}, ki je na nivoju pomnilnika shranjen v enem kosu, kar omogoči prevajalniku in procesorju, da izrabita še optimizacijo lokalnosti.
         \end{enumerate}
 
         \noindent
-        Za vse tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti, vse imajo namreč časovno zahtevnost vsaj $O(N)$. Bistveno bolj zanimiv pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja, smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $1 \times 10^7$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[0, 25000]$.
+        Za vse tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti. Bistveno bolj zanimiv pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja, smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $1 \times 10^7$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[0, 25000]$.
 
         \begin{figure}[H]
-            \centerline{\includegraphics[height=0.45\textwidth, angle=0]{prvih_k_elementov.png}}
+            \centerline{\includegraphics[height=0.5\textwidth, angle=0]{prvih_k_elementov.png}}
             \caption{Časovna primerjava pristopov za iskanje $K$ najmanjših elementov v seznamu.}
             \label{sl:k_smallest}
         \end{figure}
 
         \noindent
-        Iz grafa lahko razberemo, da vrednost $K$ nima bistvenega vpliva na prvi in tretji algoritem. Izjema je drugi algoritem, ki ima sicer časovno zahtevnost $O(N^2)$, vendar je $K$ zelo pomemben faktor, saj večji kot je $K$, večkrat moramo izvesti vstavljanje v vektor, kar pa postaja sorazmerno počasneje glede na večanje vrednosti $K$.
+        Iz grafa \ref{sl:k_smallest} lahko razberemo, da vrednost $K$ nima bistvenega vpliva na prvi in tretji algoritem. Izjema je drugi algoritem, ki ima sicer časovno zahtevnost $O(N^2)$, vendar je $K$ zelo pomemben faktor, saj večji kot je $K$, večkrat moramo izvesti vstavljanje v vektor, kar je razvidno iz dobre korelacije glede na vrednost $K$.
 
         Izkaže se, da je algoritem z uporabo prioritetne vrste najbolj optimalen pristop, kar pokažejo tudi perfomančni testi, ki se izvajajo na platformi GitHub, saj smo z uporabo omenjenega pristopa dobili do 4x pohitritev izvedbe nabora podatkov iz ene tabele.
 
+        \newpage
         \subsection{Uporaba podatkovnih okvirjev}
+        \label{using_df}
 
         Akcija za poizvedovanje ob prvi implementaciji deluje po naslednjih korakih:
         \begin{enumerate}
             \item Izgradnja strukture, ki definira vse potrebne parametre za poizvedbo – {\tt QueryObject}.
             \item Izvedba branja na nivoju programskega jezika C++ in pretvorba zapisov v seznam, kjer je posamezen zapis predstavljen kot slovar.
-            \item Pretvorba posameznega slovarja (vrstice) v instanco objekta.
+            \item Pretvorba posameznega slovarja (vrstice) v instanco razreda.
         \end{enumerate}
 
         \noindent
-        Ob profiliranju akcije za poizvedovanje podatkov opazimo, da velik delež izvajalnega časa vzame 3. točka – torej pretvorba posameznega zapisa v instanco razreda.
+        Ob profiliranju (angl. \textit{Profiling}) akcije za poizvedovanje podatkov smo opazili, da velik delež izvajalnega časa vzame 3. točka  (pretvorba posameznega zapisa v instanco razreda).
 
-        Za hitrejšo izvedbo smo na nivoju programskega jezika Python pripravili podatkovno strukturo – pogled (angl. \textit{View}). Ta struktura omogoča preprečevanje potrebe po tretjem koraku in tudi spreminja predstavitev posameznih vrstic iz strukture slovarja v terko (angl. \textit{Tuple}). {\tt View} predstavlja ovoj, ki deluje na podobnem principu, kot delujejo podatkovni okvirji (angl. \textit{DataFrame}) v paketu za podatkovno analitiko \cite{PANDAS_GITHUB}. Strukturo smo implementirali na nivoju programskega jezika C++, kar še dodatno pospeši čas dostopa do posameznega zapisa.
+        Za hitrejšo izvedbo smo na nivoju programskega jezika Python pripravili podatkovno strukturo – pogled (angl. \textit{View}). Ta struktura odstrani potrebo po tretjem koraku in spremeni predstavitev posameznih vrstic iz strukture slovarja v terko (angl. \textit{Tuple}). {\tt View} predstavlja ovoj, ki deluje na podobnem principu, kot delujejo podatkovni okvirji (angl. \textit{DataFrame}) v paketih za podatkovno analitiko \cite{mckinney2010data}. Strukturo smo implementirali na nivoju programskega jezika C++, kar še dodatno pospeši čas dostopa do posameznega zapisa.
 
         \subsubsection{Optimizacija v številkah}
         Za izmeritev učinkovitosti implementacije smo uporabili scenarij iz performančnih testov celotnega sistema (branje milijona vrstic in shranjevanje celotnega seznama v pomnilnik).
         \begin{itemize}
-            \item V prvi implementaciji je bil povprečni čas izvajanja nekje $\approx 7$ sekund, kjer je več kot 80\% časa predstavljalo instanciranje objektov.
+            \item V prvi implementaciji je bil povprečni čas izvajanja nekje $\approx 7$ sekund, kjer je več kot $80$ \% časa predstavljalo instanciranje razredov.
             \item Po optimizaciji pa celoten čas branja zahteva povprečno $\approx 1.3$ sekunde. To v podanem scenariju pomeni 5x pohitritev izvedbe branja.
         \end{itemize}
 
@@ -891,7 +895,7 @@ first_mesage = Message(
         \item \textbf{Filtriranje podatkov – funkcija {\tt filter}}
         \newline
         \noindent
-        Parametri te funkcije so drevo, kjer je posamezno vozlišče drevesa predstavljeno z enim ali več pogoji, kjer lahko vozlišče zahteva izpolnjenost vseh ali vsaj enega pogoja.
+        Argumenti te funkcije so drevo, kjer je posamezno vozlišče drevesa predstavljeno z enim ali več pogoji, kjer lahko vozlišče zahteva izpolnjenost vseh ali vsaj enega pogoja.
         
         Vozlišče v katerem želimo, da vsi pogoji držijo, kreiramo s pomočjo {\tt gx.every(...)} metode, medtem ko za kreiranje vozlišča z vezavo ``ali`` uporabimo metodo {\tt gx.some(...)}.
 
@@ -918,14 +922,14 @@ query = Message.filter(
         \noindent
         Poizvedba izvede nabor sporočil, ki so bila poslana v zadnjih petih dneh, poleg tega pa želimo, da je izpolnjen vsaj eden izmed pogojev – pošiljatelj/prejemnik je ``John`` in prejemnik ni ``Jane``.
 
-        V sklopu filtriranja podpiramo 11 različnih operaciji. To so je enako, ni enako, večje, večje ali enako, manjše, manjše ali enako, {\tt regex}, {\tt iregex} (neobčutljiv {\tt regex} na velike in male črke), je v (element je v seznamu), ni v (element ni v seznamu), med (vrednost je v intervalu).
+        V sklopu filtriranja podpiramo 11 različnih operaciji. To so: je enako, ni enako, večje, večje ali enako, manjše, manjše ali enako, {\tt regex}, {\tt iregex} (neobčutljiv {\tt regex} na velike in male črke), je v (element je v seznamu), ni v (element ni v seznamu), med (vrednost je v intervalu).
         
         \item \textbf{Omejitev števila zapisov in določanje odmikov – funkciji {\tt limit} in {\tt offset}}
         \newline
         \noindent
-        Gre za preprosta ukaza, ki sta namenjena omejevanju števila zapisov, ko iščemo le prvih nekaj zapisov oz. prvih nekaj zapisov z določenim odmikom. 
+        Gre za funkciji, ki sta namenjeni omejevanju števila zapisov, ko iščemo le prvih nekaj zapisov oz. prvih nekaj zapisov z določenim odmikom. 
 
-        Pogost primer uporabe je implementacija strani (angl. \textit{paging }). Razlog za implementacijo je optimizacija prikaza na način, da omejimo število zapisov, ki jih naenkrat prikažemo uporabniku. Lahko pa gre tudi za čisto preprosto poizvedbo, kjer iščemo prvih nekaj zapisov glede na določene kriterije npr. zadnjih pet sporočil določenega uporabnika.
+        Pogost primer uporabe je implementacija strani (angl. \textit{paging}). Razlog za implementacijo je optimizacija prikaza na način, da omejimo število zapisov, ki jih naenkrat prikažemo uporabniku. Lahko pa gre tudi za čisto preprosto poizvedbo, kjer iščemo prvih nekaj zapisov glede na določene kriterije npr. zadnjih pet sporočil določenega uporabnika.
         
         \item \textbf{Urejanje zapisov – funkcija {\tt order}} 
         \newline
@@ -952,7 +956,7 @@ ORDER BY date DESC, content
         \item \textbf{Uporaba relaciji znotraj poizvedbe – funkcija {\tt link}}
         \newline
         \noindent
-        Gre za malo drugačno izvedbo kot je to pri klasičnih relacijskih SUPB rešitvah, saj v našem primeru podatkov ne združujemo v eno matrično strukturo, temveč so podatki združeni v drevesno strukturo, kjer povezave realiziramo z dedovanjem.
+        Gre za malo drugačno izvedbo kot je to pri klasičnih relacijskih SUPB rešitvah, saj v našem primeru podatkov ne združujemo v eno matrično strukturo, temveč so podatki združeni v drevesno strukturo.
 
 \begin{minted}[breaklines]{sql}
 SELECT * FROM users
@@ -960,7 +964,7 @@ INNER JOIN tasks ON tasks.id_user = users.id
 \end{minted}
 
         \noindent
-        Ker moramo povezavo definirati že na nivoju modela, je združevanje nekoliko drugačno.
+        Ker moramo povezavo definirati že na nivoju zapisa, je združevanje nekoliko drugačno.
 
 \begin{minted}[breaklines]{python}
 query = User.link(tasks=Task)
@@ -975,10 +979,10 @@ query = User.link(tasks=Task)
         Algoritem za poizvedovanje je predstavljen s pomočjo psevdokode \ref{execute_query_algorithm}, kjer omogočamo nabor podatkov iz različnih tabel hkrati.
 
         \begin{enumerate}
-            \item Začetna točka rekurzivne metode je izvedba na korenski tabeli celotne poizvedbe. V primeru, da gre za poizvedbo, ki ne vsebuje povezovanja, rekurzijo zaključimo – robni pogoj rekurzije.
-            \item V drugi točki pripravimo strukture za dodatno filtriranje znotraj nadaljnjih poizvedb. Poleg tega pa pripravimo vmesno strukturo za shranjevanje rezultatov teh poizvedb.
-            \item Nato rekurzivno izvajamo nadaljnje poizvedbe in rezultate shranjujemo v prej pripravljeno združevalno strukturo (gre za zgoščevalno tabelo).
-            \item V zaključni fazi algoritma vmesne rezultate iz zgoščevalne tabele združimo v rezultat korenske poizvedbe – to je tudi rezultat celotne metode, ki je predstavljen v obliki podatkovnega okvirja.
+            \item Začetna točka rekurzivne metode je izvedba nabora podatkov na korenski tabeli poizvedbe. V primeru, da gre za poizvedbo, ki ne vsebuje povezovanja, rekurzijo zaključimo – robni pogoj rekurzije.
+            \item V drugi točki pripravimo strukture za dodatno filtriranje znotraj naslednjih poizvedb. Poleg tega pa pripravimo vmesno strukturo za shranjevanje rezultatov teh poizvedb.
+            \item Nato rekurzivno izvajamo naslednje poizvedbe in rezultate shranjujemo v prej pripravljeno združevalno strukturo (gre za zgoščevalno tabelo, ki vezan identifikator preslika v dejanski zapis).
+            \item V zaključni fazi algoritma vmesne rezultate iz zgoščevalne tabele združimo v rezultat korenske poizvedbe – to je tudi rezultat celotne metode, ki je predstavljen kot podatkovni okvir predstavljen v razdelku \ref{using_df}.
         \end{enumerate}
 
 \begin{code}
@@ -1011,7 +1015,7 @@ end fn
         \newpage
         \subsubsection{Globoko vgnezdene poizvedbe}
 
-        Razvit SUPB s funkcijo {\tt execute\_query}~\ref{query_execution} omogoča tudi globoko vgnezdene poizvedbe, ki v eni poizvedbi omogočajo nabor vgnezdene strukture podatkov (kar klasične poizvedbe SQL ne omogočajo). V nadaljevanju je predstavljen primer globoko vgnezdene poizvedbe \ref{deep_nested_query}, ki je sestavljena iz štirih nivojev.
+        Razvit SUPB s funkcijo {\tt execute\_query}~\ref{query_execution} omogoča tudi globoko vgnezdene poizvedbe, ki v eni poizvedbi omogočajo nabor vgnezdene strukture podatkov (kar klasične poizvedbe SQL ne omogočajo). V programski kodi \ref{deep_nested_query} je predstavljen primer globoko vgnezdene poizvedbe, ki je sestavljena iz štirih nivojev.
 
 \newpage
 \begin{code}
@@ -1032,7 +1036,7 @@ user_view = User.link(
 \label{deep_nested_query}
 \end{code}
 
-        Poizvedba za uporabnika, ki ga poiščemo preko primarnega identifikatorja pridobi še zadnjih {\tt N} nalog in sporočil. Za nabor sporočil se spustimo globlje v rekurzivno funkcijo in za vsako sporočilo pridobimo še podatke pošiljateljev, nato pa še za vsakega izmed pošiljateljev preberemo {\tt N} nalog.
+        Poizvedba za uporabnika, ki ga poiščemo preko primarnega identifikatorja pridobi še zadnjih {\tt N} nalog in sporočil. Za nabor sporočil se pomaknemo globlje v rekurzivno funkcijo in za vsako sporočilo pridobimo še podatke pošiljateljev, nato pa še za vsakega izmed pošiljateljev preberemo {\tt N} nalog.
 
         \begin{figure}[H]
             \centerline{\includegraphics[width=0.7\textwidth, angle=0]{nquery.png}}
@@ -1040,9 +1044,9 @@ user_view = User.link(
             \label{deep_nested_query}
         \end{figure}
 
-        Ob naboru podatkov izvedemo pristop od zgoraj navzdol, saj najprej preberemo podatke za korensko tabelo in se nato spuščamo v nižje nivoje.
+        Ob naboru podatkov izvedemo pristop od zgoraj navzdol (angl. \textit{top-down approach}), saj najprej preberemo podatke za korensko tabelo in se nato spuščamo v nižje nivoje.
 
-        Vsako vozlišče drevesa iz slike \ref{deep_nested_query} predstavlja ločeno branje matrične datoteke podatkov. Tekom nabora tako dvakrat izvedemo branje datoteke s podatki ``nalog`` ({\tt Task}). Pristop nabora v klasičnih poizvedbah SQL ni mogoč, saj dobimo kartezičen produkt in moramo rezultate potem še naknadno obdelati.
+        Vsako vozlišče drevesa iz slike \ref{deep_nested_query} predstavlja ločeno branje matrične datoteke podatkov. Prikazan pristopa nabora v klasičnih poizvedbah SQL ni mogoč, saj rezultat poizvedbe SQL ne moremo vsebovati vgnezdenih zapisov.
 
         Ob naboru podatkov iz dveh različnih nivojev vezavo izvedemo na nivoju programskega jezika C++, kjer uporabimo strukturo zgoščevalnih tabel za grupiranje zapisov po identifikatorju starša. Posledično sestava končne strukture steče bistveno hitreje, kot ob pristopu združevanja v programskem jeziku Python.
 
@@ -1060,8 +1064,7 @@ user_view = User.link(
             \item {\tt COUNT} – štetje zapisov.
         \end{itemize}
 
-        Vse operacije so omejene nad striktno eno 
-        tabelo in en stolpec, kar pomeni, da lahko v eni poizvedbi poiščemo npr. iskanje najnovejšega sporočila med zapisi. V večini primerov agregaciji pa ne iščemo globalno gledano zapisa, ki najbolj ustreza našim kriterijem, ampak iščemo zapis grupirano glede na neko polje npr. iščemo najnovejše sporočilo za vsakega posameznega uporabnika. Kadar govorimo v smislu poizvedb SQL, to pomeni uporabo {\tt GROUP BY} stavka.
+        Vse operacije so omejene nad striktno eno tabelo in en stolpec, kar pomeni, da lahko v eni poizvedbi poiščemo npr. iskanje najnovejšega sporočila med zapisi. V večini primerov agregaciji pa ne iščemo globalno gledano zapisa, ki najbolj ustreza našim kriterijem, ampak iščemo zapis grupiran glede na določen kriterij npr. iščemo najnovejše sporočilo za vsakega posameznega uporabnika. Kadar govorimo v smislu poizvedb SQL, to pomeni uporabo {\tt GROUP BY} stavka.
 
 \begin{minted}[breaklines]{sql}
 SELECT MAX(messages.date) AS 'latest' 
@@ -1080,7 +1083,7 @@ query = Message.agg(
 \end{minted}
 
         \noindent
-        Sintaksa je dokaj preprosta. Za izvedbo agregacijske poizvedbe preprosto uporabimo metodo {\tt .agg(...)} nad eno izmed tabel. Kot parametre pošljemo polje, po katerem združujemo (nadomestilo za {\tt GROUP BY}). Nato pa lahko dodamo še poljubno število parametrov, ki predstavljajo različne združevalne akcije.
+        Sintaksa je dokaj preprosta. Za izvedbo agregacijske poizvedbe uporabimo metodo {\tt .agg(...)}. Kot parametre pošljemo polje, po katerem združujemo (nadomestilo za {\tt GROUP BY}). Nato pa lahko dodamo še poljubno število parametrov, ki predstavljajo različne združevalne akcije.
 \end{itemize}
 
 \chapter{Sodoben pristop razvoja programske opreme}
@@ -1113,7 +1116,7 @@ query = Message.agg(
 
     Izdelava paketov s pomočjo Python.h vmesnika pomeni uporabo programskega jezika C, kar pomeni, da je velik del implementacij različnih struktur prepuščen razvijalcu.
     
-    Za lažji prehod med jezikoma smo se odločili za razvoj v programskem jeziku C++, ki ima bistveno širši nabor struktur v standardni knjižnici. 
+    Za lažji implementacijo rešitve smo se odločili za razvoj v programskem jeziku C++, ki ima bistveno širši nabor struktur in funkciji v standardni knjižnici. 
 
     Za prehod smo uporabili PyBind11 \cite{PYBIND11_GITHUB}, ki deluje na nivoju višje in za svoje delovanje v ozadju uporablja Python.h. Gre za rešitev, ki olajša pretvorbe podatkovnih struktur med jezikoma npr. {\tt std::vector} \cite{CPP_VECTOR}, se samodejno pretvori v strukturo seznama na nivoju programskega jezika Python.
 
@@ -1166,7 +1169,7 @@ print(total) # prints 15
     \end{figure}
 
     \noindent
-    Paket je sestavljen iz dveh ključnih komponent. To sta ORM, ki je napisan s pomočjo programskega jezika Python in predstavlja tudi vhodno točko za uporabnike paketa. Na drugi strani pa je jedro SUPB s sistemom za shranjevanje podatkov, ki z ORM komunicira preko prej omenjenega PyBind11 \cite{PYBIND11_GITHUB} paketa.
+    Paket je sestavljen iz dveh ključnih komponent. To sta ORM, ki je napisan v programskem jeziku Python in predstavlja tudi vhodno točko za uporabnike paketa. Na drugi strani pa je jedro SUPB s sistemom za shranjevanje podatkov, ki z ORM komunicira preko prej omenjenega PyBind11 \cite{PYBIND11_GITHUB} paketa.
 
     Jedro vsebuje vse performančno gledano kritične operacije in podatke s pomočjo mehanizma za shranjevanje drži v datotekah {\tt .bin}, ki predstavljajo zunanjo komponento sistema.
     
@@ -1225,32 +1228,32 @@ print(total) # prints 15
     Na grafu \ref{vnos} so prikazani povprečni časi vstavljanja. Za vsak pristop je prikazan čas vstavljanja 1000 zapisov, izražen v milisekundah.
    
    \begin{figure}[H]
-        \centerline{\includegraphics[width=0.70\textwidth, angle=0]{singleinsert.png}}
+        \centerline{\includegraphics[width=0.77\textwidth, angle=0]{singleinsert.png}}
         \caption{Množično vstavljanje podatkov.}
         \label{vnos}
     \end{figure}
 
     \noindent
-    Prva ugotovitev, ki jo lahko izpeljemo iz grafa je, da je vstavljanje podatkov z uporabo ORM precej počasnejše v primerjavi z neposrednim vstavljanjem preko SQL ukazov. Uporaba ORM zahteva ustvarjanje instanc objektov, kar vodi v dodatne časovne zakasnitve.
+    Prva ugotovitev, ki jo lahko izpeljemo iz grafa~\ref{vnos} je, da je vstavljanje podatkov z uporabo ORM precej počasnejše v primerjavi z neposrednim vstavljanjem preko SQL ukazov. Uporaba ORM zahteva ustvarjanje instanc razredov, kar vodi v dodatne časovne zakasnitve.
 
-    Na splošno lahko opazimo, da je SQLite prevladujoč pri hitrosti vstavljanja. Razlog, da MySQL ni tako hiter, je dokaj enostaven. MySQL SUPB teče na strežniku in vso komunikacijo opravlja preko vgrajenega protokola, kjer se podatki prenašajo z uporabo TCP/IP paketov, kar ni tako učinkovito, kot uporaba vhodno/izhodnih operaciji v SQLite.
+    Na splošno lahko opazimo, da je SQLite prevladujoč pri hitrosti vstavljanja. Razlog, da MySQL ni tako hiter, je dokaj enostaven. MySQL teče na strežniku in vso komunikacijo opravlja preko vgrajenega protokola, kjer se podatki prenašajo z uporabo TCP/IP paketov, kar ni tako učinkovito, kot uporaba vhodno/izhodnih operaciji v SQLite.
 
-    V primeru Graphenix, vstavljanje ni izvedeno v klasični množični obliki, saj je vstavljanje vsakega zapisa ločen dostop do datoteke. V analizi sta predstavljena dva pristopa vnašanja z uporabo Graphenix. V primeru množičnega vnašanja gre za direkten klic funkcije jedra za vnašanje podatkov in ne potrebujemo kreirati instanc objektov, kar je bilo tudi glavno ozko grlo pri vnašanju podatkov z uporabo ORM.
+    V primeru Graphenix, vstavljanje ni izvedeno v klasični množični obliki, saj je vstavljanje vsakega zapisa ločen dostop do datoteke. V analizi sta predstavljena dva pristopa vnašanja z uporabo Graphenix. V primeru množičnega vnašanja gre za direkten klic funkcije jedra za vnašanje podatkov in ne potrebujemo kreirati instanc razredov, kar je bilo tudi glavno ozko grlo pri vnašanju podatkov z uporabo ORM.
 
-    Pomemben dejavnik pri vnašanju podatkov je tudi dodatna varnost, ki jo zagotavljata SQLite in zlasti MySQL. Oba sistema imata dnevnike, ki v primeru napake omogočata povrnitev celotne baze podatkov v stanje pred vnašanjem. Posledično v primeru napake ali prekinitve v Graphenix tvegamo imeti neveljavne zapise v bazi podatkov.
+    Pomemben dejavnik pri vnašanju podatkov je tudi dodatna varnost, ki jo zagotavljata SQLite in zlasti MySQL. Oba sistema imata dnevnike za povrnitev (angl. \textit{rollback journal}), ki v primeru napake omogočata povrnitev celotne baze podatkov v stanje pred vnašanjem. Posledično v primeru napake ali prekinitve v Graphenix tvegamo imeti neveljavne zapise v bazi podatkov.
 
     \subsection{Vstavljanje z dodatnim indeksiranim poljem}
 
-    V drugem scenariju gre za enakovredno vstavljanje prvemu, vendar z dodatkom definicije indeksa na atributu tabele (indeks je definiran na celoštevilskem polju, kjer je vsaka vrednost unikatna).
+    V drugem scenariju gre za enakovredno vstavljanje prvemu, vendar z dodatkom uporabe indeksa na atributu tabele (indeks je definiran na celoštevilskem polju, kjer je vsaka vrednost unikatna).
     
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.70\textwidth, angle=0]{indexinsert.png}}
+        \centerline{\includegraphics[width=0.77\textwidth, angle=0]{indexinsert.png}}
         \caption{Množično vstavljanje z dodatnim indeksiranim atributom.}
         \label{index_vnos}
     \end{figure}
 
     \noindent
-    Iz grafa lahko razberemo, da z vidika hitrosti vstavljanja še vedno prevladuje SQLite. Za razliko od predhodnega scenarija \ref{vnos}, pa tokrat MySQL v večini primerov postane bolj učinkovit kot Graphenix.
+    Iz grafa~\ref{index_vnos} lahko razberemo, da z vidika hitrosti vstavljanja še vedno prevladuje SQLite. Za razliko od predhodnega scenarija \ref{vnos}, pa je tokrat MySQL v večini primerov postal bolj učinkovit kot Graphenix.
 
     V vseh treh SUPB je indeksiranje realizirano z uporabo B drevesa. Kljub temu pa je razlika v načinu vstavljanja podatkov, saj naša implementacija B drevesa ne izkorišča algoritma za množično vstavljanje v drevo. MySQL in SQLite za vstavljanje uporabljata algoritem množičnega vstavljanja in posledično čas vstavljanja v drevo nima bistvenega vpliva na celoten čas vstavljanja.
  
@@ -1266,7 +1269,7 @@ print(total) # prints 15
     \end{figure}
 
     \noindent
-    Iz grafa razberemo, da je Graphenix najbolj potraten z vidika porabe prostora. Razlog se skriva v načinu shranjevanja tekstovnih vrednosti. SQLite in MySQL uporabljata podatkovne strukture, ki ob shranjevanju prinesejo dodatno optimizacijo porabe prostora, saj uporabita le toliko prostora kot je potrebno. V primeru Graphenix, pa je dolžina tekstovnih polj točno določena, in v primeru, da polje definiramo kot {\tt String(size=50)}, vsak zapis ne glede na dolžino zavzame 50 bajtov.
+    Iz grafa~\ref{velikosti} razberemo, da je Graphenix najbolj potraten z vidika porabe prostora. Razlog se skriva v načinu shranjevanja tekstovnih vrednosti. SQLite in MySQL uporabljata podatkovne strukture, ki ob shranjevanju prinesejo dodatno optimizacijo porabe prostora, saj uporabita le toliko prostora kot je potrebno. V primeru Graphenix, pa je dolžina tekstovnih polj točno določena, in v primeru, da polje definiramo kot {\tt String(size=50)}, vsak zapis ne glede na dolžino zavzame vsaj 50 bajtov.
 
     V temnem delu stolpca je prikazana razlika velikosti z in brez uporabe indeksne strukture. SUPB z najnižjo porabo prostora z vidika velikosti indeksne strukture je SQLite. Razlog za nižjo porabo se nahaja v velikosti posameznega vozlišča in algoritmu vstavljanja v drevo, ki vpliva tudi na delitev vozlišč tekom vstavljanja.
 
@@ -1280,38 +1283,36 @@ SELECT * FROM users
     
 
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{singleread.png}}
+        \centerline{\includegraphics[width=0.75\textwidth, angle=0]{singleread.png}}
         \caption{Branje brez dodatnih parametrov znotraj poizvedbe.}
         \label{branje}
     \end{figure}
 
     \noindent
-    Iz grafa je jasno razvidno, da uporaba ORM ni dobro pripravljena za masovno nalaganje podatkov, saj se ponovno kreirajo instance kar predstavlja več kot 70\% delež celotnega branja. V primeru MySQL se ponovno pojavi tudi nekaj dodatne zakasnitve zaradi načina prenosa podatkov preko TCP/IP protokola.
+    Iz grafa~\ref{branje} je jasno razvidno, da uporaba ORM ni dobro pripravljena za masovno nalaganje podatkov, saj se ponovno kreirajo instance kar predstavlja več kot 70 \% delež celotnega branja. V primeru MySQL se ponovno pojavi tudi nekaj dodatne zakasnitve zaradi načina prenosa podatkov s TCP/IP protokolom.
 
     \subsection{Branje s filtriranjem, urejanjem in omejevanjem podatkov}
 
     V drugem scenariju branja podatkov iz ene tabele dodamo še omejitev na tip uporabnikov (želimo le administratorje). Poleg tega pa je dodano tudi urejanje podatkov in omejitev števila zapisov (želimo prvih 500 zapisov urejenih po točkah uporabnika).
 
 \begin{minted}[breaklines]{SQL}
-SELECT * FROM users
-WHERE is_admin = 1
-ORDER BY points, id
-LIMIT 500
+SELECT * FROM users WHERE is_admin = 1
+ORDER BY points, id LIMIT 500
 \end{minted}
     
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{queryread.png}}
+        \centerline{\includegraphics[width=0.72\textwidth, angle=0]{queryread.png}}
         \caption{Branje z dodanim filtriranjem in urejanjem zapisov.}
         \label{queryread}
     \end{figure}
 
     \noindent
-    Čas izvajanja posameznega branja je relativno nizek, v vseh primerih je bilo branje izvedeno v manj kot 100 ms. Opazimo, da zakasnitve kreiranja instanc pri ORM tukaj ne pridejo do izraza, saj je potrebno kreirati le 500 instanc. Do večjega izraza pridejo zakasnitve, ki jih za prenos podatkov prinaša TCP/IP protokol, kar je videno v primerih uporabe MySQL.
+    Čas izvajanja posameznega branja je relativno nizek, v vseh primerih je bilo branje izvedeno v manj kot 100 ms. Opazimo, da zakasnitve kreiranja instanc pri ORM tukaj ne pridejo do izraza, saj je potrebno kreirati le 500 instanc. Do večjega izraza pridejo zakasnitve, ki jih za prenos podatkov prinaša TCP/IP protokol, kar je na grafu~\ref{queryread} videno v primerih uporabe MySQL.
 
     \section{Primerjava poizvedb z uporabo relaciji}
     \label{join_lbl}
 
-    V scenariju definiramo poizvedbo, kjer izvedemo nabor podatkov iz dveh tabel. Št. zapisov je določeno s številom uporabnikov. Za vsakega uporabnika pa je bilo vnesenih še 10 nalog, ki so vezane preko tujega ključa ``user\_id`` v tabeli nalog.
+    V scenariju definiramo poizvedbo, kjer izvedemo nabor podatkov iz dveh tabel. Število zapisov je določeno s številom uporabnikov. Za vsakega uporabnika pa je bilo vnesenih še 10 nalog, ki so vezane preko tujega ključa ``user\_id`` v tabeli nalog ({\tt Task}).
     
 \begin{minted}[breaklines]{SQL}
 SELECT * FROM users 
@@ -1319,7 +1320,7 @@ INNER JOIN tasks ON tasks.user_id = users.id
 \end{minted}
 
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{join.png}}
+        \centerline{\includegraphics[width=0.72\textwidth, angle=0]{join.png}}
         \caption{Poizvedovanje podatkov iz dveh tabel hkrati – uporabniki in njihove naloge.}
         \label{join}
     \end{figure}
@@ -1339,7 +1340,7 @@ INNER JOIN tasks ON tasks.user_id = users.id
 
     V scenariju izvedbe agregacije uporabljamo strukturo, ki smo jo pripravili v prejšnjem scenariju \ref{join_lbl}.
 
-    V poizvedbi naloge združujemo po uporabnikih in za vsakega uporabnika pridobimo število nalog, ki mora biti v vseh primerih 10. Poleg tega pa glede na atribut ``created\_at`` pridobimo tudi datum zadnje naloge uporabnika.
+    V poizvedbi naloge združujemo po uporabnikih in za vsakega uporabnika pridobimo število nalog, ki mora biti v vseh primerih 10. Poleg tega pa glede na atribut {\tt created\_at} pridobimo tudi datum zadnje naloge uporabnika.
     
 \begin{minted}[breaklines]{SQL}
 SELECT user_id, COUNT(*) AS 'count', 
@@ -1348,13 +1349,13 @@ FROM tasks GROUP BY user_id
 \end{minted}
 
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.7\textwidth, angle=0]{agg.png}}
+        \centerline{\includegraphics[width=0.75\textwidth, angle=0]{agg.png}}
         \caption{Uporaba agregacijskih metod.}
         \label{agg}
     \end{figure}
 
     \noindent
-    V tem scenariju rezultat poizvedbe ni predstavljen kot instance objektov, saj vedno kreiramo prilagojen tip rezultata, ki vsebuje identifikator uporabnika, število nalog in zadnji datum naloge za vezanega uporabnika.
+    V tem scenariju rezultat poizvedbe ni predstavljen kot instance razredov, saj vedno kreiramo prilagojen tip rezultata, ki vsebuje identifikator uporabnika, število nalog in zadnji datum naloge za vezanega uporabnika.
 
     Rezultati sicer dobro sledijo trendom iz predhodnih scenarijev – MySQL zaradi načina prenosa podatkov potrebuje nekoliko več časa, poleg tega pa se ponovno pozna razlika uporabe ORM in uporaba poizvedb SQL. Graphenix pa je ponovno primerljiv uporabi SQLite brez ORM.
 
@@ -1377,47 +1378,47 @@ WHERE points = 5432
     \end{figure}
 
     \noindent
-    Iz grafa hitro razberemo, da je pohitritev v Graphenix SUPB drastično manjša, kot je to v primeru SQLite in MySQL.
+    Iz grafa~\ref{old_speedup} hitro razberemo, da je pohitritev v Graphenix SUPB drastično manjša, kot je to v primeru SQLite in MySQL.
 
     \subsection{Optimizacija v metodi filtriranja zapisov}
 
-    Zaradi bistveno slabšega rezultata pri iskanju smo se lotili profiliranja posameznih segmentov programske kode za nabor podatkov.
+    Zaradi bistveno slabšega rezultata pri iskanju smo se lotili profiliranja (angl. \textit{Profiling}) posameznih segmentov programske kode za nabor podatkov.
 
-    Kaj hitro smo prišli do ugotovitve, da težava ni bil proces iskanja v B drevesu, temveč je bila težava branje zaglavja tabele. Metoda za branje podatkov iz posamezne tabele je delovala tako, da je najprej prebrala celotno datoteko zaglavja tabele in za posamezen identifikator zapisa pridobila še odmik v matriki zapisov. Izkazalo se je, da je ta proces v scenariju predstavljal nekje $\approx 85$\% izvajalnega časa.
+    Kaj hitro smo prišli do ugotovitve, da težava ni bil proces iskanja v B drevesu, temveč je bila težava branje zaglavja tabele. Metoda za branje podatkov iz posamezne tabele je delovala tako, da je najprej prebrala celotno datoteko zaglavja tabele in za posamezen identifikator zapisa pridobila še odmik v matriki zapisov. Izkazalo se je, da je ta proces v scenariju predstavljal nekje $\approx 85$ \% izvajalnega časa.
 
     V namen hitrejšega izvajanja se branja celotnega zaglavja, v primeru, da imamo že vnaprej določene identifikatorje, ki jih iščemo in je teh manj kot {\tt IX\_THRESHOLD}, izognemo. Konstanta predstavlja mejo za branje celotnega zaglavja in je v trenutni implementaciji nastavljena na \num{100}.
     
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.8\textwidth, angle=0]{indexing_speedup_100000_v2.png}}
-        \caption{Iskanje specifičnega zapisa ($N = 1 \times 10^5$ z optimizacijo).}
+        \caption{Iskanje specifičnega zapisa ($N = 1 \times 10^5$) z optimizacijo.}
         \label{idx_speedup}
     \end{figure}
 
     \noindent
     Po implementirani optimizaciji opazimo bistveno izboljšavo časa iskanja. Sedaj se čas in faktor pohitritve lahko primerjata z MySQL in SQLite.
 
-    \subsubsection{Analiza iskanja nad večjo bazo podatkov}
+    \subsection{Analiza iskanja nad večjo bazo podatkov}
 
     Na grafu \ref{idx_speedup_2} je prikazana še pohitritev enake poizvedbe, kot v predhodnem scenariju. V tem primeru pa je število vseh uporabnikov $1 \times 10^6$.
     
     \begin{figure}[H]
         \centerline{\includegraphics[width=0.8\textwidth, angle=0]{indexing_speedup_1000000_v2.png}}
-        \caption{Iskanje specifičnega zapisa ($N = 1 \times 10^6$ z optimizacijo).}
+        \caption{Iskanje specifičnega zapisa ($N = 1 \times 10^6$) z optimizacijo.}
         \label{idx_speedup_2}
     \end{figure}
 
     \noindent
-    Iz grafa razberemo, da v vseh treh izvedbah zapis najdemo v manj kot 2 ms, kar tudi v vseh treh scenariji predstavlja več 100x pohitritev. Nekaj zakasnitve se sicer vseeno pojavi iz strani MySQL, kar je glede na predhodne scenarije pričakovano.
+    Iz grafa~\ref{idx_speedup_2} razberemo, da v vseh treh izvedbah zapis najdemo v manj kot 2 ms, kar tudi v vseh treh scenariji predstavlja več 100x pohitritev. Nekaj zakasnitve se sicer vseeno pojavi iz strani MySQL, kar je glede na predhodne scenarije pričakovano.
 
     \subsubsection{Idealni pogoji za indeksiranje}
-    Pomembno je omeniti, da je scenarij zelo prilagojen uporabi indeksiranja, saj v scenariju iskanja, kjer vrednosti niso unikatne, učinkovitost indeksa zelo hitro pade. Poleg tega je bilo iskanje izvedeno kot iskanje specifične vrednosti v drevesu, medtem ko če bi iskali širši interval vrednosti bi se ponovno oddaljili od časovne zahtevnosti $O(log_b(N))$ in približali $O(N)$.
+    Omenimo, da je scenarij prilagojen uporabi indeksiranja, saj v scenariju iskanja, kjer vrednosti niso unikatne, učinkovitost indeksa zelo hitro pade. Poleg tega je bilo iskanje izvedeno kot iskanje specifične vrednosti v drevesu, medtem ko če bi iskali širši nabor vrednosti bi časovna zahtevnost $O(log_b(N))$ postala $O(K \cdot log_b(N))$, kjer je $K$ število vrednosti, ki se ujemajo z iskalnim kriterijem.
 
     Če potegnemo črto je jasno, da se pri odločanju o uporabi indeksov odpira zahtevno vprašanje, ki zahteva premišljeno obravnavo. Odgovornost za to odločitev se prepušča razvijalcem, pri čemer je ključnega pomena, da se kot razvijalci zavedamo optimizaciji in pasti, ki izvirajo iz uporabe B dreves za indeksiranje. Poleg tega je nujno, da poznamo naravo podatkov in zahtev aplikacije, saj je optimizacija z indeksiranjem smiselna le v določenih kontekstih.
 
 \chapter{Scenariji oz. primeri uporabe}
 \label{ch3}
 
-    V tem poglavju sta predstavljena dva primera uporabe paketa Graphenix. V prvem primeru se paket uporablja kot dodatek strežniški aplikacij v namen beleženja podatkov. V drugem scenariju pa je predstavljen razvoj preproste namizne aplikacije, kjer paket uporabljamo za trajno shranjevanje podatkov. Oba primera skušata na praktičen način predstaviti dobre strani uporabe Graphenix knjižnice.
+    V tem poglavju sta predstavljena dva primera uporabe paketa Graphenix. V prvem primeru se paket uporablja kot dodatek strežniški aplikacij v namen beleženja podatkov (angl. \textit{logging}). V drugem scenariju pa je predstavljen razvoj preproste namizne aplikacije, kjer paket uporabljamo za trajno shranjevanje podatkov. Oba primera skušata na praktičen način predstaviti dobre strani uporabe rešitve Graphenix.
 
     \section{Strežniško beleženje podatkov}
 
@@ -1425,7 +1426,7 @@ WHERE points = 5432
 
     \subsection{Aplikacija, ki služi kot osnova za modul beleženja}
 
-    V prvi fazi si lahko za primer pripravimo preprosto strežniško aplikacijo, ki uporablja Flask \cite{FLASK_GITHUB} ogrodje. Znotraj aplikacije smo definirali eno vhodno točko, in sicer {\tt get-range}, ki je predstavljena v programski kodi \ref{simple_flask_app}, kjer lahko poljubno nastavljamo tri HTTP {\tt GET} parametre, to so {\tt start}, {\tt end} in {\tt step}, kjer ima vsak od teh parametrov tudi privzete vrednosti.
+    V prvi fazi smo si za primer pripravili preprosto strežniško aplikacijo, ki uporablja Flask \cite{FLASK_GITHUB} ogrodje. Znotraj aplikacije smo definirali eno vhodno točko, in sicer {\tt get-range}, ki je predstavljena v programski kodi \ref{simple_flask_app}, kjer lahko poljubno nastavljamo tri HTTP {\tt GET} parametre, to so {\tt start}, {\tt end} in {\tt step}, kjer ima vsak od teh parametrov tudi privzete vrednosti.
 
 \begin{code}
 \begin{minted}{python}
@@ -1468,7 +1469,7 @@ if not logging.exists():
 
     \subsection{Dekorator za dinamično dodajanje beleženja}
 
-    V namen beleženja znotraj vhodnih točk strežniške aplikacije bomo uporabili pristop z uporabo dekoratorja.
+    V namen beleženja znotraj vhodnih točk strežniške aplikacije smo uporabili pristop z uporabo dekoratorja.
     Dekorator je vzorec,  ki omogoča dinamično dodajanje funkcionalnost obstoječi funkciji, ne da bi spreminjali njeno strukturo. Med izvedbo notranje funkcije lahko argumente in različne segmente izvajanja prestrežemo in jih prilagodimo glede na naše zahteve \cite{mu2011design}.
 
 \begin{code}
@@ -1509,6 +1510,7 @@ def route_with_log(route):
 \begin{minted}{python}
 _, reqs = ReqInfo.order(ReqInfo.timestamp.desc()).limit(3).all()
 ... 
+# izpis zahtevkov
 ReqInfo(id=3, route=/get-range, timestamp=2023-07-16 03:02:15, 
     route_req={}, route_res={"Range":[0,1,2,3,4,5,6,7,8,9]},
     resp_code=200)
@@ -1556,11 +1558,11 @@ err_count, api_errors = ReqInfo\
 
     \subsubsection{Preslikava v podatkovne okvirje}
 
-    Za namen podatkovne analitike v programskem jeziku Python najpogosteje uporabljamo rešitve, ki za svoje delovanje uporabljajo podatkovne okvirje. Ena izmed teh knjižnic je že omenjeni Pandas \cite{PANDAS_GITHUB}.
+    Za namen podatkovne analitike v programskem jeziku Python najpogosteje uporabljamo rešitve, ki za svoje delovanje uporabljajo podatkovne okvirje. Ena taka rešitev je že omenjeni Pandas \cite{PANDAS_GITHUB}.
     
-    Leta 2021 se je pojavila nova knjižnica za podatkovno analitiko - Polars \cite{POLARS}. Za svoje delovanje uporablja prevedeni programski jezik, vendar v tem primeru ne gre za C/C++, temveč za programski jezik Rust \cite{RUST}.
+    Leta 2021 se je pojavil nov paket za podatkovno analitiko – Polars \cite{POLARS}. Za svoje delovanje uporablja prevedeni programski jezik, vendar v tem primeru ne gre za C/C++, temveč za programski jezik Rust \cite{RUST}.
 
-    Prednost uporabe rešitve Graphenix za beleženje je v načinu nalaganju podatkov, saj podatke zlahka filtriramo in urejamo že pred kreiranjem podatkovnega okvirja, kar klasične datoteke {\tt .csv}, ki pogosto predstavljajo format shranjenih podatkov, ne omogočajo.
+    Prednost uporabe rešitve Graphenix za beleženje je v načinu branja podatkov, saj podatke zlahka filtriramo in urejamo že preden ustvarimo podatkovni okvir, kar klasične datoteke {\tt .csv}, ki pogosto predstavljajo format shranjenih podatkov, ne omogočajo.
 
 \begin{code}
 \begin{minted}{python}
@@ -1576,7 +1578,7 @@ _, qview = ReqInfo.order(ReqInfo.timestamp)\
 pandas_df : pd.DataFrame = qview.as_pandas_df()
 polars_df : pl.DataFrame = qview.as_polars_df()
 \end{minted}
-\caption{Preslikava Graphenix pogleda v podatkovna okvirja.}
+\caption{Preslikava rezultata poizvedbe v podatkovna okvirja.}
 \label{graphenix2pandas}
 \end{code}
 
@@ -1600,9 +1602,9 @@ polars_df : pl.DataFrame = qview.as_polars_df()
     \end{figure}
 
     \noindent
-    Za vsak posamezni strošek na skupnem prikazu sta definirani akciji brisanja in urejanja. Poleg tega lahko stroške glede na naziv, ceno in kategorijo tudi urejamo. Omogočeno je tudi filtriranje stroškov po nazivu in prikazovanje po straneh.
+    Za vsak posamezen strošek sta na skupnem prikazu definirani akciji za brisanje in urejanje. Poleg tega lahko stroške glede na naziv, ceno in kategorijo tudi uredimo. Omogočeno je tudi filtriranje po nazivu in prikazovanje po straneh.
 
-    Na desnem zaslonu je prikazan obrazec, do katerega dostopamo preko urejanja ali kreiranja novega stroška. Gre za preprost obrazec, kjer določimo naziv, ceno in kategorijo posameznega stroška.
+    Na desnem zaslonu je prikazan obrazec, do katerega dostopamo preko akciji za urejanje in kreiranje novega stroška. Gre za preprost obrazec, kjer določimo naziv, ceno in kategorijo posameznega stroška.
 
     \subsubsection{Statističen pregled stroškov}
     Na sliki \ref{stats_screen} je prikazan statistični pregled stroškov, kjer so ti grupirani glede na kategorijo. Gre za tabelarni prikaz, kjer imamo za vsako kategorijo naziv, datum zadnjega stroška, število stroškov in vsoto cen vseh stroškov posamezne kategorije.
@@ -1615,7 +1617,7 @@ polars_df : pl.DataFrame = qview.as_polars_df()
 
     \subsection{Aplikacija z vidika kode}
 
-    Grahepnix je dobra izbira, saj gre za relativno nezahtevno aplikacijo, kjer ni potrebno skrbeti za več hkratnih dostopov do baze podatkov, poleg tega pa pripravljen ORM omogoča zelo preprost pristop za manipulacijo podatkov.
+    Grahepnix je dobra izbira, saj gre za relativno nezahtevno aplikacijo, kjer ni potrebno skrbeti za več hkratnih dostopov do baze podatkov, poleg tega pa pripravljen ORM omogoča preprost pristop za manipulacijo podatkov.
 
     Za izris uporabniškega vmesnika aplikacija uporablja BeeWare \cite{BEE_WARE}, ki omogoča medplatformski (angl. \textit{Cross-platform}) razvoj programske opreme, kar pomeni, da lahko isto kodo uporabimo za več različnih operacijskih sistemov.
 
@@ -1657,9 +1659,9 @@ def refresh_stats(self):
 \end{code}
 
     \noindent
-    V metodi \ref{graphenix_refresh_desktop} najprej izvedemo agregacijsko poizvedbo, kjer podatke grupiramo glede na kategorijo in pridobimo število zapisov, datum zadnjega stroška in vsoto vseh cen pri posamezni kategoriji.
+    V metodi \ref{graphenix_refresh_desktop} najprej izvedemo agregacijsko poizvedbo, kjer podatke grupiramo glede na kategorijo in pridobimo število zapisov, datum zadnjega stroška in vsoto cen pri posamezni kategoriji.
 
-    Za zaključek podatke ločeno uredimo glede na skupno ceno, saj ta funkcionalnost za agregacijske metode v SUPB ni podprta.
+    Za zaključek podatke ločeno uredimo glede na skupno ceno, saj ta funkcionalnost za agregacijske metode v Graphenix SUPB ni podprta.
 
     \newpage
     \subsubsection{Nabor podatkov za glavni prikaz stroškov}
@@ -1722,7 +1724,7 @@ def display_expenses(self, search=None, order_by=None, page=0):
         \item \textbf{Implementacija dnevnika za povrnitev}
         \newline
         \noindent
-        Koncept dnevnika za povrnitev (angl. \textit{rollback journal}) je dokaj preprost. Implementiran je kot začasen sklad, kamor zapisujemo spremembe, ki se zgodijo nad bazo podatkov. V primeru izpadov električne energije ali napak pri vstavljanju zapisov je mogoče podatkovno bazo obnoviti v prejšnje (delujoče) stanje.
+        Koncept dnevnika za povrnitev (angl. \textit{rollback journal}) je dokaj preprost. Implementiran je kot začasen sklad, kamor zapisujemo spremembe, ki se zgodijo v bazi podatkov. V primeru izpadov električne energije ali napak pri vstavljanju zapisov je mogoče podatkovno bazo obnoviti v prejšnje (delujoče) stanje.
 
         \item \textbf{Prostorska optimizacija shranjevanja nizov}
         \newline
@@ -1737,7 +1739,7 @@ def display_expenses(self, search=None, order_by=None, page=0):
     \section{Refleksija razvoja}
     \label{refleksija}
 
-    Glavni cilj celotnega diplomskega dela je bila implementacija lastnega relacijskega SUPB, kjer bi na praktičen način spoznali ozadje delovanja relacijskih podatkovnih baz in obenem izdelali celovito rešitev za programski jezik Python.
+    Glavni cilj celotnega diplomskega dela je bila implementacija lastnega relacijskega sistema za upravljanje s podatkovno bazo, kjer bi na praktičen način spoznali ozadje delovanja relacijskih podatkovnih baz in obenem izdelali celovito rešitev za programski jezik Python.
 
     Razvoj dobrega SUPB ni lahka naloga, kar lahko razberemo iz količine programske kode in različnih konceptov, ki jih uporablja npr. odprtokodni MySQL \cite{MYSQL_GITHUB}.
     
@@ -1745,9 +1747,9 @@ def display_expenses(self, search=None, order_by=None, page=0):
     
      Poudarek je bil tudi na implementaciji indeksiranja z uporabo B+ drevesa. S tem smo uporabnikom paketa Graphenix omogočili možnost uporabe indeksov, ki ob določenih pogojih (v poizvedbi uporabljamo iskanje) bistveno pospešijo poizvedbe. Zagotovo gre za najbolj zapleten del celotnega sistema. Implementacija B+ drevesa je realizirana z rekurzivno strukturo in uporabo kazalcev, kjer smo implementirali tudi shranjevanje strukture v datoteko. Za naslednje različice pa smo identificirali možne izboljšave, ki bi pohitrile mehanizem indeksiranja.
     
-    Poleg tega smo tekom razvoja dodali še lasten ORM, ki neposredno komunicira z operacijami SUPB, kar bistveno zmanjša zahtevnost, ki jo sicer prinese ORM, kjer moramo skrbeti še za dodatne preslikave med modeli in poizvedbami SQL. Pri združevanju zapisov iz različnih tabel smo se delno oddaljili od relacijskih podatkovnih baz in uporabili objektne pristope, ki jih uporabljajo nerelacijske podatkovne baze.
+    Poleg tega smo tekom razvoja dodali še lasten ORM, ki neposredno komunicira z operacijami SUPB, kar bistveno zmanjša zahtevnost, ki jo sicer prinese ORM, kjer moramo skrbeti še za dodatne preslikave med objekti in poizvedbami SQL. Pri združevanju zapisov iz različnih tabel smo se delno oddaljili od relacijskih podatkovnih baz in uporabili objektne pristope, ki jih uporabljajo nerelacijske podatkovne baze.
     
-    Razvoj prototipa je bil uspešen. Z vključitvijo testnih primerov smo poskrbeli za hitrejše sprotno odkrivanje napak in višjo kakovost programske rešitve. Analiza uspešnosti je v nekaterih scenarijih pokazala celo primerljive rezultate z MySQL in SQLite, kar je bil tudi eden izmed glavnih ciljev pred začetkom razvoja.
+    Razvoj prototipa je bil uspešen. Z vključitvijo testnih primerov smo poskrbeli za hitrejše sprotno odkrivanje napak in višjo kakovost rešitve. Analiza uspešnosti je v nekaterih scenarijih pokazala celo primerljive rezultate z MySQL in SQLite, kar je bil tudi eden izmed glavnih ciljev pred začetkom razvoja.
 
 %\cleardoublepage
 % \addcontentsline{toc}{chapter}{Literatura}

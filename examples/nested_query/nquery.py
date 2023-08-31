@@ -1,5 +1,6 @@
 from graphenix import Field, Schema, Model, ViewSearilizer, some, every
 from datetime import datetime
+import json
 
 class User(Model):
     first_name = Field.String(size=15)
@@ -89,4 +90,4 @@ class UserSearilizer(ViewSearilizer):
     tasks = TaskSearilizer
     laboratory = LaboratorySearilizer
 
-print(UserSearilizer.jsonify(data))
+print(json.dumps(UserSearilizer.jsonify(data), indent=5))
