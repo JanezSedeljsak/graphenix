@@ -311,7 +311,9 @@ opis diplome v angleščini
 % zahvala
 \thispagestyle{empty}\mbox{}\vfill\null\it%
 \noindent
-Zahvaljujem se svojemu mentorju doc. dr. Boštjanu Slivniku in somentorju asist. dr. Marku Poženelu za vso strokovno pomoč in svetovanje med implementacijo celotne rešitve ter pisanju diplomskega dela. Prav tako se zahvaljujem svoji družini in prijateljem za pomoč in podporo med študijem.
+Zahvaljujem se svojemu mentorju doc. dr. Boštjanu Slivniku in somentorju asist. dr. Marku Poženelu za vso strokovno pomoč in svetovanje med implementacijo rešitve ter pisanju diplomskega dela.
+
+Prav tako se zahvaljujem svoji družini in prijateljem za pomoč, podporo in obilico dobre volje tekom študija.
 \noindent
 Hvala vsem!
 \rm\normalfont
@@ -567,15 +569,12 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
 
     Vsa izvorna koda je prosto dostopna (pod splošno javno licenco – GNU) na repozitoriju GitHub \cite{GRAPHENIX_GITHUB}.
 
+    \newpage
     \subsubsection{Shema podatkov za predstavitev funkcionalnosti}
     Vsi primeri v tem poglavju uporabljajo shemo z uporabniki, nalogami in sporočili, prikazanimi v programski kodi \ref{er_model_def}. Uporabnik ima lahko več nalog in sporočil – pri sporočilih pa imamo še dodatno vlogo, saj je lahko uporabnik pošiljatelj ali prejemnik.
 
-
-\newpage
 \begin{code}
 \begin{minted}{python}
-import graphenix as gx
-
 class User(gx.Model):
     name = gx.Field.String()
     tasks = gx.Field.VirtualLink("user")
@@ -639,7 +638,6 @@ jane = User(name='Jane Doe').make()
 
 first_mesage = Message(
     content = 'Moje prvo sporočilo',
-    date = datetime.now(),
     sender = john,
     reciever = jane
 ).make()
@@ -659,6 +657,7 @@ first_mesage = Message(
         Še ena izmed karakteristik B+ drevesa je povezava med vozlišči na enakem nivoju, saj to omogoča optimalno iskanje na intervalu in pripelje do časovne zahtevnosti $O(log_b(N) + k)$, kjer je $k$ širina intervala. Enaka poizvedba bi v klasičnem B drevesu pomenila časovno zahtevnost $O(\frac{k}{b} \cdot log_b(N))$, saj bi zapise iz intervala iskali ločeno glede na posamezno vozlišče \cite{BPTREE}.
 
         \subsubsection{Lastnosti B+ drevesa}
+        \label{btree_rules}
         Ko govorimo o definiciji strukture drevesa B+ se moramo držati naslednjih pravil \cite{goodrich2011data}:
 
         \begin{itemize}
@@ -679,6 +678,18 @@ first_mesage = Message(
 
         \noindent
         Drevo vsebuje sedem različnih vrednosti, pri čemer ima vsaka izmed vrednosti še kazalec na zapis, katerega označimo z $d_i$. V primeru uporabe B+ drevesa za indeksiranje v podatkovni bazi, ti kazalci kažejo na posamezen zapis v tabeli, kjer se nahaja indeksiran atribut.
+
+        \subsubsection{Časovne zahtevnosti glavnih operaciji}
+        
+        Iskanje, vstavljanje in brisanje imajo v B+ drevesu časovno zahtevnost \newline $O(log_b(N))$, kjer je $b$ stopnja vozlišča in $N$ število zapisov v drevesu.
+
+        Vendar časovna zahtevnost velja le v primeru, ko sta razcep (prekoračitev velikosti vozlišča ob vstavljanju) in združevanje (spodnja prekoračitev velikosti vozlišča ob brisanju) implementirana s časovno zahtevnostjo $O(1)$ \cite{goodrich2011data}. Poleg tega pa se mora implementacija drevesa držati vseh lastnosti definiranih v razdelku~\ref{btree_rules}.
+
+        \subsection{Iskanje v B+ drevesu}
+
+        Iskanje v B+ drevesu sledi algoritmu v ostalih iskalnih drevesih. Ključna razlika se pokaže v koraku iskanja znotraj posameznega vozlišča, kjer moramo v seznamu zapisov poiskati prvo večjo ali enako vrednost glede na iskani ključ. To določa odmik, po katerem se premaknemo k naslednjemu vozlišču v B+ drevesu \cite{goodrich2011data}.
+
+        V implementaciji B+ drevesa je ena izmed ključnih lastnosti omogočanje večkratnega shranjevanja istega ključa. Posledično rezultat iskanja predstavimo z množico $\{d_1, d_2, d_3, \ldots\}$, kjer z $d$ označujemo identifikatorje najdenih zapisov.
 
         \subsection{Vstavljanje v B+ drevo}
 
@@ -709,9 +720,6 @@ first_mesage = Message(
             \item Zagotoviti moramo, da so veljavna tudi vsa predhodna vozlišča (od brisanega vozlišča do korenskega vozlišča). V tem postopku ponovno izvajamo rekurziven sprehod in po potrebi posodabljamo drevo.
         \end{enumerate}
 
-        \noindent
-        Ključnega pomena je, da drevo ohrani vse zahtevane lastnosti B+ drevesa, saj s tem ohrani tudi časovno zahtevnost operacij vstavljanja, brisanja in iskanja $O(log_b(N))$ \cite{goodrich2011data}.
-
         \subsection{Posodabljanje v B+ drevesu}
 
         Najbolj preprost način izvedbe posodabljanja v B+ drevesu je izvedba brisanja in nato vstavljanja nove vrednosti. Iz vidika števila operaciji lahko izvedemo bistveno optimizacijo, saj v primeru manjše spremembe vrednosti, ki jo posodabljamo, lahko pogosto vrednost le premaknemo znotraj vozlišča. Optimizacija na časovno zahtevnost nima vpliva, lahko pa ima velik vpliv na število I/O operaciji.
@@ -719,7 +727,9 @@ first_mesage = Message(
         \subsection{Implementacija za shranjevanje na disk}
         Razlog za uporabo B dreves znotraj podatkovnih baz je dokaj trivialen. Iskalne strukture, ki so realizirane s pomočjo binarnih dreves na področju shranjevanja na disk, namreč vsebujejo izrazito ozko grlo. Težava se pojavi pri branju in pisanju posameznih vozlišč, saj operacija nad enim vozliščem pomeni en dostop do diska oz. datoteke. B drevesa ta problem rešujejo s samo količino podatkov, ki je shranjena v enem vozlišču. Ob shranjevanju na klasične trde diske je bila velikost enega vozlišča določena, kot velikost sektorja na disku. To je pomenilo, da je dostop do posameznega vozlišča predstavljal le en dostop na disk, ki je omogočal branje/pisanje $b$ vrednosti hkrati \cite{goodrich2011data}.
 
-        Klasičen način določanja velikosti posameznih vozlišč se je delno spremenil odkar so standard za shranjevanje podatkov postali hitrejši tipi diskov kot so SSD in v tem primeru velikost posameznega vozlišča ni več določena izključno na podlagi strojne opreme. V primeru InnoDB se velikost posameznega vozlišča nastavi glede na sistemsko spremenljivko {\tt innodb\_page\_size}, ki je privzeto nastavljena na \num{16384} bajtov ({\tt 16 KB}) \cite{INOODB_PS}. Vrednost spremenljivke je možno določiti le ob kreiranju MySQL instance \cite{MYSQL_SETUP}, njeno vrednost pa lahko preverimo z ukazom {\tt SHOW VARIABLES LIKE 'innodb\_page\_size'}.
+        Klasičen način določanja velikosti posameznih vozlišč se je delno spremenil odkar so standard za shranjevanje podatkov postali hitrejši tipi diskov kot so SSD in v tem primeru velikost posameznega vozlišča ni več določena izključno na podlagi strojne opreme. 
+        
+        V primeru InnoDB se velikost posameznega vozlišča nastavi glede na sistemsko konstanto {\tt innodb\_page\_size}, ki je privzeto nastavljena na \num{16384} bajtov ({\tt 16 KB}) \cite{INOODB_PS}. Vrednost konstante je možno določiti le ob kreiranju MySQL instance \cite{MYSQL_SETUP}. Vrednost pa lahko preberemo z ukazom {\tt SHOW VARIABLES LIKE 'innodb\_page\_size'}.
 
         \subsection{Implementacija v InnoDB}
         \label{MYSQL_BPTREE}
@@ -755,10 +765,11 @@ first_mesage = Message(
 
         Pred začetkom branja matrične datoteke moramo najprej dobiti vse odmike. V primeru, da nimamo nobenih omejitev, preprosto preberemo vse odmike in preberemo vse veljavne zapise znotraj matrike podatkov. Za optimizacijo branja, pa imamo tri scenarije, ki lahko že pred začetkom branja izločijo neveljavne zapise.
 
+        \newpage
         \begin{enumerate}
             \item Pogoji direktno nad primarnim identifikatorjem zapisov.
             \item Že definirani identifikatorji – {\tt qobject.ix\_constraints} (kadar gre za poizvedbo, ki ni v korenu drevesa poizvedb).
-            \item Kadar imamo pogoje, ki uporabljajo filtriranje z indeksiranjem.
+            \item Kadar imamo pogoje nad atributi, ki uporabljajo indekse.
         \end{enumerate}
 
         \noindent
@@ -857,7 +868,7 @@ first_mesage = Message(
         Za vse tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti. Bistveno bolj zanimiv pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja, smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $1 \times 10^7$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[0, 25000]$.
 
         \begin{figure}[H]
-            \centerline{\includegraphics[height=0.5\textwidth, angle=0]{prvih_k_elementov.png}}
+            \centerline{\includegraphics[width=0.7\textwidth, angle=0]{prvih_k_elementov.png}}
             \caption{Časovna primerjava pristopov za iskanje $K$ najmanjših elementov v seznamu.}
             \label{sl:k_smallest}
         \end{figure}
@@ -867,7 +878,6 @@ first_mesage = Message(
 
         Izkaže se, da je algoritem z uporabo prioritetne vrste najbolj optimalen pristop, kar pokažejo tudi perfomančni testi, ki se izvajajo na platformi GitHub, saj smo z uporabo omenjenega pristopa dobili do 4x pohitritev izvedbe nabora podatkov iz ene tabele.
 
-        \newpage
         \subsection{Uporaba podatkovnih okvirjev}
         \label{using_df}
 
@@ -913,7 +923,9 @@ query = Message.filter(
     gx.some(
         Message.sender.equals(john),
         Message.reciever.equals(john),
-        Message.reciever.is_not(jane)))
+        Message.reciever.is_not(jane)
+    )
+)
 \end{minted}
 \caption{Filtriranje podatkov znotraj Graphenix rešitve.}
 \label{graphenix_filter}
@@ -923,7 +935,8 @@ query = Message.filter(
         Poizvedba izvede nabor sporočil, ki so bila poslana v zadnjih petih dneh, poleg tega pa želimo, da je izpolnjen vsaj eden izmed pogojev – pošiljatelj/prejemnik je ``John`` in prejemnik ni ``Jane``.
 
         V sklopu filtriranja podpiramo 11 različnih operaciji. To so: je enako, ni enako, večje, večje ali enako, manjše, manjše ali enako, {\tt regex}, {\tt iregex} (neobčutljiv {\tt regex} na velike in male črke), je v (element je v seznamu), ni v (element ni v seznamu), med (vrednost je v intervalu).
-        
+
+        \newpage
         \item \textbf{Omejitev števila zapisov in določanje odmikov – funkciji {\tt limit} in {\tt offset}}
         \newline
         \noindent
@@ -1044,7 +1057,7 @@ user_view = User.link(
             \label{deep_nested_query}
         \end{figure}
 
-        Ob naboru podatkov izvedemo pristop od zgoraj navzdol (angl. \textit{top-down approach}), saj najprej preberemo podatke za korensko tabelo in se nato spuščamo v nižje nivoje.
+        Ob naboru podatkov izvedemo pristop od zgoraj navzdol, saj najprej preberemo podatke za korensko tabelo in se nato spuščamo v nižje nivoje.
 
         Vsako vozlišče drevesa iz slike \ref{deep_nested_query} predstavlja ločeno branje matrične datoteke podatkov. Prikazan pristopa nabora v klasičnih poizvedbah SQL ni mogoč, saj rezultat poizvedbe SQL ne moremo vsebovati vgnezdenih zapisov.
 

@@ -27,6 +27,26 @@ class Laboratory(Model):
     room_number = Field.Int()
     users = Field.VirtualLink('laboratory')
 
+
+class UserBasicSearilizer(ViewSearilizer):
+    fields = ('id', 'first_name', 'last_name', 'is_admin')
+
+class LaboratorySearilizer(ViewSearilizer):
+    fields = ('name', 'room_number', 'users')
+    users = UserBasicSearilizer
+
+class SubTaskSearilizer(ViewSearilizer):
+    fields = ('id', 'name', 'date_created')
+
+class TaskSearilizer(ViewSearilizer):
+    fields = ('name', 'subtasks')
+    subtasks = SubTaskSearilizer
+
+class UserSearilizer(ViewSearilizer):
+    fields = '*'
+    tasks = TaskSearilizer
+    laboratory = LaboratorySearilizer
+
 mock_schema = Schema('mock_schema', models=[User, Laboratory, Task, SubTask])
 mock_schema.create(delete_old=True)
 
@@ -40,8 +60,8 @@ user2 = User(first_name="John", last_name="Smith", email="john.smith@example.com
 user3 = User(first_name="Bob", last_name="Johnson", email="bob.johnson@example.com", age=28, is_admin=False, created_at=datetime.now(), laboratory=laboratory3).make()
 user4 = User(first_name="Eve", last_name="Anderson", email="eve.anderson@example.com", age=15, is_admin=False, created_at=datetime.now(), laboratory=laboratory4).make()
 user5 = User(first_name="Nobody", last_name="Anderson", email="nobodyanderson@gmail.com", age=40, is_admin=False, created_at=datetime.now(), laboratory=laboratory4).make()
-user5 = User(first_name="Franc", last_name="Anderson", email="franc@example.com", age=44, is_admin=False, created_at=datetime.now(), laboratory=laboratory1).make()
-user5 = User(first_name="Jože", last_name="", email="joze@gmail.com", age=49, is_admin=False, created_at=datetime.now(), laboratory=laboratory1).make()
+user6 = User(first_name="Franc", last_name="Anderson", email="franc@example.com", age=44, is_admin=False, created_at=datetime.now(), laboratory=laboratory1).make()
+user7 = User(first_name="Joze", last_name="", email="joze@gmail.com", age=49, is_admin=False, created_at=datetime.now(), laboratory=laboratory1).make()
 
 for user in [user1, user2, user3, user4, user5]:
     for task_num in range(1, 6):
@@ -62,7 +82,7 @@ count, data = User\
             )
         ),
         laboratory = Laboratory.link(
-            users = User.order(User.desc()).filter(
+            users = User.order(User.first_name.desc()).filter(
                 some(
                     User.is_in(User.filter(User.is_admin.equals(True)).pick_id()),
                     User.last_name.equals('')
@@ -70,24 +90,5 @@ count, data = User\
             )
         )
     ).all()
-
-class UserBasicSearilizer(ViewSearilizer):
-    fields = ('id', 'first_name', 'last_name', 'is_admin')
-
-class LaboratorySearilizer(ViewSearilizer):
-    fields = ('name', 'room_number', 'users')
-    users = UserBasicSearilizer
-
-class SubTaskSearilizer(ViewSearilizer):
-    fields = ('id', 'name', 'date_created')
-
-class TaskSearilizer(ViewSearilizer):
-    fields = ('name', 'subtasks')
-    subtasks = SubTaskSearilizer
-
-class UserSearilizer(ViewSearilizer):
-    fields = '*'
-    tasks = TaskSearilizer
-    laboratory = LaboratorySearilizer
 
 print(json.dumps(UserSearilizer.jsonify(data), indent=5))
