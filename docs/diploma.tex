@@ -565,12 +565,48 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
 
 \chapter{Razvoj SUPB in mehanizma za shranjevanje}
 \label{ch0}
-    V poglavju predstavimo razvoj SUPB in mehanizma za shranjevanje s pomočjo programskega jezika C++. V prvi fazi je predstavljena celotna struktura podatkov in način shranjevanja na disk. Sledi predstavitev razvoja drevesne strukture B+ za optimalno indeksiranje podatkov. Nato predstavimo optimizacije oz. algoritme, ki omogočajo hitrejše branje podatkov in za zaključek predstavimo funkcionalnosti, ki jih podpira naš SUPB.
+    V poglavju predstavimo razvoj SUPB in mehanizma za shranjevanje s pomočjo programskega jezika C++. V prvi fazi je predstavljena arhitektura uveljavljenih SUPB rešitev. Sledi predstavitev strukture shranjevanje podatkov in razvoja drevesne strukture B+ za optimalno indeksiranje podatkov. Nato predstavimo optimizacije oz. algoritme, ki omogočajo hitrejše branje podatkov in za zaključek predstavimo funkcionalnosti, ki jih podpira naš SUPB.
 
-    Vsa izvorna koda je prosto dostopna (pod splošno javno licenco – GNU) na repozitoriju GitHub \cite{GRAPHENIX_GITHUB}.
+    Vsa izvorna koda rešitve Graphenix je prosto dostopna (pod splošno javno licenco – GNU) na repozitoriju GitHub \cite{GRAPHENIX_GITHUB}.
 
     \newpage
-    \subsubsection{Shema podatkov za predstavitev funkcionalnosti}
+    \section{Arhitektura SUPB}
+
+    Za boljše razumevanje delovanja SUPB je na sliki \ref{sl:dbms_architecture} predstavljena poenostavljena arhitektura sistema za upravljanje s podatkovno bazo. Poudarimo, da arhitektura ni točno določena in se v različnih implementacijah lahko razlikuje.
+
+    \begin{figure}[h]
+        \centerline{\includegraphics[width=0.9\textwidth, angle=0]{dbms_arc2.png}}
+        \caption{Arhitektura SUPB, prirejeno po knjigi: A First Course in DATABASE SYSTEMS, 2007 \cite{ullman2007first}.}
+        \label{sl:dbms_architecture}
+    \end{figure}
+
+    \begin{itemize}
+        \item \textbf{Prevajalnik poizvedb}\newline\noindent
+        Vhodna točka za zunanji program je prevajalnik poizvedb (angl. \textit{Query compiler}), ki prejme ukaz SQL, katerega pretvori v izvedbeni plan (angl \textit{Query plan}). Poleg tega se v fazi kreiranja strukture izvedejo tudi optimizacije, kjer s pomočjo statističnih podatkov preuredimo strukturo za hitrejšo izvedbo.
+        
+        \item \textbf{Izvajalni mehanizem}\newline\noindent
+        Izvajalni mehanizem (angl. \textit{Execution engine}) je odgovoren za izvedbo vseh korakov definiranih v izvedbenem planu. Mehanizem predstavlja jedro SUPB, saj komunicira z večino ostalih komponent v sistemu.
+        
+        \item \textbf{Dnevnik za povrnitve}\newline\noindent
+        Koncept dnevnika za povrnitev (angl. \textit{rollback journal}) je dokaj preprost. Gre za mehanizem, ki v fizično datoteko zapisuje vse spremembe, ki se zgodijo nad podatkovno bazo. V primeru izpadov električne energije ali napak pri vstavljanju zapisov je mogoče podatkovno bazo obnoviti v prejšnje (delujoče) stanje.
+        
+        \item \textbf{Mehanizem za shranjevanje}\newline\noindent
+        Fizični podatki so shranjeni v sekundarnem pomnilniku npr. na SSD disku. Ko želimo fizične podatke spreminjati, moramo te najprej prenesti v glavni pomnilnik. Nalogo opravlja mehanizem za shranjevanje (angl. \textit{Storage engine}), ki s pomočjo konfiguracijske datoteke določa format in način dostopa do shranjenih podatkov (angl. \textit{Data store}).
+        
+        \item \textbf{Nadzor nad sočasno uporabo}\newline\noindent
+        Nadzor nad sočasno uporabo (angl. \textit{Concurrency control}) je način upravljanja več hkratnih poizvedb nad podatkovno bazo, ki vstavljajo, brišejo ali posodabljajo zapise. Upravljalnik mora zagotoviti izvajanje v izolaciji in v času pisanja nastaviti ključavnico, ki zaklene dostop drugim poizvedbam. Po koncu poizvedbe se ključavnica odklene in s tem omogoči dostop naslednji poizvedbi.
+        
+    \end{itemize}
+
+    \subsubsection{Komponente realizirane v rešitvi Graphenix}
+
+    Rešitev smo implementirali z nekoliko drugačno arhitekturo prikazano v razdelku \ref{graphenix_final}.
+    Največja razlika se pojavi v sami komunikaciji med uporabnikom in SUPB, saj ne uporabljamo klasičnih poizvedb SQL, temveč do podatkovne baze dostopamo z uporabo ORM.
+
+    Poleg tega pa v rešitev nista vključena nadzor nad sočasno uporabo in dnevnik za povrnitve.
+    
+    \section{Shema podatkov za predstavitev funkcionalnosti}
+    
     Vsi primeri v tem poglavju uporabljajo shemo z uporabniki, nalogami in sporočili, prikazanimi v programski kodi \ref{er_model_def}. Uporabnik ima lahko več nalog in sporočil – pri sporočilih pa imamo še dodatno vlogo, saj je lahko uporabnik pošiljatelj ali prejemnik.
 
 \begin{code}
@@ -598,24 +634,24 @@ class Message(gx.Model):
     \section{Mehanizem shranjevanja podatkov}
         \subsection{Matrika podatkov in zaglavje s kazalci}
         Za vsako posamezno tabelo se privzeto kreirata dve datoteki {\tt ix\_<naziv\_tabele>.bin} in {\tt <naziv\_tabele>.bin}.
-        \begin{enumerate}
+        \begin{itemize}
             \item {\tt <naziv\_tabele>.bin} (matrika podatkov) – je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v tabeli. Posamezen stolpec matrike predstavlja posamezne atribute v matriki.
             \item {\tt ix\_<naziv\_tabele>.bin} (glava tabele s kazalci) – gre za vektorsko strukturo, kjer vsaka zaporedna vrstica vsebuje kazalec na dejanski zapis v matriki podatkov – ta kazalec je realiziran, kot celoštevilski odmik zapisa v matriki. Poleg kazalcev struktura vsebuje tudi kazalec na prvo prosto vrstico v matriki, ki je definiran po pravilu:
-            \begin{itemize}
+            \begin{enumerate}
                 \item Matrika je polna – kazalec na konec datoteke.
                 \item V matriki podatkov obstaja fragmentacija (v matriki je prazen prostor, ki je nastal zaradi brisanja zapisa) – kazalec na prvo prosto vrstico v matriki.
-            \end{itemize}
-        \end{enumerate}
+            \end{enumerate}
+        \end{itemize}
 
         \begin{figure}[h]
-            \centerline{\includegraphics[width=0.95\textwidth, angle=0]{struktura_entitet.png}}
-            \caption{Struktura matrike podatkov in zaglavja s kazalci.}
-            \label{sl:mindmap}
-        \end{figure}
+                \centerline{\includegraphics[width=0.95\textwidth, angle=0]{struktura_entitet.png}}
+                \caption{Struktura matrike podatkov in zaglavja s kazalci.}
+                \label{sl:matrix_and_header}
+            \end{figure}
         
         \subsection{Tipi podatkov}
         Znotraj razvitega SUPB podpiramo sedem podatkovnih tipov:
-        \begin{enumerate}
+        \begin{itemize}
             \item Cela števila ({\tt Int}) – v tem primeru gre za vrednost, ki je na nivoju programskega jezika C++ shranjena kot podatkovni tip int64\_t, oziroma predznačeno celo število. Velikost za posamezno vrednost je 8 bajtov. Razpon vrednosti, ki jih lahko shranimo v posamezen zapis je določen z intervalom $[-2^{63}, 2^{63} - 1]$.
             \item Realna števila ({\tt Float}) – zaradi lažje implementacije je velikost realnih števil enaka kot velikost celih števil – torej 8 bajtov. Vrednost je na nivoju podatkov realizirana kot ``dvojni float`` oz. ``double``. Gre za zaporedje bitov, ki so po standardu IEEE 754 \cite{kahan1996ieee} ločeni v predznak, eksponent in mantiso.
             \item Nizi ({\tt String}) – Gre za zaporedje znakov, kjer pri definiciji atributa določimo maksimalno dovoljeno dolžino posameznega niza. Torej dolžina posameznega niza je $N$ bajtov, kjer je $N$ maksimalna dolžina.
@@ -623,7 +659,7 @@ class Message(gx.Model):
             \item Datumi ({\tt Datetime}) – gre za podatkovni tip, ki je ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu \cite{EPOCH_FORMAT} – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970. 
             \item Povezava ({\tt Link}) – gre za vgrajen tip relacije, kjer je podatek kazalec na drug zapis v določeni tabeli. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
             \item Virtualna povezava ({\tt VirtualLink}) – gre za navidezno polje v tabeli, ki ne zavzame nobenega dodatnega prostora. Polje je pomembno za kreiranje povezave ob poizvedbah, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
-        \end{enumerate}
+        \end{itemize}
         
         \subsection{Implementacija relaciji}
 
@@ -683,13 +719,13 @@ first_mesage = Message(
         
         Iskanje, vstavljanje in brisanje imajo v B+ drevesu časovno zahtevnost \newline $O(log_b(N))$, kjer je $b$ stopnja vozlišča in $N$ število zapisov v drevesu.
 
-        Vendar časovna zahtevnost velja le v primeru, ko sta razcep (prekoračitev velikosti vozlišča ob vstavljanju) in združevanje (spodnja prekoračitev velikosti vozlišča ob brisanju) implementirana s časovno zahtevnostjo $O(1)$ \cite{goodrich2011data}. Poleg tega pa se mora implementacija drevesa držati vseh lastnosti definiranih v razdelku~\ref{btree_rules}.
+        Vendar časovna zahtevnost velja le v primeru, ko sta razcep, ki se zgodi ob prekoračitvi velikosti vozlišča ob vstavljanju in združevanje, do katerega pride ob spodnji prekoračitvi velikosti vozlišča pri brisanju, implementirana s časovno zahtevnostjo $O(1)$ \cite{goodrich2011data}. Poleg tega pa se mora implementacija drevesa držati vseh lastnosti definiranih v razdelku~\ref{btree_rules}.
 
         \subsection{Iskanje v B+ drevesu}
 
         Iskanje v B+ drevesu sledi algoritmu v ostalih iskalnih drevesih. Ključna razlika se pokaže v koraku iskanja znotraj posameznega vozlišča, kjer moramo v seznamu zapisov poiskati prvo večjo ali enako vrednost glede na iskani ključ. To določa odmik, po katerem se premaknemo k naslednjemu vozlišču v B+ drevesu \cite{goodrich2011data}.
 
-        V implementaciji B+ drevesa je ena izmed ključnih lastnosti omogočanje večkratnega shranjevanja istega ključa. Posledično rezultat iskanja predstavimo z množico $\{d_1, d_2, d_3, \ldots\}$, kjer z $d$ označujemo identifikatorje najdenih zapisov.
+        V implementaciji B+ drevesa je ena izmed ključnih lastnosti omogočanje večkratnega shranjevanja istega ključa. Posledično je lahko rezultat več kot en zapis, zato rezultat funkcije predstavimo kot množica $\{d_1, d_2, d_3, \ldots\}$, kjer z $d_i$ označujemo identifikatorje najdenih zapisov.
 
         \subsection{Vstavljanje v B+ drevo}
 
@@ -889,7 +925,7 @@ first_mesage = Message(
         \end{enumerate}
 
         \noindent
-        Ob profiliranju (angl. \textit{Profiling}) akcije za poizvedovanje podatkov smo opazili, da velik delež izvajalnega časa vzame 3. točka  (pretvorba posameznega zapisa v instanco razreda).
+        Ob profiliranju akcije za poizvedovanje podatkov smo opazili, da velik delež izvajalnega časa vzame 3. točka  (pretvorba posameznega zapisa v instanco razreda).
 
         Za hitrejšo izvedbo smo na nivoju programskega jezika Python pripravili podatkovno strukturo – pogled (angl. \textit{View}). Ta struktura odstrani potrebo po tretjem koraku in spremeni predstavitev posameznih vrstic iz strukture slovarja v terko (angl. \textit{Tuple}). {\tt View} predstavlja ovoj, ki deluje na podobnem principu, kot delujejo podatkovni okvirji (angl. \textit{DataFrame}) v paketih za podatkovno analitiko \cite{mckinney2010data}. Strukturo smo implementirali na nivoju programskega jezika C++, kar še dodatno pospeši čas dostopa do posameznega zapisa.
 
@@ -1052,16 +1088,16 @@ user_view = User.link(
         Poizvedba za uporabnika, ki ga poiščemo preko primarnega identifikatorja pridobi še zadnjih {\tt N} nalog in sporočil. Za nabor sporočil se pomaknemo globlje v rekurzivno funkcijo in za vsako sporočilo pridobimo še podatke pošiljateljev, nato pa še za vsakega izmed pošiljateljev preberemo {\tt N} nalog.
 
         \begin{figure}[H]
-            \centerline{\includegraphics[width=0.7\textwidth, angle=0]{nquery.png}}
+            \centerline{\includegraphics[width=0.8\textwidth, angle=0]{nquery.png}}
             \caption{Koraki za nabor podatkov globoko vgnezdene poizvedbe.}
             \label{deep_nested_query}
         \end{figure}
 
         Ob naboru podatkov izvedemo pristop od zgoraj navzdol, saj najprej preberemo podatke za korensko tabelo in se nato spuščamo v nižje nivoje.
 
-        Vsako vozlišče drevesa iz slike \ref{deep_nested_query} predstavlja ločeno branje matrične datoteke podatkov. Prikazan pristopa nabora v klasičnih poizvedbah SQL ni mogoč, saj rezultat poizvedbe SQL ne moremo vsebovati vgnezdenih zapisov.
+        Vsako vozlišče drevesa iz slike \ref{deep_nested_query} predstavlja ločeno branje matrične datoteke podatkov. Prikazan pristopa nabora v klasičnih poizvedbah SQL ni mogoč, saj rezultat poizvedbe SQL ne more vsebovati vgnezdenih zapisov.
 
-        Ob naboru podatkov iz dveh različnih nivojev vezavo izvedemo na nivoju programskega jezika C++, kjer uporabimo strukturo zgoščevalnih tabel za grupiranje zapisov po identifikatorju starša. Posledično sestava končne strukture steče bistveno hitreje, kot ob pristopu združevanja v programskem jeziku Python.
+        Vezavo zapisov izvedemo na nivoju programskega jezika C++, kjer uporabimo strukturo zgoščevalnih tabel za grupiranje zapisov po identifikatorju starša. Posledično sestava končne strukture steče bistveno hitreje, kot ob pristopu združevanja v programskem jeziku Python.
 
         \item \textbf{Agregacija oz. združevanje podatkov}
         \newline
@@ -1099,21 +1135,19 @@ query = Message.agg(
         Sintaksa je dokaj preprosta. Za izvedbo agregacijske poizvedbe uporabimo metodo {\tt .agg(...)}. Kot parametre pošljemo polje, po katerem združujemo (nadomestilo za {\tt GROUP BY}). Nato pa lahko dodamo še poljubno število parametrov, ki predstavljajo različne združevalne akcije.
 \end{itemize}
 
-\chapter{Sodoben pristop razvoja programske opreme}
+\chapter{Pristop razvoja programske opreme}
 \label{ch1}
 
-    V poglavju bomo predstavili izbrane metodologije, ki so ključne za razvoj naše izbrane programske opreme. Jasno se zavedamo, da kakovostna zasnova predstavlja temelj celotnega sistema. Za zagotovitev pravilnega delovanja te zasnove pa se danes pogosto poslužujemo postopka avtomatskega testiranja programske opreme, ki vključuje teste enot in integracijsko testiranje.
+    V poglavju bomo predstavili izbrane metodologije, ki so bile ključne za razvoj naše izbrane programske opreme. Jasno se zavedamo, da kakovostna zasnova predstavlja temelj celotnega sistema. Za zagotovitev pravilnega delovanja te zasnove pa se danes pogosto poslužujemo postopka avtomatskega testiranja programske opreme, ki omogoča lažje odkrivanje napak in višjo kakovost rešitve.
 
     \section{Razvoj paketa za programski jezik \newline Python}
 
-    V svetu programiranja je razvoj paketov ključnega pomena za širjenje funkcionalnosti posameznega programskega jezika. Python je jezik, ki že sam po sebi vključuje zelo obsežno standardno knjižnico, ki pokriva ogromno funkcionalnosti, ki jih v ostalih programskih jezikih dobimo le z uporabo eksternih modulov/paketov.
+    V svetu programiranja je razvoj paketov ključnega pomena za širjenje funkcionalnosti posameznega programskega jezika. Python je jezik, ki že sam po sebi vključuje obsežno standardno knjižnico, ki pokriva ogromno funkcionalnosti, ki jih v ostalih programskih jezikih dobimo le z uporabo zunanjih modulov/paketov.
 
-    V namen upravljanja s paketi, ki niso del standardne knjižnice programskega jezika se pogosto srečamo z upravljalci paketov (angl. \textit{package manager}). Gre za orodje, ki omogoča enostaven način nameščanja, posodabljanja in odstranjevanja uvoženih paketov. Programski jezik Python v svoji dokumentaciji \cite{PY_PM} predlaga uporabo PIP \cite{PIP} upravljalnika paketov za namestitev eksternih paketov.
+    V namen upravljanja s paketi, ki niso del standardne knjižnice programskega jezika se pogosto srečamo z upravljalci paketov (angl. \textit{package manager}). Gre za orodje, ki omogoča enostaven način nameščanja, posodabljanja in odstranjevanja uvoženih paketov.
    
     \subsection{Uporaba Python.h za razvoj paketa}
-   Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike in strežniških aplikacijah. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede do strojnega jezika. Python ima za zagon kode še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku.
-
-   Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od prevedenih jezikov. Poleg tega jezik nima striktnih tipov, kar pomeni, da je za vsako spremenljivko ob izvajanju programske kode potrebno preveriti, za kateri tip gre, kar ponovno prinese časovne zakasnitve.
+   Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike in strežniških aplikacijah. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede do strojnega jezika. Python ima za zagon kode še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku. Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od prevedenih jezikov.
 
     Področji umetne inteligence in podatkovne analitike temeljita na obdelavi masovnih podatkov, kar posledično pomeni, da Python ni najbolj optimalen jezik za izvedbo teh nalog. Zaradi teh omejitev so nastali paketi, ki so v osnovi napisani v jezikih, ki so bistveno hitrejši (prevedeni). Med pogosteje uporabljene pakete uvrščamo:
     \begin{itemize}
@@ -1171,18 +1205,19 @@ print(total) # prints 15
 \end{code}
 
     \newpage
-    \section{Končna struktura rešitve Graphenix}
+    \section{Arhitektura rešitve Graphenix}
+    \label{graphenix_final}
 
-    Na sliki \ref{graphenix_structure} je diagram, ki prikazuje strukturo celotnega sistema z vsemi pomembnimi komponentami in orodji, ki omogočajo komunikacijo in zanesljivo delovanje Graphenix rešitve.
+    Na sliki \ref{graphenix_structure} je diagram, ki prikazuje arhitekturo rešitve z vsemi pomembnimi komponentami in orodji, ki omogočajo komunikacijo in zanesljivo delovanje Graphenix rešitve.
     
     \begin{figure}[H]
-            \centerline{\includegraphics[width=0.9\textwidth, angle=0]{graphenix_structure.png}}
-            \caption{Struktura celotne Graphenix rešitve.}
+            \centerline{\includegraphics[width=1\textwidth, angle=0]{graphenix_structure.png}}
+            \caption{Arhitektura paketa Graphenix.}
         \label{graphenix_structure}
     \end{figure}
 
     \noindent
-    Paket je sestavljen iz dveh ključnih komponent. To sta ORM, ki je napisan v programskem jeziku Python in predstavlja tudi vhodno točko za uporabnike paketa. Na drugi strani pa je jedro SUPB s sistemom za shranjevanje podatkov, ki z ORM komunicira preko prej omenjenega PyBind11 \cite{PYBIND11_GITHUB} paketa.
+    Paket je sestavljen iz dveh ključnih komponent. To sta ORM, ki je napisan v programskem jeziku Python in predstavlja tudi vhodno točko za uporabnike paketa. Na drugi strani pa je jedro SUPB s sistemom za shranjevanje podatkov. ORM in SUPB komunicirata preko prej omenjenega PyBind11 \cite{PYBIND11_GITHUB} paketa. Za preslikavo zapisov in poizvedb na nivoju SUPB skrbi pretvornik, ki sestavi strukture s katerimi potem upravlja izvajalni mehanizem znotraj jedra.
 
     Jedro vsebuje vse performančno gledano kritične operacije in podatke s pomočjo mehanizma za shranjevanje drži v datotekah {\tt .bin}, ki predstavljajo zunanjo komponento sistema.
     
@@ -1395,7 +1430,7 @@ WHERE points = 5432
 
     \subsection{Optimizacija v metodi filtriranja zapisov}
 
-    Zaradi bistveno slabšega rezultata pri iskanju smo se lotili profiliranja (angl. \textit{Profiling}) posameznih segmentov programske kode za nabor podatkov.
+    Zaradi bistveno slabšega rezultata pri iskanju smo se lotili profiliranja posameznih segmentov programske kode za nabor podatkov.
 
     Kaj hitro smo prišli do ugotovitve, da težava ni bil proces iskanja v B drevesu, temveč je bila težava branje zaglavja tabele. Metoda za branje podatkov iz posamezne tabele je delovala tako, da je najprej prebrala celotno datoteko zaglavja tabele in za posamezen identifikator zapisa pridobila še odmik v matriki zapisov. Izkazalo se je, da je ta proces v scenariju predstavljal nekje $\approx 85$ \% izvajalnega časa.
 
@@ -1734,11 +1769,6 @@ def display_expenses(self, search=None, order_by=None, page=0):
         Kljub temu pa ostaja še ogromno scenarijev, ki jih z našo implementacijo nismo podprli. To je najbolj razvidno v množičnih akcijah, kot npr. iskanje več zapisov in množično vstavljanje v B+ drevo.
 
         \newpage
-        \item \textbf{Implementacija dnevnika za povrnitev}
-        \newline
-        \noindent
-        Koncept dnevnika za povrnitev (angl. \textit{rollback journal}) je dokaj preprost. Implementiran je kot začasen sklad, kamor zapisujemo spremembe, ki se zgodijo v bazi podatkov. V primeru izpadov električne energije ali napak pri vstavljanju zapisov je mogoče podatkovno bazo obnoviti v prejšnje (delujoče) stanje.
-
         \item \textbf{Prostorska optimizacija shranjevanja nizov}
         \newline
         \noindent
