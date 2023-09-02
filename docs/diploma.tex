@@ -492,7 +492,7 @@ In the final section of the thesis, we conducted a comparative analysis of our d
     
     \section{Statističen pregled Python paketov ORM}
 
-    V tabeli~\ref{orm_library_comparison} je predstavljena kratka statistična analiza najpogosteje uporabljenih paketov ORM, ki so na voljo za programski jezik Python. Podatke za število mesečnih in tedenskih prenosov smo pridobili iz spletne platforme PYPI Stats \cite{pypistats}, ki hrani podatke o prenosih posameznih paketov za programski jezik Python. Podatke za število zvezd GitHub, pa smo pridobili direktno iz repositorijev posameznih paketov, ki so dostopni na platformi GitHub.
+    V tabeli~\ref{orm_library_comparison} je predstavljena kratka statistična analiza najpogosteje uporabljenih paketov ORM, ki so na voljo za programski jezik Python. Podatke za število mesečnih in tedenskih prenosov smo pridobili iz spletne platforme PYPI Stats \cite{pypistats}, ki hrani podatke o prenosih posameznih paketov za programski jezik Python. Podatke za število zvezd GitHub, pa smo pridobili iz repositorijev posameznih paketov, ki so dostopni na platformi GitHub.
     
     \begin{table}[htbp]
         \begin{center}
@@ -535,7 +535,7 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
     \end{minted}
 
     \noindent
-    Za vsakega uporabnika prenesemo $\max(T_i, 1) \cdot \max(M_i, 1)$ zapisov, kjer je $T_i$ število opravil $i$-tega uporabnika in $M_i$ število sporočil $i$-tega uporabnika. $N$ pa določa skupno število uporabnikov. Razlog za uporabo funkcije $\max$ je zaradi načina združevanja, saj uporabljamo {\tt OUTER JOIN}, ki vrne ujemajoče se vrednosti kot tudi prazne vrednosti iz vezanih tabel. 
+    Za vsakega uporabnika prenesemo $\max(T_i, 1) \cdot \max(M_i, 1)$ zapisov, kjer je $T_i$ število opravil $i$-tega uporabnika in $M_i$ število sporočil $i$-tega uporabnika. $N$ pa določa skupno število uporabnikov. Razlog za uporabo funkcije $\max$ je v načinu združevanja, saj uporabljamo {\tt OUTER JOIN}, ki vrne ujemajoče se vrednosti kot tudi prazne vrednosti iz vezanih tabel. 
 
     Končno število zapisov, ki jih pridobimo iz podatkovne baze, je torej
     
@@ -582,16 +582,16 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
 
     \begin{itemize}
         \item \textbf{Prevajalnik poizvedb}\newline\noindent
-        Vhodna točka za zunanji program je prevajalnik poizvedb (angl. \textit{Query compiler}), ki prejme ukaz SQL, katerega pretvori v izvedbeni plan (angl \textit{Query plan}). Poleg tega se v fazi kreiranja strukture izvedejo tudi optimizacije, kjer s pomočjo statističnih podatkov preuredimo strukturo za hitrejšo izvedbo.
+        Vhodna točka za zunanji program je prevajalnik poizvedb (angl. \textit{Query compiler}), ki prejme ukaz SQL, katerega pretvori v izvedbeni plan (angl. \textit{Execution plan}). Poleg tega se v fazi kreiranja strukture izvedejo tudi optimizacije, kjer glede na statistične podatke v podatkovni bazi preuredimo strukturo za hitrejšo izvedbo.
         
         \item \textbf{Izvajalni mehanizem}\newline\noindent
-        Izvajalni mehanizem (angl. \textit{Execution engine}) je odgovoren za izvedbo vseh korakov definiranih v izvedbenem planu. Mehanizem predstavlja jedro SUPB, saj komunicira z večino ostalih komponent v sistemu.
+        Izvajalni mehanizem (angl. \textit{Execution engine}) je odgovoren za izvedbo vseh korakov definiranih v izvedbenem planu. Mehanizem predstavlja jedro SUPB, saj komunicira z večino komponent znotraj sistema.
         
         \item \textbf{Dnevnik za povrnitve}\newline\noindent
         Koncept dnevnika za povrnitev (angl. \textit{rollback journal}) je dokaj preprost. Gre za mehanizem, ki v fizično datoteko zapisuje vse spremembe, ki se zgodijo nad podatkovno bazo. V primeru izpadov električne energije ali napak pri vstavljanju zapisov je mogoče podatkovno bazo obnoviti v prejšnje (delujoče) stanje.
         
         \item \textbf{Mehanizem za shranjevanje}\newline\noindent
-        Fizični podatki so shranjeni v sekundarnem pomnilniku npr. na SSD disku. Ko želimo fizične podatke spreminjati, moramo te najprej prenesti v glavni pomnilnik. Nalogo opravlja mehanizem za shranjevanje (angl. \textit{Storage engine}), ki s pomočjo konfiguracijske datoteke določa format in način dostopa do shranjenih podatkov (angl. \textit{Data store}).
+        Fizični podatki so shranjeni v sekundarnem pomnilniku (npr. SSD disk). Ko želimo fizične podatke spreminjati, moramo te najprej prenesti v glavni pomnilnik. Nalogo opravlja mehanizem za shranjevanje (angl. \textit{Storage engine}), ki s pomočjo konfiguracijske datoteke določa format in način dostopa do shranjenih podatkov (angl. \textit{Data store}).
         
         \item \textbf{Nadzor nad sočasno uporabo}\newline\noindent
         Nadzor nad sočasno uporabo (angl. \textit{Concurrency control}) je način upravljanja več hkratnih poizvedb nad podatkovno bazo, ki vstavljajo, brišejo ali posodabljajo zapise. Upravljalnik mora zagotoviti izvajanje v izolaciji in v času pisanja nastaviti ključavnico, ki zaklene dostop drugim poizvedbam. Po koncu poizvedbe se ključavnica odklene in s tem omogoči dostop naslednji poizvedbi.
@@ -612,7 +612,7 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
 \begin{code}
 \begin{minted}{python}
 class User(gx.Model):
-    name = gx.Field.String()
+    name = gx.Field.String(size=100)
     tasks = gx.Field.VirtualLink("user")
     sent_msgs = gx.Field.VirtualLink("sender")
     recieved_msgs = gx.Field.VirtualLink("receiver")
@@ -652,13 +652,13 @@ class Message(gx.Model):
         \subsection{Tipi podatkov}
         Znotraj razvitega SUPB podpiramo sedem podatkovnih tipov:
         \begin{itemize}
-            \item Cela števila ({\tt Int}) – v tem primeru gre za vrednost, ki je na nivoju programskega jezika C++ shranjena kot podatkovni tip int64\_t, oziroma predznačeno celo število. Velikost za posamezno vrednost je 8 bajtov. Razpon vrednosti, ki jih lahko shranimo v posamezen zapis je določen z intervalom $[-2^{63}, 2^{63} - 1]$.
+            \item Cela števila ({\tt Int}) – gre za vrednost, ki je na nivoju programskega jezika C++ shranjena kot podatkovni tip int64\_t, oziroma predznačeno celo število. Velikost za posamezno vrednost je 8 bajtov. Razpon vrednosti, ki jih lahko shranimo v posamezen zapis je določen z intervalom $[-2^{63}, 2^{63} - 1]$.
             \item Realna števila ({\tt Float}) – zaradi lažje implementacije je velikost realnih števil enaka kot velikost celih števil – torej 8 bajtov. Vrednost je na nivoju podatkov realizirana kot ``dvojni float`` oz. ``double``. Gre za zaporedje bitov, ki so po standardu IEEE 754 \cite{kahan1996ieee} ločeni v predznak, eksponent in mantiso.
-            \item Nizi ({\tt String}) – Gre za zaporedje znakov, kjer pri definiciji atributa določimo maksimalno dovoljeno dolžino posameznega niza. Torej dolžina posameznega niza je $N$ bajtov, kjer je $N$ maksimalna dolžina.
+            \item Nizi ({\tt String}) – Gre za zaporedje znakov, kjer pri definiciji atributa določimo maksimalno dovoljeno dolžino posameznega niza. Torej dolžina posameznega niza je $N$ bajtov, kjer je $N$ enak maksimalni dolžini.
             \item Logične vrednosti ({\tt Bool}) – je najmanjši podatkovni tip, ki ga vsebuje naš SUPB in zavzame vsega 1 bajt; drži pa lahko vrednosti $0/1$ oz. {\tt True/False}, kot je to definirano v programskem jeziku Python.
             \item Datumi ({\tt Datetime}) – gre za podatkovni tip, ki je ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu \cite{EPOCH_FORMAT} – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970. 
             \item Povezava ({\tt Link}) – gre za vgrajen tip relacije, kjer je podatek kazalec na drug zapis v določeni tabeli. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
-            \item Virtualna povezava ({\tt VirtualLink}) – gre za navidezno polje v tabeli, ki ne zavzame nobenega dodatnega prostora. Polje je pomembno za kreiranje povezave ob poizvedbah, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
+            \item Virtualna povezava ({\tt VirtualLink}) – gre za navidezno polje v tabeli, ki ne zavzame nobenega dodatnega prostora. Polje je pomembno za vezave zapisov ob poizvedbah, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
         \end{itemize}
         
         \subsection{Implementacija relaciji}
@@ -673,7 +673,7 @@ john = User(name='John Doe').make()
 jane = User(name='Jane Doe').make()
 
 first_mesage = Message(
-    content = 'Moje prvo sporočilo',
+    content = 'Hello, World!',
     sender = john,
     reciever = jane
 ).make()
@@ -719,13 +719,13 @@ first_mesage = Message(
         
         Iskanje, vstavljanje in brisanje imajo v B+ drevesu časovno zahtevnost \newline $O(log_b(N))$, kjer je $b$ stopnja vozlišča in $N$ število zapisov v drevesu.
 
-        Vendar časovna zahtevnost velja le v primeru, ko sta razcep, ki se zgodi ob prekoračitvi velikosti vozlišča ob vstavljanju in združevanje, do katerega pride ob spodnji prekoračitvi velikosti vozlišča pri brisanju, implementirana s časovno zahtevnostjo $O(1)$ \cite{goodrich2011data}. Poleg tega pa se mora implementacija drevesa držati vseh lastnosti definiranih v razdelku~\ref{btree_rules}.
+        Vendar časovna zahtevnost velja le v primeru, ko sta razcep, ki se zgodi ob prekoračitvi velikosti vozlišča ob vstavljanju in združevanje, do katerega pride ob spodnji prekoračitvi velikosti vozlišča (pri brisanju), implementirana s časovno zahtevnostjo $O(1)$ \cite{goodrich2011data}. Poleg tega pa se mora implementacija drevesa držati vseh lastnosti definiranih v razdelku~\ref{btree_rules}.
 
         \subsection{Iskanje v B+ drevesu}
 
         Iskanje v B+ drevesu sledi algoritmu v ostalih iskalnih drevesih. Ključna razlika se pokaže v koraku iskanja znotraj posameznega vozlišča, kjer moramo v seznamu zapisov poiskati prvo večjo ali enako vrednost glede na iskani ključ. To določa odmik, po katerem se premaknemo k naslednjemu vozlišču v B+ drevesu \cite{goodrich2011data}.
 
-        V implementaciji B+ drevesa je ena izmed ključnih lastnosti omogočanje večkratnega shranjevanja istega ključa. Posledično je lahko rezultat več kot en zapis, zato rezultat funkcije predstavimo kot množica $\{d_1, d_2, d_3, \ldots\}$, kjer z $d_i$ označujemo identifikatorje najdenih zapisov.
+        V implementaciji B+ drevesa je ena izmed ključnih lastnosti omogočanje večkratnega shranjevanja istega ključa. Posledično je lahko rezultat več kot en zapis, zato rezultat funkcije predstavimo kot množica $\{d_1, d_2, d_3, \ldots\}$, kjer z $d_i$ označujemo vrednosti najdenih zapisov.
 
         \subsection{Vstavljanje v B+ drevo}
 
@@ -753,7 +753,7 @@ first_mesage = Message(
         \begin{enumerate}
             \item Poiščemo vozlišče, ki vsebuje vrednost, ki jo bomo izbrisali, če ta ne obstaja, zaključimo.
             \item Iz vozlišča odstranimo vrednost. V primeru, da v vozlišču obstaja vsaj še $\lceil \frac{b - 1}{2}\rceil$ zapisov, je brisanje končano. V scenariju, kjer pride do spodnje prekoračitve, moramo izvesti postopek združevanja vozlišč. Zatem moramo pravilno nastaviti tudi kazalec starša.
-            \item Zagotoviti moramo, da so veljavna tudi vsa predhodna vozlišča (od brisanega vozlišča do korenskega vozlišča). V tem postopku ponovno izvajamo rekurziven sprehod in po potrebi posodabljamo drevo.
+            \item Zagotoviti moramo, da so veljavna tudi vsa predhodna vozlišča (od brisanega vozlišča do korenskega vozlišča). V tem postopku ponovno izvajamo rekurzivno iteracijo in po potrebi posodabljamo drevo.
         \end{enumerate}
 
         \subsection{Posodabljanje v B+ drevesu}
@@ -791,7 +791,7 @@ first_mesage = Message(
         \begin{itemize}
             \item Najbolj preprosta izmed operaciji je iskanje zapisa po enakosti, kjer v drevesu po vrednosti preprosto poiščemo zapise in vrnemo identifikatorje teh zapisov oz. zapisa.
             \item Preverjanje ali je element v seznamu podanih elementov, kjer za vsak element v seznamu izvedemo iskanje zapisa znotraj B+ drevesa (večkrat izvedemo iskanje po enakosti).
-            \item Zadnja podprta operacija je iskanje vrednosti na intervalu, kjer podamo spodnjo in zgornjo mejo. Ob filtriranju najprej izvedemo iskanje po spodnji meji, nato izvedemo sprehod skozi povezana vozlišča, dokler ne presežemo zgornje meje. Postopek je reliziran z metodo, ki prejme delni rezultat v obliki vektorja vozlišč in desno mejo {\tt load\_up\_to\_right(nodes, right\_limit)}. Metoda tekom iskanja vozlišča dodaja v vektor {\tt nodes}.
+            \item Zadnja podprta operacija je iskanje vrednosti na intervalu, kjer podamo spodnjo in zgornjo mejo. Ob filtriranju najprej izvedemo iskanje po spodnji meji, nato izvedemo sprehod skozi povezana vozlišča, dokler ne presežemo zgornje meje. Postopek je reliziran z metodo, ki prejme delni rezultat v obliki vektorja vozlišč in desno mejo {\tt load\_up\_to\_right(nodes, right\_limit)}. Metoda tekom iteracije skozi liste drevesa, identifikatorje dodaja v vektor {\tt nodes}.
         \end{itemize}
 
         \noindent
@@ -813,12 +813,12 @@ first_mesage = Message(
 
         \subsection{Ostali pristopi indeksiranja}
 
-        MySQL omogoča dva bolj pogosta pristopa za indeksiranje podatkov. Prvi pristop je s prej omenjenim B+ drevesom \ref{MYSQL_BPTREE}. Z uporabo B+ drevesa omogočimo optimizacijo poizvedb, kjer uporabljamo pogoje {\tt =, >, >=, <, <=, BETWEEN} delno, pa je pokrit tudi operator {\tt like}, kjer je iskanje s pomočjo drevesa izvedeno v primerih, ko iščemo začetek niza \cite{TREE_HASH_MYSQL}.
+        InnoDB omogoča dva bolj pogosta pristopa za indeksiranje podatkov. Prvi pristop je s prej omenjenim B+ drevesom \ref{MYSQL_BPTREE}. Z uporabo B+ drevesa omogočimo optimizacijo poizvedb, kjer uporabljamo pogoje {\tt =, >, >=, <, <=, BETWEEN} delno, pa je pokrit tudi operator {\tt like}, kjer je iskanje s pomočjo drevesa izvedeno v primerih, ko iščemo začetek niza \cite{TREE_HASH_MYSQL}.
 
-        SUPB poleg dreves podpira tudi indeksiranje s pomočjo zgoščevalnih tabel. Gre za pristop, ki se uporablja le za preverjanje enakosti, saj zgoščene vrednosti ne moremo primerjati po velikosti.
+        Mehanizem za shranjevanje poleg dreves podpira tudi indeksiranje s pomočjo zgoščevalnih tabel. Gre za pristop, ki se uporablja le za preverjanje enakosti, saj zgoščene vrednosti ne moremo primerjati po velikosti.
         Prednost uporabe zgoščevalnih tabel se skriva v hitrosti iskanja po specifični vrednosti, saj ima ta proces časovno zahtevnost $O(1)$ oz. konstanto časovno zahtevnost.
         
-        Pristop je tako zelo uporaben, kadar imamo polje, ki vsebuje omejen nabor vrednosti, npr. pri indeksiranju pošiljatelja sporočila bi z uporabo zgoščevalne tabele zelo hitro lahko poiskali pošiljatelja, hkrati pa za ta atribut načeloma ne izvajamo ostalih operaciji filtriranja in v večini scenarijev le iščemo zapise točno določenega uporabnika.
+        Pristop je tako zelo uporaben, kadar imamo polje, ki vsebuje omejen nabor vrednosti, npr. pri indeksiranju pošiljatelja sporočila bi z uporabo zgoščevalne tabele zelo hitro poiskali sporočila iskanega pošiljatelja, hkrati pa za ta atribut načeloma ne izvajamo ostalih operaciji filtriranja in v večini scenarijev le iščemo zapise točno določenega uporabnika.
 
     \section{Optimizacije poizvedovanja}
         
@@ -897,7 +897,7 @@ first_mesage = Message(
         \begin{enumerate}
             \item Klasično vstavljanje v seznam in ureditev elementov ob koncu vnašanja, ter rezanje elementov od indeksa $O$, do vključno $O+L$. Časovna zahtevnost tega pristopa je $O(N \cdot log_2(N))$, prostorska zahtevnost pa je $O(N)$, kjer je $N$ število vseh zapisov, saj moramo v pomnilniku držati vse potencialne elemente.
             \item Postopno vstavljanje v urejen seznam, v tem primeru uporabimo vgrajeno {\tt std::vector} \cite{CPP_VECTOR} strukturo, kjer vstavljanje izvajamo s pomočjo binarnega iskanja. Težava pristopa se skriva v vstavljanju v začetni del seznama, saj moramo potem vse elemente zamikati za eno mesto v desno. Čeprav je časovna zahtevnost binarnega iskanja $O(log_2(N))$ zaradi premikanja elementov časovna zahtevnost vstavljanja postane $O(N)$. Tako je časovna zahtevnost celotnega postopka vstavljanja $O(N^2)$, v najboljšem primeru pa $O(N \cdot log_2(K))$. Glavna prednost algoritma v primerjavi z urejanjem na koncu se nahaja v prostorski zahtevnosti. Ta je namreč le $O(K)$, saj v pomnilniku ohranjamo maksimalno $K$ vrstic in jih po potrebi zamenjujemo ob iteraciji skozi vrstice matrike.
-            \item Za daleč najboljši pristop se je izkazalo vstavljanje v prioritetno vrsto, ki je realizirana kot kopica (angl. \textit{heap}). Za podatkovno strukturo uporabimo vgrajeno prioritetno vrsto ({\tt std::priority\_queue}) \cite{CPP_PQUEUE}. V tem primeru je časovna zahtevnost posameznega vstavljanja $O(log_2(K))$, kar pomeni za $N$ vstavljanj $O(N \cdot log_2(K))$. Prostorska zahtevnost pa je enako kot v predhodnem primeru $O(K)$. Problem je zastavljen tako, da $K$ ne more nikoli biti večji od $N$ in je posledično časovna zahtevnost tega pristopa najbolj optimalna. Pomemben segment pri uporabi vgrajene prioritetne vrste je tudi izbor podatkovne strukture, ki jo vrsta uporablja za shranjevanje podatkov. Za najbolj optimalen pristop se je izkazal vgrajeni {\tt std::vector} \cite{CPP_VECTOR}, ki je na nivoju pomnilnika shranjen v enem kosu, kar omogoči prevajalniku in procesorju, da izrabita še optimizacijo lokalnosti.
+            \item Za daleč najboljši pristop se je izkazalo vstavljanje v prioritetno vrsto, ki je realizirana kot kopica (angl. \textit{heap}). Za podatkovno strukturo uporabimo vgrajeno prioritetno vrsto ({\tt std::priority\_queue}) \cite{CPP_PQUEUE}. V tem primeru je časovna zahtevnost posameznega vstavljanja $O(log_2(K))$, kar pomeni za $N$ vstavljanj $O(N \cdot log_2(K))$. Prostorska zahtevnost pa je enako kot v predhodnem primeru $O(K)$. Problem je zastavljen tako, da $K$ ne more nikoli biti večji od $N$ in je posledično časovna zahtevnost tega pristopa najbolj optimalna. Pomemben segment pri uporabi vgrajene prioritetne vrste je tudi izbor podatkovne strukture, ki jo vrsta uporablja za shranjevanje podatkov. Za najbolj optimalen pristop se je izkazal vgrajeni {\tt std::vector} \cite{CPP_VECTOR}, ki je na nivoju pomnilnika shranjen v enem kosu, kar prevajalniku in procesorju omogoči, da izrabita še optimizacijo lokalnosti.
         \end{enumerate}
 
         \noindent
@@ -917,7 +917,7 @@ first_mesage = Message(
         \subsection{Uporaba podatkovnih okvirjev}
         \label{using_df}
 
-        Akcija za poizvedovanje ob prvi implementaciji deluje po naslednjih korakih:
+        Akcija za poizvedovanje je ob prvi implementaciji delovala po naslednjih korakih:
         \begin{enumerate}
             \item Izgradnja strukture, ki definira vse potrebne parametre za poizvedbo – {\tt QueryObject}.
             \item Izvedba branja na nivoju programskega jezika C++ in pretvorba zapisov v seznam, kjer je posamezen zapis predstavljen kot slovar.
@@ -927,10 +927,10 @@ first_mesage = Message(
         \noindent
         Ob profiliranju akcije za poizvedovanje podatkov smo opazili, da velik delež izvajalnega časa vzame 3. točka  (pretvorba posameznega zapisa v instanco razreda).
 
-        Za hitrejšo izvedbo smo na nivoju programskega jezika Python pripravili podatkovno strukturo – pogled (angl. \textit{View}). Ta struktura odstrani potrebo po tretjem koraku in spremeni predstavitev posameznih vrstic iz strukture slovarja v terko (angl. \textit{Tuple}). {\tt View} predstavlja ovoj, ki deluje na podobnem principu, kot delujejo podatkovni okvirji (angl. \textit{DataFrame}) v paketih za podatkovno analitiko \cite{mckinney2010data}. Strukturo smo implementirali na nivoju programskega jezika C++, kar še dodatno pospeši čas dostopa do posameznega zapisa.
+        Za hitrejšo izvedbo smo na nivoju programskega jezika C++ pripravili podatkovno strukturo – pogled (angl. \textit{View}). Ta struktura odstrani potrebo po tretjem koraku in spremeni predstavitev posameznih vrstic iz strukture slovarja v terko (angl. \textit{Tuple}). {\tt View} predstavlja ovoj, ki deluje na podobnem principu, kot delujejo podatkovni okvirji (angl. \textit{DataFrame}) v paketih za podatkovno analitiko \cite{mckinney2010data}.
 
         \subsubsection{Optimizacija v številkah}
-        Za izmeritev učinkovitosti implementacije smo uporabili scenarij iz performančnih testov celotnega sistema (branje milijona vrstic in shranjevanje celotnega seznama v pomnilnik).
+        Za izmeritev učinkovitosti implementacije smo uporabili scenarij iz performančnih testov celotnega sistema (branje $1 \times 10^6$ vrstic in shranjevanje celotnega seznama v pomnilnik).
         \begin{itemize}
             \item V prvi implementaciji je bil povprečni čas izvajanja nekje $\approx 7$ sekund, kjer je več kot $80$ \% časa predstavljalo instanciranje razredov.
             \item Po optimizaciji pa celoten čas branja zahteva povprečno $\approx 1.3$ sekunde. To v podanem scenariju pomeni 5x pohitritev izvedbe branja.
@@ -1005,7 +1005,7 @@ ORDER BY date DESC, content
         \item \textbf{Uporaba relaciji znotraj poizvedbe – funkcija {\tt link}}
         \newline
         \noindent
-        Gre za malo drugačno izvedbo kot je to pri klasičnih relacijskih SUPB rešitvah, saj v našem primeru podatkov ne združujemo v eno matrično strukturo, temveč so podatki združeni v drevesno strukturo.
+        Gre za malo drugačno izvedbo kot je to pri relacijskih SUPB rešitvah, saj v našem primeru podatkov ne združujemo v eno matrično strukturo, temveč so podatki združeni v drevesno strukturo.
 
 \begin{minted}[breaklines]{sql}
 SELECT * FROM users
@@ -1031,7 +1031,7 @@ query = User.link(tasks=Task)
             \item Začetna točka rekurzivne metode je izvedba nabora podatkov na korenski tabeli poizvedbe. V primeru, da gre za poizvedbo, ki ne vsebuje povezovanja, rekurzijo zaključimo – robni pogoj rekurzije.
             \item V drugi točki pripravimo strukture za dodatno filtriranje znotraj naslednjih poizvedb. Poleg tega pa pripravimo vmesno strukturo za shranjevanje rezultatov teh poizvedb.
             \item Nato rekurzivno izvajamo naslednje poizvedbe in rezultate shranjujemo v prej pripravljeno združevalno strukturo (gre za zgoščevalno tabelo, ki vezan identifikator preslika v dejanski zapis).
-            \item V zaključni fazi algoritma vmesne rezultate iz zgoščevalne tabele združimo v rezultat korenske poizvedbe – to je tudi rezultat celotne metode, ki je predstavljen kot podatkovni okvir predstavljen v razdelku \ref{using_df}.
+            \item V zaključni fazi algoritma vmesne rezultate iz zgoščevalne tabele združimo v rezultat korenske poizvedbe – to je tudi rezultat celotne metode, ki je tipa {\tt View} predstavljen v razdelku \ref{using_df}.
         \end{enumerate}
 
 \begin{code}
@@ -1113,7 +1113,7 @@ user_view = User.link(
             \item {\tt COUNT} – štetje zapisov.
         \end{itemize}
 
-        Vse operacije so omejene nad striktno eno tabelo in en stolpec, kar pomeni, da lahko v eni poizvedbi poiščemo npr. iskanje najnovejšega sporočila med zapisi. V večini primerov agregaciji pa ne iščemo globalno gledano zapisa, ki najbolj ustreza našim kriterijem, ampak iščemo zapis grupiran glede na določen kriterij npr. iščemo najnovejše sporočilo za vsakega posameznega uporabnika. Kadar govorimo v smislu poizvedb SQL, to pomeni uporabo {\tt GROUP BY} stavka.
+        Vse operacije so omejene na eno tabelo in en stolpec, kar pomeni, da lahko v eni poizvedbi poiščemo npr. iskanje najnovejšega sporočila med zapisi. V večini primerov agregaciji pa ne iščemo globalno gledano zapisa, ki najbolj ustreza našim kriterijem, ampak iščemo zapis grupiran glede na določen kriterij npr. iščemo najnovejše sporočilo za vsakega posameznega uporabnika. Kadar govorimo v smislu poizvedb SQL, to pomeni uporabo {\tt GROUP BY} stavka.
 
 \begin{minted}[breaklines]{sql}
 SELECT MAX(messages.date) AS 'latest' 
@@ -1147,12 +1147,12 @@ query = Message.agg(
     V namen upravljanja s paketi, ki niso del standardne knjižnice programskega jezika se pogosto srečamo z upravljalci paketov (angl. \textit{package manager}). Gre za orodje, ki omogoča enostaven način nameščanja, posodabljanja in odstranjevanja uvoženih paketov.
    
     \subsection{Uporaba Python.h za razvoj paketa}
-   Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike in strežniških aplikacijah. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede do strojnega jezika. Python ima za zagon kode še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku. Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od prevedenih jezikov.
+   Programski jezik Python je poznan predvsem po uporabi v področjih umetne inteligence, podatkovne analitike in strežniških aplikacij. Gre za interpretiran programski jezik, kar pomeni, da se koda ne prevede do nivoja, kot se to zgodi v primeru C++, kjer se koda prevede do strojnega jezika. Python ima za zagon kode še dodaten nivo abstrakcije, ki dejansko izvaja kodo in jo sproti prevaja na nivo, ki je poznan računalniku. Zaradi dodatnega nivoja abstrakcije je jezik sam po sebi bistveno počasnejši od prevedenih jezikov.
 
     Področji umetne inteligence in podatkovne analitike temeljita na obdelavi masovnih podatkov, kar posledično pomeni, da Python ni najbolj optimalen jezik za izvedbo teh nalog. Zaradi teh omejitev so nastali paketi, ki so v osnovi napisani v jezikih, ki so bistveno hitrejši (prevedeni). Med pogosteje uporabljene pakete uvrščamo:
     \begin{itemize}
         \item \textbf{Numpy \cite{NUMPY_GITHUB}} – odprtokodni paket, ki v Python prinese podatkovni tip polja (angl. \textit{array}), in veliko vgrajenih funkciji, ki bistveno pospešijo operacije, ki delajo s polji in matrikami. V področju podatkovne analitike in umetne inteligence, paket s polji predstavlja enega izmed glavnih temeljev. Veliko je tudi paketov, ki za svoje delovanje uporabljajo ravno Numpy. Tak primer je npr. Pandas \cite{PANDAS_GITHUB} – gre za enega izmed najpogosteje uporabljenih paketov za podatkovno analitiko, ki s seboj prinese še nekaj dodatnih abstrakciji za lažje delo s podatkovnimi okviri (angl. \textit{data frame}).
-        \item \textbf{Tensorflow \cite{abadi2016tensorflow}} –  odprtokodni paket za strojno učenje. V osnovi je celoten produkt Tensorflow namenjen širšemu spektru programskih jezikov in ni implementiran le za Python. Gre za splošno namensko rešitev z že pripravljenimi metodami za kreiranje modelov za strojno učenje, kar olajša delo programerju, saj je veliko korakov avtomatiziranih.
+        \item \textbf{Tensorflow \cite{abadi2016tensorflow}} –  odprtokodni paket za strojno učenje. V osnovi je celoten produkt Tensorflow namenjen širšemu spektru programskih jezikov in ni implementiran le za Python. Gre za splošno namensko rešitev z že pripravljenimi metodami za kreiranje modelov strojnega učenja, kar olajša delo programerju, saj je veliko korakov avtomatiziranih.
         \item \textbf{UltraJSON \cite{UJSON_GITHUB}} – gre za manj poznan paket, ki dela z JSON strukturami. JSON je postal najbolj popularen format za prenos strukturiranih podatkov preko HTTP \cite{JSON_ACM}. Gre za format, kjer je shema strukture enkapsulirana med podatke, zaradi česar je format prostorsko zelo potraten, hkrati pa je zaradi nedefinirane strukture tudi obdelava relativno počasna. Ravno zaradi tega je kakršnakoli optimizacija v smislu obdelave podatkov zelo dobrodošla in to je tudi glavni cilj paketa.
     \end{itemize}
 
@@ -1163,11 +1163,11 @@ query = Message.agg(
 
     Izdelava paketov s pomočjo Python.h vmesnika pomeni uporabo programskega jezika C, kar pomeni, da je velik del implementacij različnih struktur prepuščen razvijalcu.
     
-    Za lažji implementacijo rešitve smo se odločili za razvoj v programskem jeziku C++, ki ima bistveno širši nabor struktur in funkciji v standardni knjižnici. 
+    Za lažjo implementacijo rešitve smo se odločili za razvoj v programskem jeziku C++, ki ima bistveno širši nabor struktur in funkciji v standardni knjižnici. 
 
     Za prehod smo uporabili PyBind11 \cite{PYBIND11_GITHUB}, ki deluje na nivoju višje in za svoje delovanje v ozadju uporablja Python.h. Gre za rešitev, ki olajša pretvorbe podatkovnih struktur med jezikoma npr. {\tt std::vector} \cite{CPP_VECTOR}, se samodejno pretvori v strukturo seznama na nivoju programskega jezika Python.
 
-    Poleg avtomatskih pretvorb, pa imamo vseeno možnost uporabe vseh tipov in metod, ki so vključene v Python.h vmesnik.
+    Poleg avtomatskih pretvorb, pa imamo možnost uporabe vseh tipov in metod, ki so vključene v Python.h vmesnik.
 
     \subsubsection{Primer uporabe PyBind11}
     V segmentu kode \ref{pybind11_demo} imamo še preprost primer funkcije za seštevek dveh celih števil z uporabo PyBind11.
@@ -1219,13 +1219,13 @@ print(total) # prints 15
     \noindent
     Paket je sestavljen iz dveh ključnih komponent. To sta ORM, ki je napisan v programskem jeziku Python in predstavlja tudi vhodno točko za uporabnike paketa. Na drugi strani pa je jedro SUPB s sistemom za shranjevanje podatkov. ORM in SUPB komunicirata preko prej omenjenega PyBind11 \cite{PYBIND11_GITHUB} paketa. Za preslikavo zapisov in poizvedb na nivoju SUPB skrbi pretvornik, ki sestavi strukture s katerimi potem upravlja izvajalni mehanizem znotraj jedra.
 
-    Jedro vsebuje vse performančno gledano kritične operacije in podatke s pomočjo mehanizma za shranjevanje drži v datotekah {\tt .bin}, ki predstavljajo zunanjo komponento sistema.
+    SUPB vsebuje vse performančno gledano kritične operacije in podatke s pomočjo mehanizma za shranjevanje drži v datotekah {\tt .bin}, ki predstavljajo zunanjo komponento sistema.
     
     \section{Testno usmerjen razvoj}
 
     Da zagotovimo pravilno delovanje nekega bolj zahtevnega sistema, je na področju razvoja programske opreme zelo priporočen testno usmerjen razvoj. Gre za način validacije pravilnega delovanja posameznih komponent sistema najprej kot ločene enote in nato kot del večjega sistema, kjer testiramo usklajenost delovanja več komponent hkrati.
     
-    V primeru razvoja izbrane programske opreme smo proces testiranja razdelili na tri segmente – testiranje enot, integracijsko testiranje in performančno testiranje.
+    V primeru razvoja izbrane programske opreme smo proces testiranja razdelili na tri faze: testiranje enot, integracijsko testiranje in performančno testiranje.
    
    \subsection{Testi enot na nivoju SUPB in mehanizma za shranjevanje}
 
@@ -1266,7 +1266,9 @@ print(total) # prints 15
 \chapter{Analiza uspešnosti}
 \label{ch2}
 
-    V tem poglavju se bomo posvetili temeljni analizi, ki vključuje časovno in prostorsko primerjavo. Osredotočili se bomo na primerjavo med razvitim paketom Graphenix ter obstoječima SUPB-jema SQLite in MySQL. Analizo bomo izvedli na različnih scenarijih, pri čemer se bomo osredotočili predvsem na branje podatkov. Poleg tega bomo preučili vpliv uporabe ORM in izvedli teste tako z uporabo ORM kot tudi brez njega. Na ta način bomo pridobili vpogled v zmogljivost, učinkovitost ter prednosti ter slabosti posameznih rešitev v različnih kontekstih.
+    V tem poglavju se bomo posvetili temeljni analizi, ki vključuje časovno in prostorsko primerjavo. Osredotočili se bomo na primerjavo med razvitim paketom Graphenix ter ustaljenima rešitvama SQLite in MySQL. Analizo bomo izvedli na različnih scenarijih, pri čemer se bomo osredotočili predvsem na branje podatkov. Poleg tega bomo preučili vpliv uporabe ORM in izvedli teste tako z uporabo ORM kot tudi brez njega. Na ta način bomo pridobili vpogled v zmogljivost, učinkovitost ter prednosti in slabosti posameznih rešitev v različnih kontekstih.
+
+    Za izvajanje različnih testnih scenarijev je pripravljena skripta, ki za vsak SUPB scenarij izvede na različno velikih podatkovnih bazah. Hkrati pa skripta izvede tudi izračun povprečnega časa, kjer med desetimi izvedbami izloči dve najpočasnejši in dve najhitrejši, ter iz preostalih meritev izračuna povprečen čas izvajanja.
 
     \newpage
    \section{Množično vstavljanje podatkov}
@@ -1317,7 +1319,7 @@ print(total) # prints 15
     \end{figure}
 
     \noindent
-    Iz grafa~\ref{velikosti} razberemo, da je Graphenix najbolj potraten z vidika porabe prostora. Razlog se skriva v načinu shranjevanja tekstovnih vrednosti. SQLite in MySQL uporabljata podatkovne strukture, ki ob shranjevanju prinesejo dodatno optimizacijo porabe prostora, saj uporabita le toliko prostora kot je potrebno. V primeru Graphenix, pa je dolžina tekstovnih polj točno določena, in v primeru, da polje definiramo kot {\tt String(size=50)}, vsak zapis ne glede na dolžino zavzame vsaj 50 bajtov.
+    Iz grafa~\ref{velikosti} razberemo, da je Graphenix najbolj potraten z vidika porabe prostora. Razlog se skriva v načinu shranjevanja tekstovnih vrednosti. SQLite in MySQL uporabljata podatkovne strukture, ki ob shranjevanju prinesejo dodatno optimizacijo porabe prostora, saj uporabita le toliko prostora kot je potrebno. V primeru Graphenix, pa je dolžina tekstovnih polj točno določena, in v primeru, da polje definiramo kot {\tt String(size=50)}, vsak zapis ne glede na dolžino zavzame 50 bajtov.
 
     V temnem delu stolpca je prikazana razlika velikosti z in brez uporabe indeksne strukture. SUPB z najnižjo porabo prostora z vidika velikosti indeksne strukture je SQLite. Razlog za nižjo porabo se nahaja v velikosti posameznega vozlišča in algoritmu vstavljanja v drevo, ki vpliva tudi na delitev vozlišč tekom vstavljanja.
 
@@ -1360,7 +1362,7 @@ ORDER BY points, id LIMIT 500
     \section{Primerjava poizvedb z uporabo relaciji}
     \label{join_lbl}
 
-    V scenariju definiramo poizvedbo, kjer izvedemo nabor podatkov iz dveh tabel. Število zapisov je določeno s številom uporabnikov. Za vsakega uporabnika pa je bilo vnesenih še 10 nalog, ki so vezane preko tujega ključa ``user\_id`` v tabeli nalog ({\tt Task}).
+    V scenariju definiramo poizvedbo, kjer izvedemo nabor podatkov iz dveh tabel. Število zapisov je določeno s številom uporabnikov. Za vsakega uporabnika pa je bilo vnesenih še 10 nalog, ki so vezane preko tujega ključa {\tt user\_id} v tabeli nalog ({\tt Task}).
     
 \begin{minted}[breaklines]{SQL}
 SELECT * FROM users 
@@ -1378,7 +1380,7 @@ INNER JOIN tasks ON tasks.user_id = users.id
     
     \begin{itemize}
         \item ORM – podatki so v gnezdeni obliki, kjer imamo za vsakega izmed uporabnikov seznam njegovih nalog.
-        \item Brez – podatki so v obliki kartezičnega produkta oz. matrike in imamo za vsakega uporabnika toliko zapisov, kot ima uporabnik sporočil.
+        \item Brez – podatki so predstavljeni v obliki matrike, kjer imamo za vsakega uporabnika toliko zapisov, kot ima uporabnik sporočil.
     \end{itemize}
 
     \noindent
@@ -1456,7 +1458,7 @@ WHERE points = 5432
     \end{figure}
 
     \noindent
-    Iz grafa~\ref{idx_speedup_2} razberemo, da v vseh treh izvedbah zapis najdemo v manj kot 2 ms, kar tudi v vseh treh scenariji predstavlja več 100x pohitritev. Nekaj zakasnitve se sicer vseeno pojavi iz strani MySQL, kar je glede na predhodne scenarije pričakovano.
+    Iz grafa~\ref{idx_speedup_2} razberemo, da v vseh treh izvedbah zapis najdemo v manj kot 2 ms, kar tudi v vseh treh scenariji predstavlja več 100x pohitritev. Nekaj zakasnitve se sicer pojavi iz strani MySQL, kar je glede na predhodne scenarije pričakovano.
 
     \subsubsection{Idealni pogoji za indeksiranje}
     Omenimo, da je scenarij prilagojen uporabi indeksiranja, saj v scenariju iskanja, kjer vrednosti niso unikatne, učinkovitost indeksa zelo hitro pade. Poleg tega je bilo iskanje izvedeno kot iskanje specifične vrednosti v drevesu, medtem ko če bi iskali širši nabor vrednosti bi časovna zahtevnost $O(log_b(N))$ postala $O(K \cdot log_b(N))$, kjer je $K$ število vrednosti, ki se ujemajo z iskalnim kriterijem.
@@ -1493,7 +1495,7 @@ app.run()
 
     \subsection{Kreiranje sheme za beleženje podatkov}
 
-    V namen beleženja podatkov smo si najprej pripravili tabelo in shemo za shranjevanje podatkov prikazano v programski kodi \ref{logging_schema}.
+    V namen beleženja podatkov smo si najprej pripravili tabelo in shemo za shranjevanje podatkov, kar je prikazano v programski kodi \ref{logging_schema}.
 
 \begin{code}
 \begin{minted}{python}
@@ -1587,7 +1589,7 @@ route_stats = ReqInfo\
 
     \subsubsection{Izpis napak v zadnjem dnevu}
 
-    Za nabor napak v zadnjem dnevu, lahko preprosto izvedemo poizvedbo, kjer zahtevamo, da je status odgovora $>= 400$, kar pri zahtevkih, ki uporabljajo HTTP protokol predstavlja razpon napak. Poleg tega pa dodamo še zahtevo, da mora biti datum napake večji, kot včerajšnji datum ob enaki uri. Na koncu zapise uredimo po datumu napake.
+    Za nabor napak v zadnjem dnevu, lahko preprosto izvedemo poizvedbo, kjer zahtevamo, da je status odgovora $>= 400$, kar pri zahtevkih, ki uporabljajo HTTP protokol, predstavlja razpon napak. Poleg tega pa dodamo še zahtevo, da mora biti datum napake večji, kot včerajšnji datum ob enaki uri. Na koncu zapise uredimo po datumu napake.
 
 \begin{code}
 \begin{minted}[breaklines]{python}
