@@ -288,17 +288,14 @@ Besedilo je oblikovano z urejevalnikom besedil \LaTeX.}
 
 \bigskip
 \noindent\textbf{Opis:}\\
-Besedilo teme diplomskega dela študent prepiše iz študijskega informacijskega sistema, kamor ga je vnesel mentor. 
-V nekaj stavkih bo opisal, kaj pričakuje od kandidatovega diplomskega dela. 
-Kaj so cilji, kakšne metode naj uporabi, morda bo zapisal tudi ključno literaturo.
+Razvijte ultra lahek relacijski SUPB, ki ga je možno uporabljati v enostavnih Python aplikacijah, ki tečejo na sistemih z zelo majhnimi pomnilniškimi in diskovnimi viri. Zaradi učinkovitosti implementirajte osnovo SUPB v programskem jeziku C++.
 
 \bigskip
 \noindent\textbf{Title:} \ttitleEn
 
 \bigskip
 \noindent\textbf{Description:}\\
-opis diplome v angleščini
-
+Develop an ultra-lightweight relational SUPB that can be used in simple Python applications running on systems with very limited memory and disk resources. For efficiency, implement the core of SUPB in the C++ programming language.
 \vfill
 
 
@@ -351,7 +348,7 @@ Hvala vsem!
   {\bf kratica} & {\bf angleško}                              & {\bf slovensko} \\ \hline
   {\bf API} & application programming interface & aplikacijski programski vmesnik \\
   {\bf CI/CD} & continuous integration, continuous delivery & neprekinjena integracija in postavitev \\
-  {\bf CLI} & command line interface & vmesnik za ukazno vrstico \\
+  {\bf CLI} & command-line interface & vmesnik za ukazno vrstico \\
   {\bf CRUD} & create, read, update, delete & ustvarjanje, branje, posodabljanje in brisanje \\
   {\bf CSV} & comma-separated values & vrednosti, ločene z vejico \\
   {\bf GNU} & General public license & splošna javna licenca \\
@@ -384,11 +381,8 @@ Hvala vsem!
 
 %\noindent\textbf{Povzetek:} 
 \noindent 
-V diplomskem delu so predstavljeni nekateri izmed najbolj uveljavljenih sistemov za upravljanje podatkovnih baz (SUPB). Kljub napredku na tem področju ostajajo relacijske podatkovne baze v veliki meri osrednja paradigma. V okviru diplomskega dela smo se osredotočili na razvoj in predstavitev lastnega relacijskega SUPB za programski jezik Python.
-
-Razvoj namenske rešitve je realiziran v programskem jeziku C++. Gre za nizkonivojski jezik, kjer imamo visoko fleksibilnost pri upravljanju s pomnilnikom. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba podatkovnih struktur in algoritmov, ki dobro izkoristijo vhodno/izhodne operacije in omogočajo zanesljivo in optimalno delovanja podatkovne baze.
-
-V zadnjem delu diplomskega dela smo izvedli primerjalno analizo našega razvitega SUPB-ja z že uveljavljenima rešitvama SQLite in MySQL, ter predstavili dosežene rezultate.
+V diplomskem delu so predstavljeni nekateri izmed najbolj uveljavljenih sistemov za upravljanje podatkovnih baz (SUPB). Kljub napredku na tem področju ostajajo relacijske podatkovne baze v veliki meri osrednja paradigma. V okviru diplomskega dela smo se osredotočili na razvoj in predstavitev lastnega relacijskega SUPB za programski jezik Python. Razvoj namenske rešitve je realiziran v programskem jeziku C++. Gre za nizkonivojski jezik, kjer imamo 
+ visoko fleksibilnost pri upravljanju s pomnilnikom. Predstavljen je razvoj vseh potrebnih segmentov za dobro delujočo relacijsko podatkovno bazo. Ključnega pomena tekom razvoja je bila uporaba podatkovnih struktur in algoritmov, ki dobro izkoristijo vhodno/izhodne operacije in omogočajo zanesljivo in optimalno delovanja podatkovne baze. V zadnjem delu diplomskega dela smo izvedli primerjalno analizo našega razvitega SUPB-ja z že uveljavljenima rešitvama SQLite in MySQL, ter predstavili dosežene rezultate.
 \bigskip
 
 \noindent\textbf{Ključne besede:} \tkeywords.
@@ -409,11 +403,7 @@ V zadnjem delu diplomskega dela smo izvedli primerjalno analizo našega razviteg
 \bigskip
 
 %\noindent\textbf{Abstract:} 
-\noindent The thesis introduces some of the most established Database Management Systems (DBMS) available. Despite advancements in the field, relational databases remain a prominent paradigm. Consequently, our focus within the study was directed towards developing and presenting our dedicated DBMS solution tailored for the Python programming language.
-
-The development of this specialized solution was implemented using the C++ programming language due to its low-level nature, offering high flexibility in memory management. The development encompasses all the necessary components for a well-functioning relational database. A crucial aspect during development was the utilization of data structures and algorithms that efficiently leverage the input/output operations provided. This approach ultimately ensures reliable and optimal database performance.
-
-In the final section of the thesis, we conducted a comparative analysis of our developed DBMS with the established solutions SQLite and MySQL, presenting the achieved results.
+\noindent The thesis introduces some of the most established Database Management Systems (DBMS) available. Despite advancements in the field, relational databases remain a prominent paradigm. Consequently, our focus within the study was directed towards developing and presenting our dedicated DBMS solution tailored for the Python programming language. The development of this specialized solution was implemented using the C++ programming language due to its low-level nature, offering high flexibility in memory management. The development encompasses all the necessary components for a well-functioning relational database. A crucial aspect during development was the utilization of data structures and algorithms that efficiently leverage the input/output operations provided. This approach ultimately ensures reliable and optimal database performance. In the final section of the thesis, we conducted a comparative analysis of our developed DBMS with the established solutions SQLite and MySQL, presenting the achieved results.
 \bigskip
 
 \noindent\textbf{Keywords:} \tkeywordsEn.
@@ -427,7 +417,7 @@ In the final section of the thesis, we conducted a comparative analysis of our d
 \pagestyle{fancy}
 
 \chapter{Uvod}
-    Živimo v dobi, v kateri se spopadamo z izzivom obdelave velikih količin podatkov, ki jih poznamo kot velepodatki (angl. \textit{Big Data}) in predstavljajo dragocen vir informacij.
+    Živimo v dobi, v kateri se spopadamo z izzivom obdelave velikih količin podatkov, ki jih poznamo kot velepodatke (angl. \textit{big data}) in predstavljajo dragocen vir informacij.
     
     Za trajno shranjevanje podatkov uporabljamo podatkovne baze. Glede na organizacijo podatkov, podatkovne baze v grobem delimo v dve skupini – relacijske (angl. \textit{relational databases}) in nerelacijske podatkovne baze (angl. \textit{non-relational or NoSQL databases}).
     
@@ -439,7 +429,7 @@ In the final section of the thesis, we conducted a comparative analysis of our d
 
         Kaj hitro, ko začnemo raziskovati interno delovanje relacijskih podatkovnih baz, naletimo na pojem sistem za uporabljanje podatkovnih baz – SUPB (angl. \textit{Database Management System}). SUPB je programska rešitev za upravljanje in organiziranje podatkov. Uporabnikom omogoča ustvarjanje, spreminjanje in poizvedovanje po bazi podatkov \cite{connolly2005database}.
 
-        SUPB predstavlja vmesnik med uporabnikom, ki dela s podatkovno bazo (angl. \textit{Data Store}), in mehanizmom za shranjevanje podatkov (angl. \textit{Storage engine}). Mehanizem za shranjevanje podatkov je programska rešitev, ki skrbi za strukturo shranjenih podatkov. MySQL nudi dva primarna mehanizma: MyISAM in InnoDB (privzet od različice {\tt v5.5}). MySQL med drugim ponuja mehanizem za shranjevanje podatkov v datoteke .csv, kar omogoča vpogled v podatke s standardnimi orodji za obdelavo podatkov (npr. Excel). Pomanjkljivost tega pristopa je omejen nabor funkcij SUPB \cite{MYSQL_SE}.
+        SUPB predstavlja vmesnik med uporabnikom, ki dela s podatkovno bazo (angl. \textit{Data store}), in mehanizmom za shranjevanje podatkov (angl. \textit{storage engine}). Mehanizem za shranjevanje podatkov je programska rešitev, ki skrbi za strukturo shranjenih podatkov. MySQL nudi dva primarna mehanizma: MyISAM in InnoDB (privzet od različice {\tt v5.5}). MySQL med drugim ponuja mehanizem za shranjevanje podatkov v datoteke .csv, kar omogoča vpogled v podatke s standardnimi orodji za obdelavo podatkov (npr. Excel). Pomanjkljivost tega pristopa je omejen nabor funkcij SUPB \cite{MYSQL_SE}.
 
         \subsubsection{Začetki relacijskih podatkovnih baz}
         Gre za paradigmo podatkovnih baz, ki se je prvič pojavila leta 1970, ko je model za shranjevanje predstavil Edgar F. Codd – matematik izobražen na univerzi Oxford \cite{IBM_SUPB_1970}. Prva družina relacijskih podatkovnih baz pa je bila razvita leta 1983 – Db2 \cite{DB2} v podjetju IBM. IBM je Db2 vseskozi posodabljal. Kljub temu je ta konceptualno ostal nespremenjen in še vedno uporablja zasnovo relacijskega modela iz leta 1970.
@@ -464,10 +454,10 @@ In the final section of the thesis, we conducted a comparative analysis of our d
     \noindent
     Arhitekturo sestavljajo tri ključne komponente. Na levi strani slike so odjemalci (mobilne, spletne aplikacije, itd). S strežniškim delom sistema komunicirajo s pomočjo protokola HTTP.
 
-    Večji del informacijskega sistema se nahaja v uporabniku skritem delu, kjer je realizirana poslovna logika in upravljanje s podatki oz. bazo podatkov, s katero upravlja SUPB. V sodobnih informacijskih sistemih za dodaten nivo varnosti in lažjo manipulacijo podatkov pogosto uporabimo še objektno relacijsko preslikavo – ORM (angl. \textit{Object-relational mapping}) \cite{torres-17}. Gre za programsko rešitev, ki s pomočjo preslikave tabel omogoča lažje delo s podatkovno bazo. Table se znotraj ORM preslikajo v razrede, zapisi znotraj tabele pa so predstavljeni kot instance teh razredov. ORM predstavlja dodaten nivo abstrakcije, ki programerju omogoči lažje upravljanje s podatkovno bazo znotraj uporabljenega programskega jezika.
+    Večji del informacijskega sistema se nahaja v uporabniku skritem delu, kjer je realizirana poslovna logika in upravljanje s podatki oz. bazo podatkov, s katero upravlja SUPB. V sodobnih informacijskih sistemih za dodaten nivo varnosti in lažjo manipulacijo podatkov pogosto uporabimo še objektno relacijsko preslikavo – ORM (angl. \textit{Object-relational mapping}) \cite{torres-17}. Gre za programsko rešitev, ki s pomočjo preslikave tabel omogoča lažje delo s podatkovno bazo. Tabele se znotraj ORM preslikajo v razrede, zapisi znotraj tabele pa so predstavljeni kot instance teh razredov. ORM predstavlja dodaten nivo abstrakcije, ki programerju omogoči lažje upravljanje s podatkovno bazo znotraj uporabljenega programskega jezika.
 
     \section{Motivacija za razvoj lastnega SUPB in ORM vmesnika}
-    Glavna motivacija za razvoj lastnega SUPB je boljše razumevanje delovanja podatkovnih baz, ter njihovega vpliva na delovanje modernih aplikaciji. Programerji pogosto več pozornosti posvečajo implementaciji novih funkcij sistema, zanemarjajo pa vidike in vzorce, ki jih uporabljajo za razvoj podatkovne baze \cite{karwin2010sql}.
+    Glavna motivacija za razvoj lastnega SUPB je boljše razumevanje delovanja podatkovnih baz, ter njihovega vpliva na delovanje modernih aplikacij. Programerji pogosto več pozornosti posvečajo implementaciji novih funkcij sistema, zanemarjajo pa vidike in vzorce, ki jih uporabljajo za razvoj podatkovne baze \cite{karwin2010sql}.
     
     Podatkovna baza s seboj prinese visoko raven abstrakcije, ki je podprta z obsežno množico algoritmov in konceptov, ki omogočijo zanesljivo, hitro in varno izvajanje operaciji nad podatki. Eden izmed ciljev našega dela je spoznati v abstrakciji skrite koncepte, ki jih prinašata SUPB in jezik SQL, ki programerju predstavlja način komuniciranja z bazo podatkov.
 
@@ -477,18 +467,18 @@ In the final section of the thesis, we conducted a comparative analysis of our d
     \newline
     \newline
     \noindent
-    Poudarimo, da cilj implementacije lastne rešitve ne vključuje razvoja dovršenega SUPB, ki bi se primerjal z naprednimi in uveljavljenimi rešitvami. Naš cilj je razviti SUPB, ki bo vseboval temeljne funkcionalnosti in bo primeren za uporabo v manjših aplikacijah. Osredotočili se bomo predvsem na izgradnjo preprostega in intuitivnega načina za upravljanje podatkov.
+    Poudarimo, da cilj implementacije lastne rešitve ne vključuje razvoja dovrše\-nega SUPB, ki bi se primerjal z naprednimi in uveljavljenimi rešitvami. Naš cilj je razviti SUPB, ki bo vseboval temeljne funkcionalnosti in bo primeren za uporabo v manjših aplikacijah. Osredotočili se bomo predvsem na izgradnjo preprostega in intuitivnega načina za upravljanje podatkov.
 
 \chapter{Sorodna dela}
 
-    Prve podatkovne baze so bile razvile pred več kot štiridesetimi leti, ob tem pa tudi ogromno različnih pristopov za komunikacijo med programskimi jeziki in SUPB \cite{bachman-09}. V računalništvu je izbor orodja ključnega pomena in izbor tehnologij znotraj podatkovnega sloja nikakor ne predstavlja izjeme.
+    Prve podatkovne baze so bile razvite pred več kot štiridesetimi leti, ob tem pa tudi ogromno različnih pristopov za komunikacijo med programskimi jeziki in SUPB \cite{bachman-09}. V računalništvu je izbor orodja ključnega pomena in izbor tehnologij znotraj podatkovnega sloja nikakor ne predstavlja izjeme.
 
     \section{Izbor SUPB}
     Pri izbiri SUPB za rešitve, ki upravljajo večje količine podatkov, imamo na voljo različne možnosti, med katerimi izstopajo: Db2 \cite{DB2}, Oracle \cite{ORACLE} in Microsoft SQL Server (MSSQL) \cite{MSSQL}, ki predstavljajo največje in najbolj skalabilne SUPB-je. Kljub temu je izbor SUPB-ja, podobno kot pri večini področij v računalništvu, odvisen od zahtev naše aplikacije in narave podatkov, ki jih bomo shranjevali.
 
     V mnogih primerih zadostujeta že preprostejša sistema za upravljanje s podatkovno bazo, kot sta PostgreSQL \cite{POSTGRESQL} in MySQL \cite{MYSQL}, ki ravno tako ponujata enostavno upravljanje podatkov in predstavljata dobro izbiro tudi za shranjevanje obsežnih količin podatkov. 
     
-    V določenih scenarijih, ko imamo opravka z bolj preprosto in manj obsežno strukturo podatkov (npr. pri razvoju mobilnih aplikaciji), se za najprimernejšo izbiro izkaže SQLite \cite{SQLITE}. Gre za minimalističen SUPB, ki za razliko od prej omenjenih izbir za potrebe shranjevanja podatkov uporablja zgolj datoteko, ki jo zlahka enkapsuliramo v izolirano okolje, kot je mobilna naprava. V skupino manjših sistemov za uporavljanje s podatkovno bazo lahko uvrstimo tudi rešitev Graphenix, ki smo jo razvili v okviru tega diplomskega dela \cite{GRAPHENIX_GITHUB}.
+    V določenih scenarijih, ko imamo opravka z bolj preprosto in manj obsežno strukturo podatkov (npr. pri razvoju mobilnih aplikacij), se za najprimernejšo izbiro izkaže SQLite \cite{SQLITE}. Gre za minimalističen SUPB, ki za razliko od prej omenjenih izbir za potrebe shranjevanja podatkov uporablja zgolj datoteko, ki jo zlahka enkapsuliramo v izolirano okolje, kot je mobilna naprava. V skupino manjših sistemov za uporavljanje s podatkovno bazo lahko uvrstimo tudi rešitev Graphenix, ki smo jo razvili v okviru tega diplomskega dela \cite{GRAPHENIX_GITHUB}.
     
     \section{Statističen pregled Python paketov ORM}
 
@@ -512,18 +502,18 @@ In the final section of the thesis, we conducted a comparative analysis of our d
     \noindent
     Iz tabele \ref{orm_library_comparison} izluščimo, da za uporabo v programskem jeziku Python prevladujejo paketi SQLAlchemy, Django in Peewee.
     \begin{itemize}
-        \item \textbf{Django ORM \cite{DJANGO_GITHUB}} je del širšega orodja za izdelavo spletnih aplikaciji Django. Omogoča zelo širok nabor operaciji nad podatkovno bazo, poleg tega ima vgrajen tudi svoj vmesnik za ukazno vrstico – CLI (angl. \textit{Command Line Interface}). S tem celotno ogrodje bistveno pospeši produktivnost razvijalcev. ORM podpira pet sistemov za upravljanje s podatkovno bazo, to so PostgreSQL \cite{POSTGRESQL}, MariaDB \cite{MARIADB}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE} in SQLite \cite{SQLITE}. Izpostavimo, da je število prenosov lahko nekoliko zavajajoče, saj uporaba Django ogrodja v primerih, ko ne potrebujemo trajnega shranjevanja podatkov, ne pomeni uporabe Django ORM.
-        \item \textbf{SQLAlchemy \cite{SQLALCHEMY_GITHUB}} gre za enega najbolj fleksibilnih in uporabljenih paketov znotraj programskega jezika. Fleksibilnost pomeni, da so številne operacije, ki so znotraj Django ORM že avtomatizirane, tukaj prepuščene implementaciji razvijalca. Fleksibilnost s seboj prinaša tudi bistveno prednost, saj lahko kot razvijalec, ki dobro pozna ozadje delovanja uporabljenega SUPB, izkoristimo različne pristope optimizacije, ki jih ni mogoče realizirati znotraj Django ORM oz. je implementacija bistveno težja. Paket med drugim podira tudi prej omenjene SQLite \cite{SQLITE}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE}, MSSQL \cite{MSSQL} in še druge SUPB rešitve.
+        \item \textbf{Django ORM \cite{DJANGO_GITHUB}} je del širšega orodja za izdelavo spletnih aplikaciji Django. Omogoča zelo širok nabor operaciji nad podatkovno bazo, poleg tega ima vgrajen tudi svoj vmesnik za ukazno vrstico – CLI (angl. \textit{Command-line interface}). S tem celotno ogrodje bistveno pospeši produktivnost razvijalcev. ORM podpira pet sistemov za upravljanje s podatkovno bazo, to so PostgreSQL \cite{POSTGRESQL}, MariaDB \cite{MARIADB}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE} in SQLite \cite{SQLITE}. Izpostavimo, da je število prenosov lahko nekoliko zavajajoče, saj uporaba Django ogrodja v primerih, ko ne potrebujemo trajnega shranjevanja podatkov, ne pomeni uporabe Django ORM.
+        \item \textbf{SQLAlchemy \cite{SQLALCHEMY_GITHUB}} gre za enega najbolj fleksibilnih in uporabljenih paketov znotraj programskega jezika. Fleksibilnost pomeni, da so številne operacije, ki so znotraj Django ORM že avtomatizirane, tukaj prepušče\-ne implementaciji razvijalca. Fleksibilnost s seboj prinaša tudi bistveno prednost, saj lahko kot razvijalec, ki dobro pozna ozadje delovanja uporabljenega SUPB, izkoristimo različne pristope optimizacije, ki jih ni mogoče realizirati znotraj Django ORM oz. je implementacija bistveno težja. Paket med drugim podira tudi prej omenjene SQLite \cite{SQLITE}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE}, MSSQL \cite{MSSQL} in še druge SUPB rešitve.
         \item \textbf{Peewee \cite{PEEWEE_GITHUB}} je eden izmed preprostejših paketov, ki ima lahkoten nivo obstrakcije. Paket podpira tri relacijske podatkovne baze, to so PostgreSQL \cite{POSTGRESQL}, MySQL \cite{MYSQL} in SQLite \cite{SQLITE}. Gre za dokaj omejen nabor, saj je paket dokaj minimalističen in ne ponuja toliko funkcionalnosti kot Django ORM in SQLAlchemy.
     \end{itemize}
 
     \noindent
     Cilj vseh zgoraj navedenih paketov je pospešiti proces razvoja aplikacij in zagotoviti dodatno varnost pri delu s podatkovno bazo. Omeniti velja, da ti paketi omogočajo tudi druge koristne funkcionalnosti, kot je lažja manipulacija s podatki, poenostavljeno vzdrževanje in enostavna migracija strukture (preoblikovanje obstoječe sheme v že nameščeni podatkovni bazi). S svojo abstrakcijo in intuitivnimi vmesniki odpravljajo potrebo po neposrednem rokovanju z zapletenimi poizvedbami SQL ter s tem razbremenjujejo razvijalce in omogočajo hitrejši razvoj aplikacij \cite{torres-17}.
 
-    \subsection{Slabost uporabe paketov ORM na nivoju poizvedb}
+    \subsection{Slabost uporabe paketov ORM}
     Kljub vsem prednostim omenjenih paketov, pa tudi vsak izmed njih prinaša dodaten nivo abstrakcije in razvijalcu skrije veliko možnosti za optimizacijo delovanja SUPB. V algoritmih se moramo pogosto odločiti za kompromis med hitrostjo in porabo prostora, ko pa govorimo o paketih ORM in programskih jezikih, pa višji nivo abstrakcije lahko prinaša tudi nižje hitrosti delovanja.
 
-    SUPB za pridobitev končnega rezultata uporablja mehanizme kartezičnega produkta tabel, projekcije (izbira atributov) in selekcije (izbira vrstic). Končen rezultat poizvedbe je matrika, kjer vrstice predstavljajo izbrane zapise in stolpci predstavljajo atribute teh zapisov \cite{keller1985algorithms}.
+    SUPB za pridobitev končnega rezultata uporablja mehanizme kartezičnega produkta tabel, projekcije (izbira atributov) in selekcije (izbira vrstic). Kon\-čen rezultat poizvedbe je matrika, kjer vrstice predstavljajo izbrane zapise in stolpci predstavljajo atribute teh zapisov \cite{keller1985algorithms}.
     
     Kot ciljni uporabniki pogosto želimo drugačno strukturo podatkov, ki pa ni v skladu z osnovno idejo relacijskih baz. V ta namen ORM rešitve izvedejo več različnih poizvedb in interno združujejo zapise in kreirajo ciljno strukturo ali pa izvedejo eno zahtevnejšo poizvedbo in pridobljene podatke nato preoblikujejo v končno strukturo.
     
@@ -559,22 +549,22 @@ LEFT OUTER JOIN messages AS m ON users.id = m.user_id
 
     V primeru drugega načina poizvedbe, ki je predstavljena z vsoto~\eqref{data_sum_second} prenašamo bistveno manjšo količino podatkov ($(100 \cdot (1000 + 200)) = 1.2 \times 10^5$. Kar predstavlja le $0.6$ \% podatkov v primerjavi s prvo vsoto~\eqref{data_sum_first}.
 
-    V pristopu nabora podatkov s pomočjo ORM se kaže, da končni rezultat in struktura, ki jo vrača podatkovna baza, nista v enakem formatu. Preoblikovanje podatkov v končno obliko je pri uporabi omenjenih paketov izvedeno znotraj Python kode, ki ne izkoristi nizkonivojskega pristopa kot ga omogoča programski jezik C++.
+    V pristopu nabora podatkov s pomočjo ORM se kaže, da končni rezultat in struktura, ki jo vrača podatkovna baza, nista v enakem formatu. Preoblikovanje podatkov v končno obliko je pri uporabi omenjenih paketov izvedeno znotraj Python kode, ki ne izkoristi nizkonivojskega pristopa, kot ga omogoča programski jezik C++.
 
     Pri implementaciji namenske rešitve bomo skušali format podatkov, ki jih vrača SUPB, kar se da dobro prilagoditi za ORM del in se posledično pri branju količinsko gledano približati vsoti~\eqref{data_sum_second}.
 
 \chapter{Razvoj SUPB in mehanizma za shranjevanje}
 \label{ch0}
-    V poglavju predstavimo razvoj SUPB in mehanizma za shranjevanje s pomočjo programskega jezika C++. V prvi fazi je predstavljena arhitektura uveljavljenih SUPB rešitev. Sledi predstavitev strukture shranjevanje podatkov in razvoja drevesne strukture B+ za optimalno indeksiranje podatkov. Nato predstavimo optimizacije oz. algoritme, ki omogočajo hitrejše branje podatkov in za zaključek predstavimo funkcionalnosti, ki jih podpira naš SUPB.
+    V poglavju predstavimo razvoj SUPB in mehanizma za shranjevanje s pomo\-čjo programskega jezika C++. V prvi fazi je predstavljena arhitektura uveljavljenih SUPB rešitev. Sledi predstavitev strukture shranjevanje podatkov in razvoja drevesne strukture B+ za optimalno indeksiranje podatkov. Nato predstavimo optimizacije oz. algoritme, ki omogočajo hitrejše branje podatkov in za zaključek predstavimo funkcionalnosti, ki jih podpira naš SUPB.
 
     Vsa izvorna koda rešitve Graphenix je prosto dostopna (pod splošno javno licenco – GNU) na repozitoriju GitHub \cite{GRAPHENIX_GITHUB}.
 
-    \newpage
     \section{Arhitektura SUPB}
 
     Za boljše razumevanje delovanja SUPB je na sliki \ref{sl:dbms_architecture} predstavljena poenostavljena arhitektura sistema za upravljanje s podatkovno bazo. Poudarimo, da arhitektura ni točno določena in se v različnih implementacijah lahko razlikuje.
 
-    \begin{figure}[h]
+    \newpage
+    \begin{figure}[t]
         \centerline{\includegraphics[width=0.9\textwidth, angle=0]{dbms_arc2.png}}
         \caption{Arhitektura SUPB, prirejeno po knjigi: A First Course in DATABASE SYSTEMS, 2007 \cite{ullman2007first}.}
         \label{sl:dbms_architecture}
@@ -633,9 +623,9 @@ class Message(gx.Model):
     
     \section{Mehanizem shranjevanja podatkov}
         \subsection{Matrika podatkov in zaglavje s kazalci}
-        Za vsako posamezno tabelo se privzeto kreirata dve datoteki {\tt ix\_<naziv\_tabele>.bin} in {\tt <naziv\_tabele>.bin}.
+        Za vsako posamezno tabelo se privzeto kreirata dve datoteki \newline {\tt ix\_<naziv\_tabele>.bin} in {\tt <naziv\_tabele>.bin}.
         \begin{itemize}
-            \item {\tt <naziv\_tabele>.bin} (matrika podatkov) – je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v tabeli. Posamezen stolpec matrike predstavlja posamezne atribute v matriki.
+            \item {\tt <naziv\_tabele>.bin} (matrika podatkov) – je matrična struktura, ki predstavlja dejanske zapise podatkov. Vsaka vrstica predstavlja en zapis, kjer je dolžina vrstice vsota dolžin vseh atributov, ki se shranjujejo v tabeli. Posamezen stolpec matrike predstavlja posamezen atribut v tabeli.
             \item {\tt ix\_<naziv\_tabele>.bin} (glava tabele s kazalci) – gre za vektorsko strukturo, kjer vsaka zaporedna vrstica vsebuje kazalec na dejanski zapis v matriki podatkov – ta kazalec je realiziran, kot celoštevilski odmik zapisa v matriki. Poleg kazalcev struktura vsebuje tudi kazalec na prvo prosto vrstico v matriki, ki je definiran po pravilu:
             \begin{enumerate}
                 \item Matrika je polna – kazalec na konec datoteke.
@@ -644,7 +634,7 @@ class Message(gx.Model):
         \end{itemize}
 
         \begin{figure}[h]
-                \centerline{\includegraphics[width=0.95\textwidth, angle=0]{struktura_entitet.png}}
+                \centerline{\includegraphics[width=1\textwidth, angle=0]{struktura_entitet.png}}
                 \caption{Struktura matrike podatkov in zaglavja s kazalci.}
                 \label{sl:matrix_and_header}
             \end{figure}
@@ -654,18 +644,18 @@ class Message(gx.Model):
         \begin{itemize}
             \item Cela števila ({\tt Int}) – gre za vrednost, ki je na nivoju programskega jezika C++ shranjena kot podatkovni tip int64\_t, oziroma predznačeno celo število. Velikost za posamezno vrednost je 8 bajtov. Razpon vrednosti, ki jih lahko shranimo v posamezen zapis je določen z intervalom $[-2^{63}, 2^{63} - 1]$.
             \item Realna števila ({\tt Float}) – zaradi lažje implementacije je velikost realnih števil enaka kot velikost celih števil – torej 8 bajtov. Vrednost je na nivoju podatkov realizirana kot ``dvojni float`` oz. ``double``. Gre za zaporedje bitov, ki so po standardu IEEE 754 \cite{kahan1996ieee} ločeni v predznak, eksponent in mantiso.
-            \item Nizi ({\tt String}) – Gre za zaporedje znakov, kjer pri definiciji atributa določimo maksimalno dovoljeno dolžino posameznega niza. Torej dolžina posameznega niza je $N$ bajtov, kjer je $N$ enak maksimalni dolžini.
+            \item Nizi ({\tt String}) – Gre za zaporedje znakov, kjer pri definiciji atributa določimo maksimalno dovoljeno dolžino posameznega niza. Torej dolži\-na posameznega niza je $N$ bajtov, kjer je $N$ enak maksimalni dolžini.
             \item Logične vrednosti ({\tt Bool}) – je najmanjši podatkovni tip, ki ga vsebuje naš SUPB in zavzame vsega 1 bajt; drži pa lahko vrednosti $0/1$ oz. {\tt True/False}, kot je to definirano v programskem jeziku Python.
             \item Datumi ({\tt Datetime}) – gre za podatkovni tip, ki je ponovno shranjen, kot vrednost int64\_t in je predstavljen v EPOCH formatu \cite{EPOCH_FORMAT} – gre za časovni odmik trenutnega časa od UTC datuma 1. 1. 1970. 
             \item Povezava ({\tt Link}) – gre za vgrajen tip relacije, kjer je podatek kazalec na drug zapis v določeni tabeli. V ozadju je to le primarni ključ določenega zapisa, ki se nastavi avtomatsko (ponovno gre za podatek, ki je zapisan kot int64\_t vrednost).
             \item Virtualna povezava ({\tt VirtualLink}) – gre za navidezno polje v tabeli, ki ne zavzame nobenega dodatnega prostora. Polje je pomembno za vezave zapisov ob poizvedbah, kjer na določen zapis vežemo seznam zapisov iz druge tabele.  
         \end{itemize}
         
-        \subsection{Implementacija relaciji}
+        \subsection{Implementacija relacij}
 
-        Implementacija relacij med tabelami se izvaja s pomočjo uporabe tujih ključev, ki predstavljajo primarne identifikatorje zapisov, ki jih želimo povezati. Vzpostavitev povezave se izvede pri ustvarjanju zapisa na ravni programskega jezika Python. Ko na zapisu nastavimo povezavo, se v polje shrani identifikator povezanega zapisa.
+        Implementacija relacij med tabelami se izvaja s pomočjo uporabe tujih klju\-čev, ki predstavljajo primarne identifikatorje zapisov, ki jih želimo povezati. Vzpostavitev povezave se izvede pri ustvarjanju zapisa na ravni programskega jezika Python. Ko na zapisu nastavimo povezavo, se v polje shrani identifikator povezanega zapisa.
 
-        V programski kodi \ref{relation_code} je preprost prestavljen primer, kjer sporočilo vežemo na dva uporabnika, ki imata vlogi pošiljatelja in prejemnika.
+        V programski kodi \ref{relation_code} je predstavljen preprost primer, kjer sporočilo veže\-mo na dva uporabnika, ki imata vlogi pošiljatelja in prejemnika.
 
 \begin{code}
 \begin{minted}{python}
@@ -707,7 +697,7 @@ first_mesage = Message(
         Na sliki \ref{btree_example} je prikazan preprost primer B+ drevesa realiziran s stopnjo $b=4$.
         
         \begin{figure}[H]        
-            \centerline{\includegraphics[width=0.7\textwidth, angle=0]{Bplustree.png}}
+            \centerline{\includegraphics[width=0.9\textwidth, angle=0]{Bplustree.png}}
             \caption{Primer B+ drevesa, povzeto po Wikipediji \cite{BPTREE}.}
             \label{btree_example}
         \end{figure}
@@ -801,9 +791,8 @@ first_mesage = Message(
 
         Pred začetkom branja matrične datoteke moramo najprej dobiti vse odmike. V primeru, da nimamo nobenih omejitev, preprosto preberemo vse odmike in preberemo vse veljavne zapise znotraj matrike podatkov. Za optimizacijo branja, pa imamo tri scenarije, ki lahko že pred začetkom branja izločijo neveljavne zapise.
 
-        \newpage
         \begin{enumerate}
-            \item Pogoji direktno nad primarnim identifikatorjem zapisov.
+            \item Pogoji nad primarnim identifikatorjem zapisov.
             \item Že definirani identifikatorji – {\tt qobject.ix\_constraints} (kadar gre za poizvedbo, ki ni v korenu drevesa poizvedb).
             \item Kadar imamo pogoje nad atributi, ki uporabljajo indekse.
         \end{enumerate}
@@ -901,10 +890,10 @@ first_mesage = Message(
         \end{enumerate}
 
         \noindent
-        Za vse tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti. Bistveno bolj zanimiv pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja, smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $1 \times 10^7$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[0, 25000]$.
+        Za vse tri pristope obstaja veliko spremenljivk, ki vplivajo na čas izvajanja algoritma za iskanje $K$ najmanjših elementov v seznamu. Največ vpliva ima vrednost $N$, ki predstavlja število zapisov, ki jih moramo preveriti in primerjati z ostalimi elementi. Je tudi spodnja meja za vse časovne zahtevnosti. Bistveno bolj zanimiv pa je vpliv vrednosti $K$, ki predstavlja tudi razliko v časovnih zahtevnostih med posameznimi algoritmi. Za lažje razumevanje, kako vrednost $K$ vpliva na čas izvajanja, smo pripravili tudi grafično analizo, kjer v izoliranem okolju izvedemo vse tri algoritme. Vrednost $N$ je nastavljena na $1 \times 10^7$, $K$ pa se spreminja na $x$ osi in je definiran na intervalu $[100, 25000]$.
 
         \begin{figure}[H]
-            \centerline{\includegraphics[width=0.7\textwidth, angle=0]{prvih_k_elementov.png}}
+            \centerline{\includegraphics[width=0.75\textwidth, angle=0]{prvih_k_elementov.png}}
             \caption{Časovna primerjava pristopov za iskanje $K$ najmanjših elementov v seznamu.}
             \label{sl:k_smallest}
         \end{figure}
@@ -1002,7 +991,7 @@ SELECT * FROM messages
 ORDER BY date DESC, content
 \end{minted}          
 
-        \item \textbf{Uporaba relaciji znotraj poizvedbe – funkcija {\tt link}}
+        \item \textbf{Uporaba relacij znotraj poizvedbe – funkcija {\tt link}}
         \newline
         \noindent
         Gre za malo drugačno izvedbo kot je to pri relacijskih SUPB rešitvah, saj v našem primeru podatkov ne združujemo v eno matrično strukturo, temveč so podatki združeni v drevesno strukturo.
@@ -1022,7 +1011,7 @@ query = User.link(tasks=Task)
         \noindent
         V primeru izvedbe, bi za vsakega uporabnika dobili še seznam njegovih nalog.
 
-        \subsubsection{Algoirtem za poizvedovanje z uporabo relaciji}
+        \subsubsection{Algoirtem za poizvedovanje z uporabo relacij}
         \label{query_execution}
 
         Algoritem za poizvedovanje je predstavljen s pomočjo psevdokode \ref{execute_query_algorithm}, kjer omogočamo nabor podatkov iz različnih tabel hkrati.
@@ -1030,7 +1019,7 @@ query = User.link(tasks=Task)
         \begin{enumerate}
             \item Začetna točka rekurzivne metode je izvedba nabora podatkov na korenski tabeli poizvedbe. V primeru, da gre za poizvedbo, ki ne vsebuje povezovanja, rekurzijo zaključimo – robni pogoj rekurzije.
             \item V drugi točki pripravimo strukture za dodatno filtriranje znotraj naslednjih poizvedb. Poleg tega pa pripravimo vmesno strukturo za shranjevanje rezultatov teh poizvedb.
-            \item Nato rekurzivno izvajamo naslednje poizvedbe in rezultate shranjujemo v prej pripravljeno združevalno strukturo (gre za zgoščevalno tabelo, ki vezan identifikator preslika v dejanski zapis).
+            \item Nato rekurzivno izvajamo naslednje poizvedbe in rezultate shranjujemo v prej pripravljeno združevalno strukturo (gre za zgošče\-valno tabelo, ki vezan identifikator preslika v dejanski zapis).
             \item V zaključni fazi algoritma vmesne rezultate iz zgoščevalne tabele združimo v rezultat korenske poizvedbe – to je tudi rezultat celotne metode, ki je tipa {\tt View} predstavljen v razdelku \ref{using_df}.
         \end{enumerate}
 
@@ -1057,7 +1046,7 @@ fn execute_query(qobject: query_object) -> View
     return root_res
 end fn
 \end{minted}
-\caption{Algoritem za izvedbo poizvedbe z uporabo relaciji.}
+\caption{Algoritem za izvedbo poizvedbe z uporabo relacij.}
 \label{execute_query_algorithm}
 \end{code}
 
@@ -1095,7 +1084,7 @@ user_view = User.link(
 
         Ob naboru podatkov izvedemo pristop od zgoraj navzdol, saj najprej preberemo podatke za korensko tabelo in se nato spuščamo v nižje nivoje.
 
-        Vsako vozlišče drevesa iz slike \ref{deep_nested_query} predstavlja ločeno branje matrične datoteke podatkov. Prikazan pristopa nabora v klasičnih poizvedbah SQL ni mogoč, saj rezultat poizvedbe SQL ne more vsebovati vgnezdenih zapisov.
+        Vsako vozlišče drevesa iz slike \ref{deep_nested_query} predstavlja ločeno branje matrične datoteke podatkov. Prikazan pristop nabora v klasičnih poizvedbah SQL ni mogoč, saj rezultat poizvedbe SQL ne more vsebovati vgnezdenih zapisov.
 
         Vezavo zapisov izvedemo na nivoju programskega jezika C++, kjer uporabimo strukturo zgoščevalnih tabel za grupiranje zapisov po identifikatorju starša. Posledično sestava končne strukture steče bistveno hitreje, kot ob pristopu združevanja v programskem jeziku Python.
 
@@ -1217,7 +1206,7 @@ print(total) # prints 15
     \end{figure}
 
     \noindent
-    Paket je sestavljen iz dveh ključnih komponent. To sta ORM, ki je napisan v programskem jeziku Python in predstavlja tudi vhodno točko za uporabnike paketa. Na drugi strani pa je jedro SUPB s sistemom za shranjevanje podatkov. ORM in SUPB komunicirata preko prej omenjenega PyBind11 \cite{PYBIND11_GITHUB} paketa. Za preslikavo zapisov in poizvedb na nivoju SUPB skrbi pretvornik, ki sestavi strukture s katerimi potem upravlja izvajalni mehanizem znotraj jedra.
+    Paket je sestavljen iz dveh ključnih komponent. To sta ORM, ki je napisan v programskem jeziku Python in predstavlja tudi vhodno točko za uporabnike paketa. Na drugi strani pa je jedro SUPB s sistemom za shranjevanje podatkov. ORM in SUPB komunicirata preko prej omenjenega paketa PyBind11 \cite{PYBIND11_GITHUB}. Za preslikavo zapisov in poizvedb na nivoju SUPB skrbi pretvornik, ki sestavi strukture s katerimi potem upravlja izvajalni mehanizem znotraj jedra.
 
     SUPB vsebuje vse performančno gledano kritične operacije in podatke s pomočjo mehanizma za shranjevanje drži v datotekah {\tt .bin}, ki predstavljajo zunanjo komponento sistema.
     
@@ -1263,14 +1252,13 @@ print(total) # prints 15
 
    Pristop avtomatskega testiranja in posodabljanja imenujemo tudi CI/CD le-ta temelji na hitrem in varnem razvoju, ki razvijalca hitro obvesti o morebitnih napakah, ki se pojavljajo znotraj sistema.
     
-\chapter{Analiza uspešnosti}
+\chapter{Analiza delovanja}
 \label{ch2}
 
     V tem poglavju se bomo posvetili temeljni analizi, ki vključuje časovno in prostorsko primerjavo. Osredotočili se bomo na primerjavo med razvitim paketom Graphenix ter ustaljenima rešitvama SQLite in MySQL. Analizo bomo izvedli na različnih scenarijih, pri čemer se bomo osredotočili predvsem na branje podatkov. Poleg tega bomo preučili vpliv uporabe ORM in izvedli teste tako z uporabo ORM kot tudi brez njega. Na ta način bomo pridobili vpogled v zmogljivost, učinkovitost ter prednosti in slabosti posameznih rešitev v različnih kontekstih.
 
-    Za izvajanje različnih testnih scenarijev je pripravljena skripta, ki za vsak SUPB scenarij izvede na različno velikih podatkovnih bazah. Hkrati pa skripta izvede tudi izračun povprečnega časa, kjer med desetimi izvedbami izloči dve najpočasnejši in dve najhitrejši, ter iz preostalih meritev izračuna povprečen čas izvajanja.
+    Za izvajanje različnih testnih scenarijev je pripravljena skripta, ki vsak scenarij izvede na različno velikih podatkovnih bazah. Hkrati pa skripta izvede tudi izračun povprečnega časa, kjer med desetimi izvedbami izloči dve najpočasnejši in dve najhitrejši, ter iz preostalih meritev izračuna povprečen čas izvajanja.
 
-    \newpage
    \section{Množično vstavljanje podatkov}
 
     V okviru prvega scenarija izvajamo postopek vstavljanja podatkov v tabelo uporabnikov. Skozi postopek povečujemo število zapisov, ki jih sistematično vnašamo v podatkovno bazo.
@@ -1290,7 +1278,7 @@ print(total) # prints 15
 
     V primeru Graphenix, vstavljanje ni izvedeno v klasični množični obliki, saj je vstavljanje vsakega zapisa ločen dostop do datoteke. V analizi sta predstavljena dva pristopa vnašanja z uporabo Graphenix. V primeru množičnega vnašanja gre za direkten klic funkcije jedra za vnašanje podatkov in ne potrebujemo kreirati instanc razredov, kar je bilo tudi glavno ozko grlo pri vnašanju podatkov z uporabo ORM.
 
-    Pomemben dejavnik pri vnašanju podatkov je tudi dodatna varnost, ki jo zagotavljata SQLite in zlasti MySQL. Oba sistema imata dnevnike za povrnitev (angl. \textit{rollback journal}), ki v primeru napake omogočata povrnitev celotne baze podatkov v stanje pred vnašanjem. Posledično v primeru napake ali prekinitve v Graphenix tvegamo imeti neveljavne zapise v bazi podatkov.
+    Pomemben dejavnik pri vnašanju podatkov je tudi dodatna varnost, ki jo zagotavljata SQLite in zlasti MySQL. Oba sistema imata dnevnike za povrnitev (angl. \textit{rollback journal}), ki v primeru napake omogočajo povrnitev celotne baze podatkov v stanje pred vnašanjem. Posledično v primeru napake ali prekinitve v Graphenix tvegamo imeti neveljavne zapise v bazi podatkov.
 
     \subsection{Vstavljanje z dodatnim indeksiranim poljem}
 
@@ -1341,7 +1329,7 @@ SELECT * FROM users
     \noindent
     Iz grafa~\ref{branje} je jasno razvidno, da uporaba ORM ni dobro pripravljena za masovno nalaganje podatkov, saj se ponovno kreirajo instance kar predstavlja več kot 70 \% delež celotnega branja. V primeru MySQL se ponovno pojavi tudi nekaj dodatne zakasnitve zaradi načina prenosa podatkov s TCP/IP protokolom.
 
-    \subsection{Branje s filtriranjem, urejanjem in omejevanjem podatkov}
+    \subsection{Branje z omejitvami}
 
     V drugem scenariju branja podatkov iz ene tabele dodamo še omejitev na tip uporabnikov (želimo le administratorje). Poleg tega pa je dodano tudi urejanje podatkov in omejitev števila zapisov (želimo prvih 500 zapisov urejenih po točkah uporabnika).
 
@@ -1351,7 +1339,7 @@ ORDER BY points, id LIMIT 500
 \end{minted}
     
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.72\textwidth, angle=0]{queryread.png}}
+        \centerline{\includegraphics[width=0.75\textwidth, angle=0]{queryread.png}}
         \caption{Branje z dodanim filtriranjem in urejanjem zapisov.}
         \label{queryread}
     \end{figure}
@@ -1359,7 +1347,7 @@ ORDER BY points, id LIMIT 500
     \noindent
     Čas izvajanja posameznega branja je relativno nizek, v vseh primerih je bilo branje izvedeno v manj kot 100 ms. Opazimo, da zakasnitve kreiranja instanc pri ORM tukaj ne pridejo do izraza, saj je potrebno kreirati le 500 instanc. Do večjega izraza pridejo zakasnitve, ki jih za prenos podatkov prinaša TCP/IP protokol, kar je na grafu~\ref{queryread} videno v primerih uporabe MySQL.
 
-    \section{Primerjava poizvedb z uporabo relaciji}
+    \section{Primerjava poizvedb z uporabo relacij}
     \label{join_lbl}
 
     V scenariju definiramo poizvedbo, kjer izvedemo nabor podatkov iz dveh tabel. Število zapisov je določeno s številom uporabnikov. Za vsakega uporabnika pa je bilo vnesenih še 10 nalog, ki so vezane preko tujega ključa {\tt user\_id} v tabeli nalog ({\tt Task}).
@@ -1370,7 +1358,7 @@ INNER JOIN tasks ON tasks.user_id = users.id
 \end{minted}
 
     \begin{figure}[H]
-        \centerline{\includegraphics[width=0.72\textwidth, angle=0]{join.png}}
+        \centerline{\includegraphics[width=0.75\textwidth, angle=0]{join.png}}
         \caption{Poizvedovanje podatkov iz dveh tabel hkrati – uporabniki in njihove naloge.}
         \label{join}
     \end{figure}
@@ -1474,7 +1462,7 @@ WHERE points = 5432
 
     Pogosta uporaba programskega jezika Python je na strani strežniških aplikacij. Na tem področju je beleženje sprememb in zahtev kritično. Z uporabo pripravljene rešitve je prilagojeno beleženje podatkov lahko zelo preprosto.
 
-    \subsection{Aplikacija, ki služi kot osnova za modul beleženja}
+    \subsection{Modul beleženja}
 
     V prvi fazi smo si za primer pripravili preprosto strežniško aplikacijo, ki uporablja Flask \cite{FLASK_GITHUB} ogrodje. Znotraj aplikacije smo definirali eno vhodno točko, in sicer {\tt get-range}, ki je predstavljena v programski kodi \ref{simple_flask_app}, kjer lahko poljubno nastavljamo tri HTTP {\tt GET} parametre, to so {\tt start}, {\tt end} in {\tt step}, kjer ima vsak od teh parametrov tudi privzete vrednosti.
 
@@ -1794,7 +1782,7 @@ def display_expenses(self, search=None, order_by=None, page=0):
     
     Poleg tega smo tekom razvoja dodali še lasten ORM, ki neposredno komunicira z operacijami SUPB, kar bistveno zmanjša zahtevnost, ki jo sicer prinese ORM, kjer moramo skrbeti še za dodatne preslikave med objekti in poizvedbami SQL. Pri združevanju zapisov iz različnih tabel smo se delno oddaljili od relacijskih podatkovnih baz in uporabili objektne pristope, ki jih uporabljajo nerelacijske podatkovne baze.
     
-    Razvoj prototipa je bil uspešen. Z vključitvijo testnih primerov smo poskrbeli za hitrejše sprotno odkrivanje napak in višjo kakovost rešitve. Analiza uspešnosti je v nekaterih scenarijih pokazala celo primerljive rezultate z MySQL in SQLite, kar je bil tudi eden izmed glavnih ciljev pred začetkom razvoja.
+    Razvoj prototipa je bil uspešen. Z vključitvijo testnih primerov smo poskrbeli za hitrejše sprotno odkrivanje napak in višjo kakovost rešitve. Analiza delovanja je v nekaterih scenarijih pokazala celo primerljive rezultate z MySQL in SQLite, kar je bil tudi eden izmed glavnih ciljev pred začetkom razvoja.
 
 %\cleardoublepage
 % \addcontentsline{toc}{chapter}{Literatura}
