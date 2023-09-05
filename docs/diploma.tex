@@ -502,7 +502,7 @@ V diplomskem delu so predstavljeni nekateri izmed najbolj uveljavljenih sistemov
     \noindent
     Iz tabele \ref{orm_library_comparison} izluščimo, da za uporabo v programskem jeziku Python prevladujejo paketi SQLAlchemy, Django in Peewee.
     \begin{itemize}
-        \item \textbf{Django ORM \cite{DJANGO_GITHUB}} je del širšega orodja za izdelavo spletnih aplikaciji Django. Omogoča zelo širok nabor operaciji nad podatkovno bazo, poleg tega ima vgrajen tudi svoj vmesnik za ukazno vrstico – CLI (angl. \textit{Command-line interface}). S tem celotno ogrodje bistveno pospeši produktivnost razvijalcev. ORM podpira pet sistemov za upravljanje s podatkovno bazo, to so PostgreSQL \cite{POSTGRESQL}, MariaDB \cite{MARIADB}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE} in SQLite \cite{SQLITE}. Izpostavimo, da je število prenosov lahko nekoliko zavajajoče, saj uporaba Django ogrodja v primerih, ko ne potrebujemo trajnega shranjevanja podatkov, ne pomeni uporabe Django ORM.
+        \item \textbf{Django ORM \cite{DJANGO_GITHUB}} je del širšega orodja za izdelavo spletnih aplikacij Django. Omogoča zelo širok nabor operaciji nad podatkovno bazo, poleg tega ima vgrajen tudi svoj vmesnik za ukazno vrstico – CLI (angl. \textit{Command-line interface}). S tem celotno ogrodje bistveno pospeši produktivnost razvijalcev. ORM podpira pet sistemov za upravljanje s podatkovno bazo, to so PostgreSQL \cite{POSTGRESQL}, MariaDB \cite{MARIADB}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE} in SQLite \cite{SQLITE}. Izpostavimo, da je število prenosov lahko nekoliko zavajajoče, saj uporaba Django ogrodja v primerih, ko ne potrebujemo trajnega shranjevanja podatkov, ne pomeni uporabe Django ORM.
         \item \textbf{SQLAlchemy \cite{SQLALCHEMY_GITHUB}} gre za enega najbolj fleksibilnih in uporabljenih paketov znotraj programskega jezika. Fleksibilnost pomeni, da so številne operacije, ki so znotraj Django ORM že avtomatizirane, tukaj prepušče\-ne implementaciji razvijalca. Fleksibilnost s seboj prinaša tudi bistveno prednost, saj lahko kot razvijalec, ki dobro pozna ozadje delovanja uporabljenega SUPB, izkoristimo različne pristope optimizacije, ki jih ni mogoče realizirati znotraj Django ORM oz. je implementacija bistveno težja. Paket med drugim podira tudi prej omenjene SQLite \cite{SQLITE}, MySQL \cite{MYSQL}, Oracle \cite{ORACLE}, MSSQL \cite{MSSQL} in še druge SUPB rešitve.
         \item \textbf{Peewee \cite{PEEWEE_GITHUB}} je eden izmed preprostejših paketov, ki ima lahkoten nivo obstrakcije. Paket podpira tri relacijske podatkovne baze, to so PostgreSQL \cite{POSTGRESQL}, MySQL \cite{MYSQL} in SQLite \cite{SQLITE}. Gre za dokaj omejen nabor, saj je paket dokaj minimalističen in ne ponuja toliko funkcionalnosti kot Django ORM in SQLAlchemy.
     \end{itemize}
@@ -773,7 +773,7 @@ first_mesage = Message(
         
         Vsaka stran oz. vozlišče vsebuje ``Infimum``, ki predstavlja vrednost manjšo kot kateri koli zapis v vozlišču. Na drugi strani pa je ``Supremum``, ki predstavlja vrednost večjo kot kateri koli zapis v vozlišču.
 
-        Gre še za malo bolj napredno implementacijo B+ drevesa, ki omogoča nekaj dodatnih optimizaciji z vidika shranjevanja podatkov in izvajanja iskanja \cite{BPTREE_INNODB}.
+        Gre še za malo bolj napredno implementacijo B+ drevesa, ki omogoča nekaj dodatnih optimizacij z vidika shranjevanja podatkov in izvajanja iskanja \cite{BPTREE_INNODB}.
         
         \subsection{Podprte operacije filtriranja}
         
@@ -804,7 +804,7 @@ first_mesage = Message(
 
         InnoDB omogoča dva bolj pogosta pristopa za indeksiranje podatkov. Prvi pristop je s prej omenjenim B+ drevesom \ref{MYSQL_BPTREE}. Z uporabo B+ drevesa omogočimo optimizacijo poizvedb, kjer uporabljamo pogoje {\tt =, >, >=, <, <=, BETWEEN} delno, pa je pokrit tudi operator {\tt like}, kjer je iskanje s pomočjo drevesa izvedeno v primerih, ko iščemo začetek niza \cite{TREE_HASH_MYSQL}.
 
-        Mehanizem za shranjevanje poleg dreves podpira tudi indeksiranje s pomočjo zgoščevalnih tabel. Gre za pristop, ki se uporablja le za preverjanje enakosti, saj zgoščene vrednosti ne moremo primerjati po velikosti.
+        Mehanizem za shranjevanje poleg dreves podpira tudi indeksiranje s po\-močjo zgoščevalnih tabel. Gre za pristop, ki se uporablja le za preverjanje enakosti, saj zgoščene vrednosti ne moremo primerjati po velikosti.
         Prednost uporabe zgoščevalnih tabel se skriva v hitrosti iskanja po specifični vrednosti, saj ima ta proces časovno zahtevnost $O(1)$ oz. konstanto časovno zahtevnost.
         
         Pristop je tako zelo uporaben, kadar imamo polje, ki vsebuje omejen nabor vrednosti, npr. pri indeksiranju pošiljatelja sporočila bi z uporabo zgoščevalne tabele zelo hitro poiskali sporočila iskanega pošiljatelja, hkrati pa za ta atribut načeloma ne izvajamo ostalih operaciji filtriranja in v večini scenarijev le iščemo zapise točno določenega uporabnika.
@@ -1451,7 +1451,7 @@ WHERE points = 5432
     \subsubsection{Idealni pogoji za indeksiranje}
     Omenimo, da je scenarij prilagojen uporabi indeksiranja, saj v scenariju iskanja, kjer vrednosti niso unikatne, učinkovitost indeksa zelo hitro pade. Poleg tega je bilo iskanje izvedeno kot iskanje specifične vrednosti v drevesu, medtem ko če bi iskali širši nabor vrednosti bi časovna zahtevnost $O(log_b(N))$ postala $O(K \cdot log_b(N))$, kjer je $K$ število vrednosti, ki se ujemajo z iskalnim kriterijem.
 
-    Če potegnemo črto je jasno, da se pri odločanju o uporabi indeksov odpira zahtevno vprašanje, ki zahteva premišljeno obravnavo. Odgovornost za to odločitev se prepušča razvijalcem, pri čemer je ključnega pomena, da se kot razvijalci zavedamo optimizaciji in pasti, ki izvirajo iz uporabe B dreves za indeksiranje. Poleg tega je nujno, da poznamo naravo podatkov in zahtev aplikacije, saj je optimizacija z indeksiranjem smiselna le v določenih kontekstih.
+    Če potegnemo črto je jasno, da se pri odločanju o uporabi indeksov odpira zahtevno vprašanje, ki zahteva premišljeno obravnavo. Odgovornost za to odločitev se prepušča razvijalcem, pri čemer je ključnega pomena, da se kot razvijalci zavedamo optimizacij in pasti, ki izvirajo iz uporabe B dreves za indeksiranje. Poleg tega je nujno, da poznamo naravo podatkov in zahtev aplikacije, saj je optimizacija z indeksiranjem smiselna le v določenih kontekstih.
 
 \chapter{Scenariji oz. primeri uporabe}
 \label{ch3}
@@ -1545,7 +1545,7 @@ def route_with_log(route):
 
     \subsubsection{Izpis zadnjih treh zahtevkov}
 
-\begin{minted}{python}
+\begin{minted}[breaklines]{python}
 _, reqs = ReqInfo.order(ReqInfo.timestamp.desc()).limit(3).all()
 ... 
 # izpis zahtevkov
@@ -1626,7 +1626,7 @@ polars_df : pl.DataFrame = qview.as_polars_df()
     Od te točke dalje pa lahko podatke v celoti obdelujemo s pomočjo paketov za podatkovno analitiko.
 
     \newpage
-    \section{Namizna aplikacija za upravljanje stroškov}
+    \section{Aplikacija za upravljanje stroškov}
 
     V tem razdelku je predstavljen razvoj namizne aplikacije za upravljanje stroškov. Aplikacija omogoča pregled stroškov, vstavljanje, urejanje, brisanje in statističen pregled, kjer so stroški grupirani glede na kategorije.
 
