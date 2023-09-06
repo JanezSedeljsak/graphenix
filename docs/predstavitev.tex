@@ -253,6 +253,33 @@ class Message(gx.Model):
 my_schema = Schema('my_schema', models=[User, Task, Message])
 my_schema.create(delete_old=True)
         \end{minted}
+        \note{Twest test test}
+    \end{frame}
+
+    \subsection{Tok ustvarjanja zapisov}
+    \begin{frame}[fragile]
+    \frametitle{Tok ustvarjanja zapisov}
+    \footnotesize
+    \begin{minted}{python}
+# ustvarimo dva uporabnika
+john = User(name='John De').make()
+jane = User(name='Jane Doe').make()
+
+# posodobimo uporabnika
+john.name = 'John Doe'
+john.save()
+
+# ustavirmo sporočilo z vezavo
+first_mesage = Message(
+    content = 'Hello, World!',
+    sender = john,
+    reciever = jane
+).make()
+
+# brisanje
+first_mesage.delete()
+Message.bulkdelete([first_mesage.id])
+        \end{minted}   
     \end{frame}
 
     \subsection{Poizvedovanje}
@@ -285,7 +312,7 @@ _, view = User.link(
     \begin{frame}[fragile]
     \frametitle{Sestavljanje pogojev}
     \begin{block}{Nabor sporočil s sestavljanjem pogojev}
-    Preberemo vsa sporočila, ki so bila poslana v zadnjih petih dneh. Poleg tega zahtevamo, da je izpolnjen eden izmed pogojev: Pošiljatelj/prejemnik je uporabnik {\tt john} ali prejemnik ni {\tt jane}
+    Preberemo vsa sporočila, ki so bila poslana v zadnjih petih dneh. Poleg tega zahtevamo, da je izpolnjen eden izmed pogojev: pošiljatelj/prejemnik je uporabnik {\tt john} ali prejemnik ni {\tt jane}
     \end{block} 
     \footnotesize
     \begin{minted}{python}
@@ -357,7 +384,7 @@ _, view = User.link(
 
     \subsection{Uporaba indeksiranja}
     \begin{frame}
-        \frametitle{Indeksiranje pred in po optimizaciji (število zapisov = $10^5$)}
+        \frametitle{Indeksiranje pred in po optimizaciji ($10^5$ zapisov)}
             \centering
             \includegraphics[height=4cm]{indexing_speedup_100000.png}
             \vline
