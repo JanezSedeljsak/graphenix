@@ -107,13 +107,6 @@ Univerza v Ljubljani, Fakulteta za računalništvo in informatiko \\ % Your inst
 \titlepage % Print the title page as the first slide
 \end{frame}
 
-\setcounter{tocdepth}{1}
-
-\begin{frame}
-\frametitle{Kazalo} % Table of contents slide, comment this block out to remove it
-\tableofcontents % Throughout your presentation, if you choose to use \section{} and \subsection{} commands, these will automatically be printed on this slide as an overview of your presentation
-\end{frame}
-
 %----------------------------------------------------------------------------------------
 %	PRESENTATION SLIDES
 %----------------------------------------------------------------------------------------
@@ -127,16 +120,19 @@ Univerza v Ljubljani, Fakulteta za računalništvo in informatiko \\ % Your inst
 \frametitle{Motivacija}
     \begin{itemize}
         \item{Spoznati delovanje podatkovnih baz}
-        \item{Izogib uporabi anti-vzorcev}
+        \begin{itemize}
+            \item{Izogib uporabi anti-vzorcev}
+            \item{Boljša implementacija podatkovnega sloja}
+        \end{itemize}
     \end{itemize}
-    \textbf{Glavni cilji:}
+    \vfill
     \begin{itemize}
         \item{Razvoj minimalističnega SUPB za programski jezik Python:}
         \begin{itemize}
             \item{SUPB na nivoju programskega jezika C++}
             \item{Indeksiranje z uporabo B+ dreves}
             \item{Intuitiven način komunikacije s podatkovno bazo}
-            \item{Delno primerljiv z SQLite}
+            \item{Izhodišče sta MySQL in SQLite}
         \end{itemize}
     \end{itemize}
 \end{frame}
@@ -169,65 +165,6 @@ Univerza v Ljubljani, Fakulteta za računalništvo in informatiko \\ % Your inst
     \end{itemize}
     \end{frame}
 
-    \subsection{Optimiacije branja}
-    \frametitle{Indeksiranje z uporabo B+ dreves}
-    \begin{frame}
-
-    \begin{enumerate}
-        \item Gručanje zapisov ob branju matrike podatkov
-        \item Uporaba prioritetne vrste ob branju z omejevanjem in urejanjem
-        \item Uporaba vgnezdenih podatkovnih okvirjev za predstavitev rezultatov
-    \end{enumerate}
-    \end{frame}
-
-    \subsection{Podatkovni tipi in operacije filtriranja}
-    \begin{frame}[fragile]
-    \begin{columns}[t]
-        \begin{column}{0.48\textwidth}
-            \begin{block}{Podatkovni tipi}
-            \footnotesize
-            \begin{minted}{cpp}
-enum FIELD_TYPE
-{
-    INT = 0,
-    STRING = 1,
-    BOOL = 2,
-    DATETIME = 3,
-    LINK = 4,
-    DOUBLE = 5,
-    VIRTUAL_LINK = 6
-};
-
-
-
-
-            \end{minted}
-            \end{block}
-        \end{column}
-        \begin{column}{0.48\textwidth}
-            \begin{block}{Operacije filtriranja}
-            \footnotesize
-            \begin{minted}{cpp}
-enum FILTER_OPERATION_TYPE
-{
-    EQUAL = 0,
-    NOTEQUAL = 1,
-    GREATER = 2,
-    GREATER_OR_EQUAL = 3,
-    LESS = 4,
-    LESS_OR_EQUAL = 5,
-    REGEX = 6,
-    IS_IN = 7,
-    NOT_IN = 8,
-    BETWEEN = 9,
-    IREGEX = 10
-};
-            \end{minted}
-            \end{block}
-        \end{column}
-    \end{columns}
-\end{frame}
-
 \section{Predstavitev delovanja}
     \subsection{Definiranje sheme}
     \begin{frame}[fragile]
@@ -249,37 +186,7 @@ class Message(gx.Model):
     date = gx.Field.DateTime()
     sender = gx.Field.Link().as_index()
     reciever = gx.Field.Link().as_index()
-
-my_schema = Schema('my_schema', models=[User, Task, Message])
-my_schema.create(delete_old=True)
         \end{minted}
-        \note{Twest test test}
-    \end{frame}
-
-    \subsection{Tok ustvarjanja zapisov}
-    \begin{frame}[fragile]
-    \frametitle{Tok ustvarjanja zapisov}
-    \footnotesize
-    \begin{minted}{python}
-# ustvarimo dva uporabnika
-john = User(name='John De').make()
-jane = User(name='Jane Doe').make()
-
-# posodobimo uporabnika
-john.name = 'John Doe'
-john.save()
-
-# ustavirmo sporočilo z vezavo
-first_mesage = Message(
-    content = 'Hello, World!',
-    sender = john,
-    reciever = jane
-).make()
-
-# brisanje
-first_mesage.delete()
-Message.bulkdelete([first_mesage.id])
-        \end{minted}   
     \end{frame}
 
     \subsection{Poizvedovanje}
@@ -287,43 +194,17 @@ Message.bulkdelete([first_mesage.id])
     \frametitle{Poizvedovanje}
     \footnotesize
     \begin{minted}{python}
-# uporabniki s padajočo ureditvijo
+# uporabniki urejeno po imenu - padajoče
 _, view = User.order(User.name.desc()).all()
 
-# imena uporabnikov z odmikom 5 in omejitvijo 10
-users = User.offset(5).limit(10).pick(User.name)
-
-# sporočila, ki jih je danes prejel uporabnik John
-_, view = Message.filter(Message.reciever.equals(john)).all()
+# uporabniki in njihove naloge
+_, view = User.link(tasks=Task).all()
 
 # število sporočil in datum zadnjega sporočila po uporabnikih
 counts = Message.agg(by=Message.sender, 
     count=gx.AGG.count(), latest=gx.AGG.max(Message.date))
-
-# uporabniki in zadnja 3 prejeta sporočila
-_, view = User.link(
-    recieved=Message.order(Message.date.desc()).limit(3)
-).all()
     
     \end{minted}
-    \end{frame}
-    
-    \subsection{Sestavljanje pogojev}
-    \begin{frame}[fragile]
-    \frametitle{Sestavljanje pogojev}
-    \begin{block}{Nabor sporočil s sestavljanjem pogojev}
-    Preberemo vsa sporočila, ki so bila poslana v zadnjih petih dneh. Poleg tega zahtevamo, da je izpolnjen eden izmed pogojev: pošiljatelj/prejemnik je uporabnik {\tt john} ali prejemnik ni {\tt jane}
-    \end{block} 
-    \footnotesize
-    \begin{minted}{python}
-_, view = Message.filter(
-    Message.date.greater(datetime.now() - timedelta(days=5)), 
-    gx.some(
-        Message.sender.equals(john),
-        Message.reciever.equals(john),
-        Message.reciever.is_not(jane)
-    )).all()
-        \end{minted}   
     \end{frame}
 
     \subsection{Vgnezdne poizvedbe}
@@ -333,8 +214,8 @@ _, view = Message.filter(
     \footnotesize
     \begin{minted}{python}
 _, view = User.link(
-    tasks=Task.order(Task.content).limit(3), 
-    recieved=Message.link(sender=User).limit(5)
+    tasks=Task.limit(3), 
+    recieved=Message.link(sender=User)
 ).filter(User.name.iregex('john.*')).all()
         \end{minted}
     \end{block}
@@ -352,49 +233,60 @@ _, view = User.link(
 }
     \end{minted}
     \end{frame}
-
-    
     
 \section{Analiza delovanja}
     \subsection{Vstavljanje}
     \begin{frame}
-        \frametitle{Vstavljanje zapisov (brez in z indeksiranim atributom)}
+    \frametitle{Vstavljanje zapisov}
+    \begin{figure}
+        \begin{minipage}[t]{0.45\textwidth}
             \centering
             \includegraphics[height=4cm]{singleinsert.png}
-            \vline
-            \includegraphics[height=4cm]{indexinsert.png}
-    \end{frame}
-
-    \subsection{Velikost podatkovne baze na disku}
-    \begin{frame}
-        \frametitle{Velikost podatkovne baze na disku}
+            \caption*{Množično vstavljanje podatkov.}
+        \end{minipage}
+        \hfill
+        \begin{minipage}[t]{0.45\textwidth}
             \centering
-            \includegraphics[height=6cm]{sizes.png}
-    \end{frame}
+            \includegraphics[height=4cm]{indexinsert.png}
+            \caption*{Vstavljanje z dodatnim indeksiranim poljem.}
+        \end{minipage}
+    \end{figure}
+\end{frame}
 
     \subsection{Poizvedovanje}
     \begin{frame}
-        \frametitle{Brez omejitev, s filtrom, s povezavami, agregacijsko}
-        \includegraphics[height=3.2cm]{singleread.png}
-        \includegraphics[height=3.2cm]{queryread.png}
-        \hline
-        \includegraphics[height=3.2cm]{join.png}
-        \includegraphics[height=3.2cm]{agg.png}
+        \frametitle{Poizvedovanje}
+        \begin{figure}
+            \begin{minipage}[t]{0.45\textwidth}
+                \centering
+                \includegraphics[height=4cm]{singleread.png}
+                \caption*{Branje brez dodatnih parametrov znotraj poizvedbe.}
+            \end{minipage}
+            \hfill
+            \begin{minipage}[t]{0.45\textwidth}
+                \centering
+                \includegraphics[height=4cm]{queryread.png}
+                \caption*{Branje z omejitvami - prvih 500 uporabnikov + filtriranje + urejanje.}
+            \end{minipage}
+        \end{figure}
     \end{frame}
 
     \subsection{Uporaba indeksiranja}
     \begin{frame}
         \frametitle{Indeksiranje pred in po optimizaciji ($10^5$ zapisov)}
-            \centering
-            \includegraphics[height=4cm]{indexing_speedup_100000.png}
-            \vline
-            \includegraphics[height=4cm]{indexing_speedup_100000_v2.png}
-    \end{frame}
-
-    \begin{frame}
-        \frametitle{Indeksiranje nad večjo bazo podatkov ($10^6$ zapisov)}
-            \centering
-            \includegraphics[height=6cm]{indexing_speedup_1000000_v2.png}
+        \begin{figure}
+            \begin{minipage}[t]{0.45\textwidth}
+                \centering
+                \includegraphics[height=4cm]{indexing_speedup_100000.png}
+                \caption*{Pohitritve s pomočjo indeksiranja.}
+            \end{minipage}
+            \hfill
+            \begin{minipage}[t]{0.45\textwidth}
+                \centering
+                \includegraphics[height=4cm]{indexing_speedup_100000_v2.png}
+                \caption*{Pohitritve s pomočjo indeksiranja po optimizaciji.}
+            \end{minipage}
+        \end{figure}
     \end{frame}
 
 \section{Sklepne ugotovitve}
@@ -406,7 +298,6 @@ _, view = User.link(
         \item Ali je bil razvoj uspešen?
     \end{itemize}
 \end{frame}
-
 
 \begin{frame}
 \Huge{\centerline{Hvala za pozornost}}
