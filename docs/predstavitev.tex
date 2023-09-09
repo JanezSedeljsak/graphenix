@@ -158,7 +158,7 @@ Univerza v Ljubljani, Fakulteta za računalništvo in informatiko \\ % Your inst
     \begin{itemize}
         \item Implementacija s pomočjo programskega jezika C++
         \item Shranjevanje strukture v binarni datoteki
-        \item Uproaba ``generikov`` za različne podatkovne tipe (nizi, cela števila, realna števila, povezave)
+        \item Uporaba ``generikov`` za različne podatkovne tipe (nizi, cela števila, realna števila, povezave)
         
         \centering
         \includegraphics[height=3cm]{Bplustree.png}
@@ -175,7 +175,7 @@ class User(gx.Model):
     name = gx.Field.String(size=100)
     tasks = gx.Field.VirtualLink("user")
     sent = gx.Field.VirtualLink("sender")
-    recieved = gx.Field.VirtualLink("reciever")
+    received = gx.Field.VirtualLink("receiver")
     
 class Task(gx.Model):
     content = gx.Field.String(size=100)
@@ -185,7 +185,7 @@ class Message(gx.Model):
     content = gx.Field.String(size=50)
     date = gx.Field.DateTime()
     sender = gx.Field.Link().as_index()
-    reciever = gx.Field.Link().as_index()
+    receiver = gx.Field.Link().as_index()
         \end{minted}
     \end{frame}
 
@@ -215,7 +215,7 @@ counts = Message.agg(by=Message.sender,
     \begin{minted}{python}
 _, view = User.link(
     tasks=Task.limit(3), 
-    recieved=Message.link(sender=User)
+    received=Message.link(sender=User)
 ).filter(User.name.iregex('john.*')).all()
         \end{minted}
     \end{block}
@@ -227,7 +227,7 @@ _, view = User.link(
     "tasks": [
         {"content": "Finish the diploma"},
     ],
-    "recieved": [
+    "received": [
         {"content": "Hello", "sender": {}},
     ]
 }
