@@ -105,7 +105,7 @@ query = Teacher.link(laboratory = Laboratory)
 
 #### `.filter()`
 
-The method is meant to replace the `WHERE` operator in `SQL` it is a bit different it can only be used within the entity you are querying. It supports
+The method is meant to replace the `WHERE` operator in `SQL` it is a bit different it can only be used within the table you are querying. It supports
 9 operations (equals, is_not, greater, greater_or_equal, less, less_or_equal, regex(), is_in(), not_in()) + we can also wrap these methods into a condition tree like so:
 ```python
 query = Teacher.filter(
@@ -126,7 +126,7 @@ query = Teacher.offset(30).limit(15)
 
 #### `.order()`
 
-The order operator is quite straight forward we can sort records from one entity by multiple columns (ASC/DESC).
+The order operator is quite straight forward we can sort records from one table by multiple columns (ASC/DESC).
 For example if we want to sort the Teachers by full_name and in case of the same name we do descending by email:
 ```python
 query = Teacher.order(Teacher.full_name, Teacher.email.desc())
